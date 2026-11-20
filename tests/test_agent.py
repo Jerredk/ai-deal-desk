@@ -239,7 +239,8 @@ def test_multiturn_tool_use_logs_cost_ledger(seeded_db_path, sample_case):
     assert isinstance(first_kwargs["system"], list)
     assert first_kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
     assert first_kwargs["tools"][-1]["cache_control"] == {"type": "ephemeral"}
-    assert first_kwargs["temperature"] == 0.0
+    assert "temperature" not in first_kwargs
+    assert first_kwargs["max_tokens"] == 2048
 
 
 def test_v1_has_no_cache_control_and_uses_basic_tools(seeded_db_path, sample_case):

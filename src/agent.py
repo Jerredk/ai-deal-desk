@@ -224,10 +224,11 @@ class DealDeskAgent:
         messages: list[dict],
         tools: list[dict] | None,
     ) -> Any:
+        # Note: current anthropic SDK Messages.create no longer accepts `temperature`
+        # as a top-level kwarg; keep deterministic behavior via prompt + tool protocol.
         kwargs: dict[str, Any] = {
             "model": self.model,
             "max_tokens": 2048,
-            "temperature": 0.0,
             "system": system,
             "messages": messages,
         }
