@@ -10,7 +10,10 @@ import numpy as np
 
 from db.schema import init_db
 
-# USD per 1M tokens. cache_write ≈ 1.25× input; cache_read ≈ 0.10× or 0.05× input.
+# Pinned Anthropic list rates (USD per 1M tokens), as of 2026-11-21.
+# Source: Anthropic public pricing; not fetched live (no pricing API).
+# cache_write ≈ 1.25× input; cache_read ≈ 0.10× or 0.05× input by model family.
+# Update this table (and the date) when rates change; keep pinned during a benchmark.
 ANTHROPIC_PRICING_USD_PER_1M: dict[str, dict[str, float]] = {
     "claude-sonnet-4-6": {
         "input": 3.00,
