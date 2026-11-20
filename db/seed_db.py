@@ -15,89 +15,34 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from dotenv import load_dotenv
 
 from db.schema import init_db
+from src.deal_economics import (
+    BASE_COGS_PCT,
+    HIGH_RISK_LEGAL_FLAGS,
+    SERVICES_HOURLY_RATE,
+    WORKING_CAPITAL_PENALTY,
+    compute_gross_margin_pct,
+    determine_approval_tier,
+)
+from src.hybrid_rag import LOCAL_EMBEDDING_DIM, local_embed_text
 
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Unit-economics constants
-# ---------------------------------------------------------------------------
-BASE_COGS_PCT = 0.18  # 18% of list ARR → 82% margin at 0% discount
-SERVICES_HOURLY_RATE = 150.0
-WORKING_CAPITAL_PENALTY = {
-    "Net-30": 0.0,
-    "Net-60": 0.015,
-    "Net-90": 0.03,
-}
-HIGH_RISK_LEGAL_FLAGS = frozenset(
-    {
-        "MFN_CLAUSE",
-        "UNCAPPED_LIABILITY",
-        "TERMINATION_CONVENIENCE_30D",
-        "NON_STANDARD_AUDIT",
-    }
-)
+# Re-export SSOT symbols for Increment 1 tests / callers
+__all__ = [
+    "BASE_COGS_PCT",
+    "SERVICES_HOURLY_RATE",
+    "WORKING_CAPITAL_PENALTY",
+    "HIGH_RISK_LEGAL_FLAGS",
+    "DEFAULT_DB_PATH",
+    "compute_gross_margin_pct",
+    "determine_approval_tier",
+    "seed_db",
+]
 
 DEFAULT_DB_PATH = "db/deal_desk.db"
-
-
-def compute_gross_margin_pct(
-    annual_contract_value: float,
-    discount_pct: float,
-    payment_terms: str,
-    custom_onboarding_hours: float,
-) -> float:
-    """Effective gross margin using explicit B2B SaaS unit-economics rules."""
-    if discount_pct >= 1.0:
-        raise ValueError("discount_pct must be < 1.0")
-    list_arr = annual_contract_value / (1.0 - discount_pct)
-    base_cogs = BASE_COGS_PCT * list_arr
-    services_cogs = custom_onboarding_hours * SERVICES_HOURLY_RATE
-    working_capital_penalty = annual_contract_value * WORKING_CAPITAL_PENALTY[payment_terms]
-    margin = (
-        (annual_contract_value - base_cogs - services_cogs - working_capital_penalty)
-        / annual_contract_value
-    ) * 100.0
-    return round(margin, 2)
-
-
-def determine_approval_tier(
-    discount_pct: float,
-    gross_margin_pct: float,
-    payment_terms: str,
-    risk_flags: list[str],
-) -> str:
-    """Map deal economics + legal flags to an approval tier."""
-    has_high_risk = bool(set(risk_flags) & HIGH_RISK_LEGAL_FLAGS)
-
-    if (
-        discount_pct > 0.25
-        or gross_margin_pct < 72.0
-        or payment_terms == "Net-90"
-        or has_high_risk
-    ):
-        return "CFO-And-Legal"
-
-    if (
-        discount_pct <= 0.15
-        and gross_margin_pct >= 75.0
-        and payment_terms == "Net-30"
-        and not has_high_risk
-    ):
-        return "Auto-Approve"
-
-    if (
-        0.15 < discount_pct <= 0.25
-        and gross_margin_pct >= 72.0
-        and payment_terms in ("Net-30", "Net-60")
-        and not has_high_risk
-    ):
-        return "VP-Sales"
-
-    # Residual gap cases (e.g. low discount + Net-60) escalate to CFO
-    return "CFO-And-Legal"
 
 
 # ---------------------------------------------------------------------------
@@ -462,36 +407,10 @@ def build_rag_chunks() -> list[dict]:
     return policies + clauses
 
 
-LOCAL_EMBEDDING_DIM = 384
-
-
-def _local_embed_text(text: str, dim: int = LOCAL_EMBEDDING_DIM) -> list[float]:
-    """Deterministic local dense embedding (hashing bag-of-words, L2-normalized)."""
-    import numpy as np
-
-    vec = np.zeros(dim, dtype=np.float64)
-    tokens = [t for t in "".join(ch.lower() if ch.isalnum() else " " for ch in text).split() if t]
-    if not tokens:
-        return vec.tolist()
-    for token in tokens:
-        # Stable FNV-1a style hash → bucket + signed contribution
-        h = 2166136261
-        for ch in token:
-            h ^= ord(ch)
-            h = (h * 16777619) & 0xFFFFFFFF
-        idx = h % dim
-        sign = 1.0 if (h & 1) == 0 else -1.0
-        vec[idx] += sign
-    norm = np.linalg.norm(vec)
-    if norm > 0:
-        vec = vec / norm
-    return vec.tolist()
-
-
 def embed_chunks_locally(chunks: list[dict]) -> list[dict]:
-    """Compute and store local dense embeddings in embedding_json (no external API)."""
+    """Compute and store local dense embeddings via shared hybrid_rag embedder."""
     for chunk in chunks:
-        chunk["embedding_json"] = json.dumps(_local_embed_text(chunk["content"]))
+        chunk["embedding_json"] = json.dumps(local_embed_text(chunk["content"]))
     logger.info(
         "Stored local dense embeddings (dim=%d) for %d chunks in SQLite.",
         LOCAL_EMBEDDING_DIM,
