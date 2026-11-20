@@ -27,11 +27,11 @@ pytest -v
 
 ## 3. Test Setup
 
-**Unstructured Retrieval Corpus.** Six B2B SaaS Deal-Desk policy documents covering discount authority bands, the 72.0% hard margin floor (with 82% baseline margin at 0% discount / 18% list-ARR COGS), working-capital penalties for Net-60/90, onboarding services COGS, and the escalation matrix—plus ten commercial contract clauses modeled on CUAD categories (Most Favored Nation pricing parity, uncapped liability, 30-day termination for convenience, on-site audit rights, auto-renewal/price-cap, and five standard/acceptable baseline clauses so retrieval must discriminate).
+**Unstructured Retrieval Corpus.** Six B2B SaaS Deal-Desk policy documents covering discount authority bands, the 72.0% hard margin floor (with 82% baseline margin at 0% discount / 18% list-ARR COGS), working-capital penalties for Net-60/90, onboarding services COGS, and the escalation matrix—plus ten commercial contract clauses modeled on CUAD categories (Most Favored Nation pricing parity, uncapped liability, 30-day termination for convenience, on-site audit rights, auto-renewal/price-cap, and five standard/acceptable baseline clauses so retrieval must discriminate). Dense embeddings for Hybrid RAG are computed locally and stored in SQLite (`rag_chunks.embedding_json`); no third-party embedding API is required.
 
 **Structured Warehouse & Golden Eval Suite.** Two hundred fifty seeded historical B2B SaaS deals (`random.seed(42)`) with realistic win-rate decay at extreme discounts and longer cycles when legal redlines are present. Twenty adversarial golden cases: 5 Auto-Approve, 5 VP-Sales, 10 CFO-And-Legal—including six nominal-discount margin traps where `discount <= 20%` still breaches the 72.0% floor after services COGS and Net-90 working-capital drag. Every golden `expected_gross_margin_pct` and `expected_approval_tier` is computed from the same Python formulas used at runtime.
 
-**Planned Progression.** Cross-version evaluation of `v1` (baseline prompting) vs. `v2` (poka-yoked tools + Hybrid RAG + prompt caching) vs. `v3` (Evaluator-Optimizer loop), scored with deterministic assertions plus LLM-as-a-Judge.
+**Planned Progression.** Cross-version evaluation of `v1` (baseline prompting) vs. `v2` (poka-yoked tools + Hybrid RAG + prompt caching) vs. `v3` (Evaluator-Optimizer loop), scored with deterministic assertions plus LLM-as-a-Judge grading on an independent Anthropic model (separate from the deal-desk agent).
 
 ## 4. Test Results
 

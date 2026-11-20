@@ -462,39 +462,41 @@ def build_rag_chunks() -> list[dict]:
     return policies + clauses
 
 
-def maybe_embed_chunks(chunks: list[dict]) -> list[dict]:
-    """Compute text-embedding-3-small embeddings when OPENAI_API_KEY is set."""
-    import os
+LOCAL_EMBEDDING_DIM = 384
 
-    api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    if not api_key:
-        logger.warning(
-            "OPENAI_API_KEY not found in environment/.env — leaving "
-            "embedding_json NULL for all rag_chunks (seed continues)."
-        )
-        for chunk in chunks:
-            chunk["embedding_json"] = None
-        return chunks
 
-    try:
-        from openai import OpenAI
+def _local_embed_text(text: str, dim: int = LOCAL_EMBEDDING_DIM) -> list[float]:
+    """Deterministic local dense embedding (hashing bag-of-words, L2-normalized)."""
+    import numpy as np
 
-        client = OpenAI(api_key=api_key)
-        texts = [c["content"] for c in chunks]
-        response = client.embeddings.create(
-            model="text-embedding-3-small",
-            input=texts,
-        )
-        for chunk, item in zip(chunks, response.data):
-            chunk["embedding_json"] = json.dumps(item.embedding)
-        logger.info("Stored text-embedding-3-small embeddings for %d chunks.", len(chunks))
-    except Exception as exc:  # noqa: BLE001 — seed must not fail on embed errors
-        logger.warning(
-            "Embedding generation failed (%s) — leaving embedding_json NULL.", exc
-        )
-        for chunk in chunks:
-            chunk["embedding_json"] = None
+    vec = np.zeros(dim, dtype=np.float64)
+    tokens = [t for t in "".join(ch.lower() if ch.isalnum() else " " for ch in text).split() if t]
+    if not tokens:
+        return vec.tolist()
+    for token in tokens:
+        # Stable FNV-1a style hash → bucket + signed contribution
+        h = 2166136261
+        for ch in token:
+            h ^= ord(ch)
+            h = (h * 16777619) & 0xFFFFFFFF
+        idx = h % dim
+        sign = 1.0 if (h & 1) == 0 else -1.0
+        vec[idx] += sign
+    norm = np.linalg.norm(vec)
+    if norm > 0:
+        vec = vec / norm
+    return vec.tolist()
 
+
+def embed_chunks_locally(chunks: list[dict]) -> list[dict]:
+    """Compute and store local dense embeddings in embedding_json (no external API)."""
+    for chunk in chunks:
+        chunk["embedding_json"] = json.dumps(_local_embed_text(chunk["content"]))
+    logger.info(
+        "Stored local dense embeddings (dim=%d) for %d chunks in SQLite.",
+        LOCAL_EMBEDDING_DIM,
+        len(chunks),
+    )
     return chunks
 
 
@@ -983,7 +985,7 @@ def seed_db(db_path: str = DEFAULT_DB_PATH) -> dict[str, int]:
     clear_tables(conn)
 
     deals = generate_historical_deals(250)
-    chunks = maybe_embed_chunks(build_rag_chunks())
+    chunks = embed_chunks_locally(build_rag_chunks())
     cases = build_golden_eval_cases()
 
     insert_historical_deals(conn, deals)

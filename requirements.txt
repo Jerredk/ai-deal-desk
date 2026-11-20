@@ -1,5 +1,4 @@
 anthropic
-openai
 pydantic
 rank-bm25
 numpy
