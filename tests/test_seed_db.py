@@ -47,6 +47,7 @@ def test_all_tables_exist_with_exact_row_counts(seeded_db):
         "golden_eval_cases",
         "rag_chunks",
         "cost_ledger",
+        "eval_results",
     }
     assert counts["historical_deals"] == 250
     assert counts["golden_eval_cases"] == 20
@@ -168,6 +169,7 @@ def test_init_db_is_idempotent(tmp_path):
     assert "golden_eval_cases" in tables
     assert "rag_chunks" in tables
     assert "cost_ledger" in tables
+    assert "eval_results" in tables
 
 
 def test_rag_chunk_source_mix(seeded_db):

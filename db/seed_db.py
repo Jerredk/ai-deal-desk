@@ -848,7 +848,13 @@ def build_golden_eval_cases() -> list[dict]:
 # Persist helpers
 # ---------------------------------------------------------------------------
 def clear_tables(conn: sqlite3.Connection) -> None:
-    for table in ("historical_deals", "golden_eval_cases", "rag_chunks", "cost_ledger"):
+    for table in (
+        "historical_deals",
+        "golden_eval_cases",
+        "rag_chunks",
+        "cost_ledger",
+        "eval_results",
+    ):
         conn.execute(f"DELETE FROM {table}")
     conn.commit()
 

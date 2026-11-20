@@ -167,9 +167,17 @@ class CostLedger:
         return row
 
     def get_run_summary(self, run_id: str) -> dict:
+        """Aggregate agent call costs for a run.
+
+        Rows with step_name='llm_judge' are excluded so cross-model judge spend
+        does not contaminate per-run agent unit economics.
+        """
         conn = self._connect()
         rows = conn.execute(
-            "SELECT * FROM cost_ledger WHERE run_id = ?",
+            """
+            SELECT * FROM cost_ledger
+            WHERE run_id = ? AND step_name != 'llm_judge'
+            """,
             (run_id,),
         ).fetchall()
         conn.close()

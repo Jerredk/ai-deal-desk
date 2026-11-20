@@ -132,5 +132,56 @@ def init_db(db_path: str = "db/deal_desk.db") -> sqlite3.Connection:
         "ON cost_ledger(case_id)"
     )
 
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS eval_results (
+            eval_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            experiment_version TEXT NOT NULL,
+            case_id TEXT NOT NULL,
+            difficulty TEXT NOT NULL,
+            tier_exact_match INTEGER NOT NULL CHECK (tier_exact_match IN (0, 1)),
+            margin_exact_match INTEGER NOT NULL CHECK (margin_exact_match IN (0, 1)),
+            flag_precision REAL NOT NULL,
+            flag_recall REAL NOT NULL,
+            flag_f1 REAL NOT NULL,
+            deterministic_pass INTEGER NOT NULL CHECK (deterministic_pass IN (0, 1)),
+            judge_model TEXT NOT NULL,
+            judge_commercial_accuracy INTEGER NOT NULL CHECK (
+                judge_commercial_accuracy BETWEEN 1 AND 5
+            ),
+            judge_policy_grounding INTEGER NOT NULL CHECK (
+                judge_policy_grounding BETWEEN 1 AND 5
+            ),
+            judge_executive_clarity INTEGER NOT NULL CHECK (
+                judge_executive_clarity BETWEEN 1 AND 5
+            ),
+            judge_actionability INTEGER NOT NULL CHECK (
+                judge_actionability BETWEEN 1 AND 5
+            ),
+            judge_overall_score REAL NOT NULL,
+            judge_rationale TEXT NOT NULL,
+            revision_applied INTEGER NOT NULL CHECK (revision_applied IN (0, 1)),
+            total_cost_usd REAL NOT NULL,
+            total_latency_ms REAL NOT NULL,
+            cache_hit_rate_pct REAL NOT NULL,
+            memo_json TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+        """
+    )
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_eval_results_version "
+        "ON eval_results(experiment_version)"
+    )
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_eval_results_case "
+        "ON eval_results(case_id)"
+    )
+    cursor.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_eval_results_version_case "
+        "ON eval_results(experiment_version, case_id)"
+    )
+
     conn.commit()
     return conn
