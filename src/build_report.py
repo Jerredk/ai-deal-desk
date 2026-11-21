@@ -107,6 +107,641 @@ def _connect() -> sqlite3.Connection:
     return conn
 
 
+
+def _percentile(sorted_vals: list[float], p: float) -> float:
+    if not sorted_vals:
+        return 0.0
+    if len(sorted_vals) == 1:
+        return float(sorted_vals[0])
+    k = (len(sorted_vals) - 1) * (p / 100.0)
+    f = int(k)
+    c = min(f + 1, len(sorted_vals) - 1)
+    if f == c:
+        return float(sorted_vals[f])
+    return float(sorted_vals[f] + (sorted_vals[c] - sorted_vals[f]) * (k - f))
+
+
+def _wilson_interval(k: int, n: int, z: float = 1.96) -> dict[str, float]:
+    """Wilson score 95% CI for a binomial proportion."""
+    if n <= 0:
+        return {"k": 0, "n": 0, "rate": 0.0, "lo": 0.0, "hi": 0.0}
+    import math
+
+    p = k / n
+    den = 1.0 + (z * z) / n
+    centre = (p + (z * z) / (2.0 * n)) / den
+    margin = (z * math.sqrt((p * (1.0 - p) / n) + (z * z) / (4.0 * n * n))) / den
+    return {
+        "k": k,
+        "n": n,
+        "rate": round(100.0 * p, 2),
+        "lo": round(100.0 * max(0.0, centre - margin), 2),
+        "hi": round(100.0 * min(1.0, centre + margin), 2),
+    }
+
+
+def _mcnemar_exact(b: int, c: int) -> dict[str, Any]:
+    """Exact two-sided McNemar test on discordant paired binary outcomes.
+
+    b = baseline fail & challenger pass; c = baseline pass & challenger fail.
+    """
+    from math import comb
+
+    n = b + c
+    if n == 0:
+        return {
+            "b": b,
+            "c": c,
+            "n_discordant": 0,
+            "exact_p_two_sided": 1.0,
+            "significant_at_0_05": False,
+            "note": "No discordant pairs — versions identical on this binary outcome.",
+        }
+    # Two-sided exact binomial test under p=0.5
+    k = max(b, c)
+    tail = sum(comb(n, i) for i in range(k, n + 1)) / (2**n)
+    p = min(1.0, 2.0 * tail) if b != c else 1.0
+    return {
+        "b": b,
+        "c": c,
+        "n_discordant": n,
+        "exact_p_two_sided": round(p, 4),
+        "significant_at_0_05": bool(p < 0.05),
+        "note": (
+            "Exact McNemar (binomial) on discordant pairs only. "
+            "Small discordant counts limit power; non-significance does not "
+            "imply practical equivalence."
+        ),
+    }
+
+
+def _dist_stats(values: list[float]) -> dict[str, float]:
+    import statistics
+
+    vals = sorted(float(v) for v in values)
+    n = len(vals)
+    if n == 0:
+        return {
+            "n": 0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p10": 0.0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "max": 0.0,
+            "min": 0.0,
+            "stdev": 0.0,
+            "iqr": 0.0,
+        }
+    mean = statistics.mean(vals)
+    stdev = statistics.stdev(vals) if n > 1 else 0.0
+    q1 = _percentile(vals, 25)
+    q3 = _percentile(vals, 75)
+    return {
+        "n": n,
+        "mean": round(mean, 6),
+        "median": round(_percentile(vals, 50), 6),
+        "p10": round(_percentile(vals, 10), 6),
+        "p50": round(_percentile(vals, 50), 6),
+        "p90": round(_percentile(vals, 90), 6),
+        "max": round(vals[-1], 6),
+        "min": round(vals[0], 6),
+        "stdev": round(stdev, 6),
+        "iqr": round(q3 - q1, 6),
+    }
+
+
+def _normalize_flag_token(raw: str) -> str:
+    token = (raw or "").strip()
+    for sep in (":", " —", " -", "–"):
+        if sep in token:
+            token = token.split(sep, 1)[0].strip()
+            break
+    return token.upper().replace(" ", "_")
+
+
+def _build_analytics(
+    cases: list[dict[str, Any]],
+    summary: list[dict[str, Any]],
+    cost_by_run: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    """Derived analytics for the decision-support dashboard (no new eval runs)."""
+    by_ver_cases: dict[str, list[dict[str, Any]]] = {"v1": [], "v2": [], "v3": []}
+    for c in cases:
+        by_ver_cases.setdefault(c["experiment_version"], []).append(c)
+
+    by_ver_summary = {r["experiment_version"]: r for r in summary}
+
+    # Distributions
+    distributions: dict[str, Any] = {}
+    for ver, rows in by_ver_cases.items():
+        costs = [float(r["total_cost_usd"]) for r in rows]
+        lats = [float(r["total_latency_ms"]) / 1000.0 for r in rows]
+        distributions[ver] = {
+            "cost_usd": _dist_stats(costs),
+            "latency_s": _dist_stats(lats),
+            "pass_count": sum(int(r["deterministic_pass"]) for r in rows),
+            "n": len(rows),
+        }
+
+    wilson = {
+        ver: _wilson_interval(distributions[ver]["pass_count"], distributions[ver]["n"])
+        for ver in ("v1", "v2", "v3")
+    }
+
+    # Paired case index
+    by_case: dict[str, dict[str, dict[str, Any]]] = {}
+    for c in cases:
+        by_case.setdefault(c["case_id"], {})[c["experiment_version"]] = c
+
+    def mcnemar_pair(a: str, b: str) -> dict[str, Any]:
+        bb = cc = 0
+        improved, regressed, unchanged = [], [], []
+        for cid, vers in sorted(by_case.items()):
+            if a not in vers or b not in vers:
+                continue
+            pa = int(vers[a]["deterministic_pass"])
+            pb = int(vers[b]["deterministic_pass"])
+            if pa == 0 and pb == 1:
+                bb += 1
+                improved.append(cid)
+            elif pa == 1 and pb == 0:
+                cc += 1
+                regressed.append(cid)
+            else:
+                unchanged.append(cid)
+        out = _mcnemar_exact(bb, cc)
+        out.update(
+            {
+                "baseline": a,
+                "challenger": b,
+                "improved_cases": improved,
+                "regressed_cases": regressed,
+                "unchanged_count": len(unchanged),
+            }
+        )
+        return out
+
+    mcnemar = {
+        "v1_v2": mcnemar_pair("v1", "v2"),
+        "v2_v3": mcnemar_pair("v2", "v3"),
+    }
+
+    # Paired continuous deltas (cost / latency) with bootstrap CI of mean paired diff
+    import random
+
+    def paired_delta(metric_fn, a: str, b: str, n_boot: int = 2000) -> dict[str, Any]:
+        diffs = []
+        for cid, vers in sorted(by_case.items()):
+            if a not in vers or b not in vers:
+                continue
+            diffs.append(metric_fn(vers[b]) - metric_fn(vers[a]))
+        if not diffs:
+            return {}
+        mean_d = sum(diffs) / len(diffs)
+        rng = random.Random(42)
+        boots = []
+        for _ in range(n_boot):
+            sample = [diffs[rng.randrange(len(diffs))] for _ in range(len(diffs))]
+            boots.append(sum(sample) / len(sample))
+        boots.sort()
+        lo = boots[int(0.025 * n_boot)]
+        hi = boots[int(0.975 * n_boot)]
+        return {
+            "n_pairs": len(diffs),
+            "mean_delta": round(mean_d, 6),
+            "median_delta": round(sorted(diffs)[len(diffs) // 2], 6),
+            "boot_ci95_mean_lo": round(lo, 6),
+            "boot_ci95_mean_hi": round(hi, 6),
+            "interpretation": (
+                "Bootstrap 95% CI for mean paired delta (challenger − baseline). "
+                "CI excluding 0 suggests a consistent directional shift under resampling."
+            ),
+        }
+
+    paired_continuous = {
+        "cost_v1_v2": paired_delta(lambda r: float(r["total_cost_usd"]), "v1", "v2"),
+        "cost_v2_v3": paired_delta(lambda r: float(r["total_cost_usd"]), "v2", "v3"),
+        "latency_v1_v2": paired_delta(
+            lambda r: float(r["total_latency_ms"]) / 1000.0, "v1", "v2"
+        ),
+        "latency_v2_v3": paired_delta(
+            lambda r: float(r["total_latency_ms"]) / 1000.0, "v2", "v3"
+        ),
+    }
+
+    # Cost / latency step breakdown from ledger
+    step_rollup: dict[str, dict[str, Any]] = {}
+    for ver in ("v1", "v2", "v3"):
+        buckets = {
+            "producer": {"cost": 0.0, "latency_ms": 0.0, "calls": 0},
+            "json_repair": {"cost": 0.0, "latency_ms": 0.0, "calls": 0},
+            "critic": {"cost": 0.0, "latency_ms": 0.0, "calls": 0},
+            "producer_revision": {"cost": 0.0, "latency_ms": 0.0, "calls": 0},
+            "llm_judge": {"cost": 0.0, "latency_ms": 0.0, "calls": 0},
+            "other_agent": {"cost": 0.0, "latency_ms": 0.0, "calls": 0},
+        }
+        for c in by_ver_cases[ver]:
+            for s in cost_by_run.get(c["run_id"], []):
+                name = s["step_name"]
+                if name.startswith("producer_turn"):
+                    key = "producer"
+                elif name == "producer_json_repair":
+                    key = "json_repair"
+                elif name == "critic":
+                    key = "critic"
+                elif name == "producer_revision":
+                    key = "producer_revision"
+                elif name == "llm_judge":
+                    key = "llm_judge"
+                else:
+                    key = "other_agent"
+                buckets[key]["cost"] += float(s["cost_usd"])
+                buckets[key]["latency_ms"] += float(s["latency_ms"])
+                buckets[key]["calls"] += 1
+        agent_cost = (
+            buckets["producer"]["cost"]
+            + buckets["json_repair"]["cost"]
+            + buckets["critic"]["cost"]
+            + buckets["producer_revision"]["cost"]
+            + buckets["other_agent"]["cost"]
+        )
+        n = max(1, len(by_ver_cases[ver]))
+        step_rollup[ver] = {
+            "buckets": {
+                k: {
+                    "cost_usd": round(v["cost"], 6),
+                    "latency_s": round(v["latency_ms"] / 1000.0, 3),
+                    "calls": v["calls"],
+                    "cost_per_deal_usd": round(v["cost"] / n, 6),
+                }
+                for k, v in buckets.items()
+            },
+            "agent_total_usd": round(agent_cost, 6),
+            "agent_mean_per_deal_usd": round(agent_cost / n, 6),
+            "judge_total_usd": round(buckets["llm_judge"]["cost"], 6),
+            "judge_mean_per_deal_usd": round(buckets["llm_judge"]["cost"] / n, 6),
+            "critic_overhead_total_usd": round(
+                buckets["critic"]["cost"] + buckets["producer_revision"]["cost"], 6
+            ),
+            "critic_overhead_per_deal_usd": round(
+                (buckets["critic"]["cost"] + buckets["producer_revision"]["cost"]) / n, 6
+            ),
+            "json_repair_calls": buckets["json_repair"]["calls"],
+            "json_repair_cases_estimate": buckets["json_repair"]["calls"],  # calls, not unique cases
+            "n_deals": n,
+        }
+
+    # Failure taxonomy (evidence-linked; no invented causes)
+    taxonomy: list[dict[str, Any]] = []
+
+    def add_tax(cat_id, label, description, case_version_pairs, resolved_in=None, notes=""):
+        by_v = {"v1": [], "v2": [], "v3": []}
+        for cid, ver in case_version_pairs:
+            by_v[ver].append(cid)
+        taxonomy.append(
+            {
+                "id": cat_id,
+                "label": label,
+                "description": description,
+                "cases_by_version": by_v,
+                "counts_by_version": {v: len(ids) for v, ids in by_v.items()},
+                "resolved_in": resolved_in,
+                "notes": notes,
+                "evidence": "Observed from golden expected flags vs memo detected_risk_flags and deterministic graders.",
+            }
+        )
+
+    # Non-canonical / prose flag labels causing deterministic fail (recall 0)
+    prose_fails = []
+    for c in by_ver_cases["v1"]:
+        if int(c["deterministic_pass"]) == 0 and float(c["flag_recall"]) == 0.0:
+            # Check if actual looks like prose annotation of expected
+            exp = set(c.get("expected_risk_flags") or [])
+            act_raw = c.get("actual_risk_flags") or []
+            norms = {_normalize_flag_token(str(x)) for x in act_raw}
+            if exp and any(_normalize_flag_token(e) in " ".join(norms) or any(e in str(a) for a in act_raw) for e in exp):
+                prose_fails.append((c["case_id"], "v1"))
+            elif not exp and act_raw:
+                pass  # handled below
+            else:
+                prose_fails.append((c["case_id"], "v1"))
+
+    # More precise: GE-018, GE-019 are prose; GE-009 is unexpected flags on empty expected
+    add_tax(
+        "non_canonical_flag_labels",
+        "Non-canonical / prose risk-flag labels",
+        "Agent included the right legal concept but emitted verbose prose instead of the exact canonical code, so deterministic flag matching scored recall = 0 (tier and margin were already exact).",
+        [("GE-018", "v1"), ("GE-019", "v1")],
+        resolved_in="v2",
+        notes="Both cases became deterministic passes with flag F1 = 1.0 under v2 and v3.",
+    )
+    add_tax(
+        "spurious_flags_on_clean_expected",
+        "Spurious flags when golden expected set is empty",
+        "Golden expected_risk_flags was empty, but the memo emitted annotated discount/payment flags; graders recorded precision = recall = 0 and Partially Passed.",
+        [("GE-009", "v1")],
+        resolved_in="v2",
+        notes="v2/v3 emit no spurious flags on GE-009 (pass with F1 = 1.0).",
+    )
+    fp_v1 = [
+        (c["case_id"], "v1")
+        for c in by_ver_cases["v1"]
+        if float(c["flag_precision"]) < 0.999
+        and float(c["flag_recall"]) >= 0.999
+        and int(c["deterministic_pass"]) == 1
+    ]
+    add_tax(
+        "false_positive_extra_flags",
+        "False-positive extra risk flags (still deterministic pass)",
+        "Recall of required flags was complete, but additional non-expected flags reduced precision. Deterministic pass still holds because the harness requires full recall, not perfect precision.",
+        fp_v1 + ([("GE-016", "v3")] if True else []),
+        resolved_in="mostly_v2",
+        notes=(
+            "v2 eliminated these false positives on the paired cases. "
+            "v3 re-introduced a false-positive NON_STANDARD_AUDIT on GE-016 after critic revision "
+            "(precision 0.5) while remaining a deterministic pass."
+        ),
+    )
+    add_tax(
+        "incorrect_approval_tier",
+        "Incorrect approval tier",
+        "Predicted required_approval_tier did not exact-match the golden label.",
+        [],
+        resolved_in=None,
+        notes="0 / 60 runs. Tier accuracy = 100% in every version.",
+    )
+    add_tax(
+        "margin_calculation_error",
+        "Margin calculation error",
+        "Predicted gross margin outside the deterministic tolerance versus golden.",
+        [],
+        resolved_in=None,
+        notes="0 / 60 runs. Margin accuracy = 100% in every version.",
+    )
+    add_tax(
+        "critic_precision_regression",
+        "Critic revision associated with precision regression",
+        "On the only revised v3 case (GE-016), revision_applied=1 and flag precision fell from 1.0 (v2) to 0.5 (extra NON_STANDARD_AUDIT). Deterministic pass still held via full recall.",
+        [("GE-016", "v3")],
+        resolved_in=None,
+        notes=(
+            "This is an observed association on n=1 revised case — not evidence that the critic "
+            "improves high-stakes compound deals. Hypothesis for further testing."
+        ),
+    )
+
+    # Unavailable categories (explicit gaps)
+    unavailable_failure_cats = [
+        {
+            "id": "missing_escalation_recommendations",
+            "label": "Missing escalation recommendations",
+            "reason": "No dedicated deterministic grader for escalation completeness in the current harness.",
+        },
+        {
+            "id": "unsupported_commercial_recommendations",
+            "label": "Unsupported commercial recommendations",
+            "reason": "Judge rationale is free text; no structured extraction of unsupported claims was stored.",
+        },
+        {
+            "id": "incomplete_executive_memos",
+            "label": "Incomplete executive memos",
+            "reason": "Schema presence is enforced; qualitative completeness is only reflected indirectly in Opus scores near ceiling.",
+        },
+    ]
+
+    # Scenario-level comparison rows
+    scenario_compare = []
+    for cid, vers in sorted(by_case.items()):
+        row = {"case_id": cid, "difficulty": vers.get("v1", vers.get("v2", {})).get("difficulty")}
+        for ver in ("v1", "v2", "v3"):
+            c = vers.get(ver)
+            if not c:
+                continue
+            row[ver] = {
+                "status": c["status"],
+                "deterministic_pass": c["deterministic_pass"],
+                "flag_precision": c["flag_precision"],
+                "flag_recall": c["flag_recall"],
+                "flag_f1": c["flag_f1"],
+                "judge_overall_score": c["judge_overall_score"],
+                "total_cost_usd": c["total_cost_usd"],
+                "total_latency_ms": c["total_latency_ms"],
+                "revision_applied": c["revision_applied"],
+            }
+        # deltas
+        if "v1" in vers and "v2" in vers:
+            row["v1_to_v2"] = {
+                "pass_change": int(vers["v2"]["deterministic_pass"]) - int(vers["v1"]["deterministic_pass"]),
+                "f1_change": round(float(vers["v2"]["flag_f1"]) - float(vers["v1"]["flag_f1"]), 4),
+                "cost_change_usd": round(
+                    float(vers["v2"]["total_cost_usd"]) - float(vers["v1"]["total_cost_usd"]), 6
+                ),
+                "latency_change_s": round(
+                    (float(vers["v2"]["total_latency_ms"]) - float(vers["v1"]["total_latency_ms"]))
+                    / 1000.0,
+                    3,
+                ),
+            }
+        if "v2" in vers and "v3" in vers:
+            row["v2_to_v3"] = {
+                "pass_change": int(vers["v3"]["deterministic_pass"]) - int(vers["v2"]["deterministic_pass"]),
+                "f1_change": round(float(vers["v3"]["flag_f1"]) - float(vers["v2"]["flag_f1"]), 4),
+                "cost_change_usd": round(
+                    float(vers["v3"]["total_cost_usd"]) - float(vers["v2"]["total_cost_usd"]), 6
+                ),
+                "latency_change_s": round(
+                    (float(vers["v3"]["total_latency_ms"]) - float(vers["v2"]["total_latency_ms"]))
+                    / 1000.0,
+                    3,
+                ),
+                "precision_change": round(
+                    float(vers["v3"]["flag_precision"]) - float(vers["v2"]["flag_precision"]), 4
+                ),
+            }
+        scenario_compare.append(row)
+
+    # Judge ceiling analysis
+    judge_dims = [
+        "judge_overall_score",
+        "judge_commercial_accuracy",
+        "judge_policy_grounding",
+        "judge_executive_clarity",
+        "judge_actionability",
+    ]
+    judge_analysis = {"dimensions": {}, "ceiling_effect": True, "note": ""}
+    for dim in judge_dims:
+        vals = [float(c[dim]) for c in cases]
+        judge_analysis["dimensions"][dim] = {
+            "min": round(min(vals), 4),
+            "max": round(max(vals), 4),
+            "mean": round(sum(vals) / len(vals), 4),
+            "n_at_5": sum(1 for v in vals if v >= 4.999),
+            "n": len(vals),
+        }
+    judge_analysis["note"] = (
+        "Observed Opus scores concentrate at 4.90–5.00 across all versions. "
+        "Commercial accuracy, policy grounding, and executive clarity are saturated at 5.0 "
+        "in the version-level means. This ceiling effect limits the judge suite as a "
+        "between-version discriminator; deterministic flag metrics carry the comparative signal."
+    )
+    judge_analysis["available_dimensions"] = [
+        "commercial_accuracy",
+        "policy_grounding",
+        "executive_clarity",
+        "actionability",
+        "overall_score",
+    ]
+    judge_analysis["unavailable_requested_dimensions"] = [
+        {
+            "name": "factual_correctness",
+            "reason": "Not a separate stored rubric field; closest proxy is commercial_accuracy.",
+        },
+        {
+            "name": "completeness",
+            "reason": "Not separately scored in stored judge outputs.",
+        },
+        {
+            "name": "evidence_grounding",
+            "reason": "Closest stored field is policy_grounding; no distinct evidence-span score.",
+        },
+        {
+            "name": "consistency",
+            "reason": "Single run per case×version; no repeated-run consistency metric exists.",
+        },
+    ]
+
+    # Latency investigation for v3 P90
+    v3_sorted = sorted(by_ver_cases["v3"], key=lambda r: float(r["total_latency_ms"]), reverse=True)
+    top = v3_sorted[0]
+    latency_investigation = {
+        "observation": "v3 p90 latency (88.3s) exceeds v2 p90 (76.8s).",
+        "max_case": {
+            "case_id": top["case_id"],
+            "latency_s": round(float(top["total_latency_ms"]) / 1000.0, 3),
+            "cost_usd": top["total_cost_usd"],
+            "revision_applied": top["revision_applied"],
+            "difficulty": top["difficulty"],
+        },
+        "evidence": (
+            "The single slowest v3 run is GE-016 (revision_applied=1) at ~163.5s and $0.199 — "
+            "far above other v3 cases. Critic steps add ~49.7s total ledger latency across 20 runs "
+            f"(~{step_rollup['v3']['buckets']['critic']['latency_s']/20:.2f}s mean per deal), "
+            "and JSON repair remains present (6 calls). "
+            "Attribution of the p90 gap is therefore mixed: the extreme tail is coincident with "
+            "the only critic revision, while non-revised heavy cases (e.g. GE-015) still approach ~96s."
+        ),
+        "hypothesis_not_proven": (
+            "We cannot claim the critic universally improves high-stakes outcomes; "
+            "only 1/20 cases revised, and that revision coincided with a precision regression."
+        ),
+    }
+
+    # Comparison matrix deltas
+    def pct_change(new, old):
+        if old == 0:
+            return None
+        return round(100.0 * (new - old) / old, 2)
+
+    matrix = []
+    order = ["v1", "v2", "v3"]
+    for ver in order:
+        s = by_ver_summary[ver]
+        d = distributions[ver]
+        prev = by_ver_summary[order[order.index(ver) - 1]] if ver != "v1" else None
+        prev_d = distributions[order[order.index(ver) - 1]] if ver != "v1" else None
+        entry = {
+            "version": ver,
+            "pass_rate_pct": s["deterministic_pass_rate_pct"],
+            "pass_count": d["pass_count"],
+            "n": d["n"],
+            "flag_precision": s["mean_flag_precision"],
+            "flag_recall": s["mean_flag_recall"],
+            "flag_f1": s["mean_flag_f1"],
+            "tier_accuracy_pct": s["tier_accuracy_pct"],
+            "margin_accuracy_pct": s["margin_accuracy_pct"],
+            "mean_cost_usd": s["mean_cost_usd"],
+            "p50_cost_usd": s["p50_cost_usd"],
+            "p90_cost_usd": s["p90_cost_usd"],
+            "max_cost_usd": d["cost_usd"]["max"],
+            "stdev_cost_usd": d["cost_usd"]["stdev"],
+            "p50_latency_s": s["p50_latency_s"],
+            "p90_latency_s": s["p90_latency_s"],
+            "max_latency_s": d["latency_s"]["max"],
+            "mean_latency_s": d["latency_s"]["mean"],
+            "cache_hit_rate_pct": s["avg_cache_hit_rate_pct"],
+            "mean_judge_score": s["mean_judge_score"],
+            "revision_rate_pct": s["revision_trigger_rate_pct"],
+            "agent_api_calls": step_rollup[ver]["buckets"]["producer"]["calls"]
+            + step_rollup[ver]["buckets"]["json_repair"]["calls"]
+            + step_rollup[ver]["buckets"]["critic"]["calls"]
+            + step_rollup[ver]["buckets"]["producer_revision"]["calls"],
+            "json_repair_calls": step_rollup[ver]["json_repair_calls"],
+            "deltas_vs_prev": None,
+        }
+        if prev and prev_d:
+            entry["deltas_vs_prev"] = {
+                "pass_rate_pp": round(
+                    s["deterministic_pass_rate_pct"] - prev["deterministic_pass_rate_pct"], 2
+                ),
+                "flag_f1": round(s["mean_flag_f1"] - prev["mean_flag_f1"], 4),
+                "mean_cost_pct": pct_change(s["mean_cost_usd"], prev["mean_cost_usd"]),
+                "p50_cost_pct": pct_change(s["p50_cost_usd"], prev["p50_cost_usd"]),
+                "p50_latency_pct": pct_change(s["p50_latency_s"], prev["p50_latency_s"]),
+                "p90_latency_pct": pct_change(s["p90_latency_s"], prev["p90_latency_s"]),
+                "cache_hit_pp": round(
+                    s["avg_cache_hit_rate_pct"] - prev["avg_cache_hit_rate_pct"], 2
+                ),
+                "judge_overall": round(s["mean_judge_score"] - prev["mean_judge_score"], 4),
+            }
+        matrix.append(entry)
+
+    data_gaps = [
+        "No repeated-run consistency: each case×version was executed once.",
+        "No human audit scores populated (human_audit_score column unused).",
+        "Judge rubric lacks separate factual-correctness / completeness / consistency dimensions.",
+        "Small legal/compound subgroups (n=2 and n=3) make subgroup percentages unstable.",
+        "McNemar v1→v2 has only 3 discordant pairs (exact p=0.25) — underpowered for α=0.05 significance claims.",
+        "v3 high-stakes benefit remains a hypothesis (1/20 revisions; precision regression on that case).",
+    ]
+
+    return {
+        "distributions": distributions,
+        "wilson_ci": wilson,
+        "mcnemar": mcnemar,
+        "paired_continuous": paired_continuous,
+        "step_rollup": step_rollup,
+        "failure_taxonomy": taxonomy,
+        "unavailable_failure_categories": unavailable_failure_cats,
+        "scenario_compare": scenario_compare,
+        "judge_analysis": judge_analysis,
+        "latency_investigation": latency_investigation,
+        "comparison_matrix": matrix,
+        "data_gaps": data_gaps,
+        "cost_semantics": {
+            "agent_unit_economics": (
+                "eval_results.total_cost_usd and benchmark cost percentiles exclude llm_judge rows "
+                "(production-relevant agent inference including critic/repair when present)."
+            ),
+            "evaluation_overhead": (
+                "llm_judge costs are experimental evaluation overhead and are reported separately."
+            ),
+        },
+        "execution_vs_success": {
+            "benchmark_runs_completed": 60,
+            "deterministic_full_pass": sum(1 for c in cases if c["status"] == "Passed"),
+            "partial_pass": sum(1 for c in cases if c["status"] == "Partially Passed"),
+            "failed": sum(1 for c in cases if c["status"] == "Failed"),
+            "note": (
+                "60/60 means every case×version produced a scored eval_results row (execution complete). "
+                "Only rows with deterministic_pass=1 are full evaluation passes. "
+                "v1 contributes 3 Partially Passed rows (tier+margin exact, flag recall incomplete)."
+            ),
+        },
+    }
+
+
+
 def _assemble_dataset(pytest_report: dict[str, Any], git_meta: dict[str, str]) -> dict[str, Any]:
     summary = _read_json(OUTPUTS / "benchmark_summary.json")
     summary_csv = _read_csv(OUTPUTS / "benchmark_summary.csv")
@@ -287,6 +922,8 @@ def _assemble_dataset(pytest_report: dict[str, Any], git_meta: dict[str, str]) -
         "Partially Passed": 0,
     }
 
+    analytics = _build_analytics(cases, summary, cost_by_run)
+
     return {
         "meta": {
             "repo": "enterprise-deal-desk",
@@ -308,18 +945,29 @@ def _assemble_dataset(pytest_report: dict[str, Any], git_meta: dict[str, str]) -
         "kpis": {
             "unit_tests_passed": f"{unit['passed']}/{unit['passed'] + unit['failed'] + unit['skipped']} Passed",
             "unit_tests_raw": unit,
+            "benchmark_runs_completed": f"{len(cases)}/60",
             "benchmark_runs": f"{len(cases)}/60",
+            "deterministic_full_pass": analytics["execution_vs_success"]["deterministic_full_pass"],
+            "partial_pass": analytics["execution_vs_success"]["partial_pass"],
             "v1_to_v2_pass_rate": f"{v1['deterministic_pass_rate_pct']}% → {v2['deterministic_pass_rate_pct']}%",
             "v1_to_v2_flag_f1": f"{v1['mean_flag_f1']:.4f} → {v2['mean_flag_f1']:.4f}",
             "v1_to_v2_p50_cost_reduction_pct": p50_cost_reduction_pct,
+            "v1_to_v2_mean_cost_reduction_pct": mean_cost_reduction_pct,
             "v1_p50_cost_usd": v1["p50_cost_usd"],
             "v2_p50_cost_usd": v2["p50_cost_usd"],
+            "v2_mean_cost_usd": v2["mean_cost_usd"],
+            "v2_p50_latency_s": v2["p50_latency_s"],
+            "v2_p90_latency_s": v2["p90_latency_s"],
             "v2_cache_hit_rate_pct": v2["avg_cache_hit_rate_pct"],
-            "v1_to_v2_mean_cost_reduction_pct": mean_cost_reduction_pct,
+            "v2_flag_precision": v2["mean_flag_precision"],
+            "v2_flag_recall": v2["mean_flag_recall"],
+            "v2_flag_f1": v2["mean_flag_f1"],
+            "sample_size_per_version": 20,
         },
         "status_breakdown": {
             "unit_tests": unit_status,
             "benchmark_runs": status_counts,
+            "execution_vs_success": analytics["execution_vs_success"],
             "v3_producer_revision_skipped": critic_stats["v3"]["producer_revision_skipped"],
             "partial_pass_cases": [
                 c["case_id"]
@@ -332,6 +980,7 @@ def _assemble_dataset(pytest_report: dict[str, Any], git_meta: dict[str, str]) -
         "difficulty_breakdown": difficulty,
         "token_by_version": token_by_version,
         "critic_stats": critic_stats,
+        "analytics": analytics,
         "cases": cases,
         "pytest": pytest_report,
         "notable": {
@@ -387,592 +1036,16 @@ def _write_data_files(
     )
 
 
+def _load_html_template() -> str:
+    path = Path(__file__).with_name("dashboard_template.html")
+    return path.read_text(encoding="utf-8")
+
+
 def _html_document(dataset: dict[str, Any]) -> str:
     payload = json.dumps(dataset, ensure_ascii=False)
     # Prevent </script> breakouts in embedded JSON
     payload = payload.replace("<", "\\u003c").replace(">", "\\u003e")
-    return HTML_TEMPLATE.replace("@@EVAL_DATA@@", payload)
-
-
-HTML_TEMPLATE = r"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>enterprise-deal-desk — Evaluation Dashboard</title>
-<style>
-:root {
-  --bg: #f4f1ea;
-  --ink: #1c1917;
-  --muted: #57534e;
-  --card: #fffcf7;
-  --line: #d6d3d1;
-  --accent: #0f766e;
-  --accent2: #b45309;
-  --pass: #15803d;
-  --partial: #a16207;
-  --fail: #b91c1c;
-  --skip: #57534e;
-  --v1: #78716c;
-  --v2: #0f766e;
-  --v3: #1d4ed8;
-  --shadow: 0 1px 2px rgba(28,25,22,.06), 0 8px 24px rgba(28,25,22,.06);
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --sans: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --ui: "Avenir Next", "Segoe UI", system-ui, sans-serif;
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  margin: 0; color: var(--ink); background:
-    radial-gradient(1200px 600px at 10% -10%, #efe6d6 0%, transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, #d9ece8 0%, transparent 50%),
-    var(--bg);
-  font-family: var(--ui); line-height: 1.45;
-}
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-.wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem 4rem; }
-nav.top {
-  position: sticky; top: 0; z-index: 40; backdrop-filter: blur(10px);
-  background: rgba(244,241,234,.92); border-bottom: 1px solid var(--line);
-}
-nav.top .inner { display:flex; flex-wrap:wrap; gap:.75rem 1rem; align-items:center; justify-content:space-between; padding:.75rem 1.25rem; max-width:1180px; margin:0 auto; }
-nav.top .brand { font-weight:700; letter-spacing:.01em; }
-nav.top .links { display:flex; flex-wrap:wrap; gap:.65rem .9rem; font-size:.9rem; }
-header.hero { padding: 2rem 0 1rem; }
-header.hero h1 { font-family: var(--sans); font-size: clamp(1.8rem, 3vw, 2.6rem); margin:0 0 .4rem; line-height:1.15; }
-header.hero .sub { color: var(--muted); max-width: 62ch; }
-.meta-row { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1rem; }
-.pill { display:inline-flex; align-items:center; gap:.35rem; border:1px solid var(--line); background:var(--card); padding:.25rem .6rem; border-radius:999px; font-size:.8rem; color:var(--muted); font-family:var(--mono); }
-section { margin: 2.5rem 0; scroll-margin-top: 4.5rem; }
-section h2 { font-family: var(--sans); font-size:1.65rem; margin:0 0 .75rem; border-bottom:1px solid var(--line); padding-bottom:.4rem; }
-section h3 { margin:1.4rem 0 .6rem; font-size:1.05rem; }
-.grid { display:grid; gap:1rem; }
-.grid.kpis { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
-.card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1rem 1.1rem; box-shadow:var(--shadow); }
-.card .label { color:var(--muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; }
-.card .value { font-size:1.25rem; font-weight:700; margin-top:.25rem; }
-.card .hint { color:var(--muted); font-size:.8rem; margin-top:.2rem; }
-.badge { display:inline-block; padding:.15rem .5rem; border-radius:999px; font-size:.75rem; font-weight:600; }
-.badge.Passed { background:#dcfce7; color:var(--pass); }
-.badge.Partially\ Passed, .badge.partial { background:#fef3c7; color:var(--partial); }
-.badge.Failed { background:#fee2e2; color:var(--fail); }
-.badge.Skipped { background:#e7e5e4; color:var(--skip); }
-table { width:100%; border-collapse:collapse; font-size:.9rem; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-th, td { padding:.55rem .65rem; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
-th { background:#ebe6dc; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); }
-tr:last-child td { border-bottom:none; }
-.chart-card { padding:1rem; }
-.chart-card svg { width:100%; height:auto; display:block; }
-.muted { color:var(--muted); }
-.mono { font-family:var(--mono); font-size:.82rem; }
-.controls { display:flex; flex-wrap:wrap; gap:.6rem; margin: .8rem 0 1rem; }
-.controls input, .controls select {
-  border:1px solid var(--line); background:#fff; border-radius:8px; padding:.45rem .6rem; font:inherit;
-}
-.drawer {
-  display:none; margin-top:.6rem; padding:1rem; border:1px dashed var(--line); border-radius:12px; background:#fffef9;
-}
-.drawer.open { display:block; }
-pre.json {
-  white-space:pre-wrap; word-break:break-word; background:#1c1917; color:#f5f5f4;
-  padding:1rem; border-radius:10px; font-size:.75rem; max-height:320px; overflow:auto;
-}
-.two-col { display:grid; grid-template-columns:1.2fr .8fr; gap:1rem; }
-@media (max-width: 900px) { .two-col { grid-template-columns:1fr; } }
-.list-tight li { margin:.25rem 0; }
-footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem; }
-.clickable { cursor:pointer; }
-.clickable:hover { background:#f7f3ea; }
-</style>
-</head>
-<body>
-<nav class="top">
-  <div class="inner">
-    <div class="brand">enterprise-deal-desk</div>
-    <div class="links">
-      <a href="#overview">Overview</a>
-      <a href="#iterations">Iterations</a>
-      <a href="#economics">Economics</a>
-      <a href="#difficulty">Difficulty</a>
-      <a href="#walkthrough">Walkthrough</a>
-      <a href="#explorer">Explorer</a>
-      <a href="#traceability">Traceability</a>
-    </div>
-  </div>
-</nav>
-
-<div class="wrap">
-<header class="hero">
-  <h1>Evaluation Dashboard</h1>
-  <p class="sub">Self-contained report of the framework-free Anthropic Deal-Desk agent and the 60-run <code>v1</code>/<code>v2</code>/<code>v3</code> empirical evaluation. Opens via <code>file://</code> with zero network dependencies.</p>
-  <div class="meta-row" id="meta-pills"></div>
-</header>
-
-<section id="overview">
-  <h2>1. Executive Overview</h2>
-  <div class="card" style="margin-bottom:1rem;">
-    <p><strong>Architecture implemented:</strong> a framework-free Anthropic Messages API tool-use loop; deterministic Python/SQLite SaaS unit-economics (18% list-ARR COGS, $150/hr services, Net-60/90 working-capital penalties, 72% hard floor); local 384-d deterministic dense embeddings (hashing bag-of-words) + BM25 Hybrid RAG with Reciprocal Rank Fusion over Deal-Desk policies &amp; CUAD-style clauses; Anthropic prompt caching on system + tools; Evaluator-Optimizer critic loop (<code>v3</code>); and cross-model LLM-as-a-Judge on independent <code>claude-opus-4-6</code> (agent: <code>claude-sonnet-4-6</code>).</p>
-  </div>
-  <div class="grid kpis" id="kpi-cards"></div>
-  <h3>Status breakdown</h3>
-  <div class="two-col">
-    <div class="card" id="status-tables"></div>
-    <div class="card">
-      <div class="label">Interpretation</div>
-      <ul class="list-tight">
-        <li><span class="badge Passed">Passed</span> — <code>deterministic_pass == 1</code> (tier + margin + full flag recall).</li>
-        <li><span class="badge partial">Partially Passed</span> — tier &amp; margin exact, but <code>flag_recall &lt; 1</code> (v1 GE-009 / GE-018 / GE-019).</li>
-        <li><span class="badge Failed">Failed</span> — tier or margin miss.</li>
-        <li><span class="badge Skipped">Skipped</span> — unit-test skips; v3 <code>producer_revision</code> skipped when critic approved first draft.</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section id="iterations">
-  <h2>2. Iteration Progression</h2>
-  <div class="card" style="overflow:auto; margin-bottom:1rem;" id="summary-table"></div>
-  <div class="card chart-card"><h3>Chart 1 — Quality progression</h3><div id="chart-quality"></div></div>
-  <div class="card chart-card" style="margin-top:1rem;"><h3>Chart 2 — Opus judge rubric (1–5)</h3><div id="chart-rubric"></div></div>
-</section>
-
-<section id="economics">
-  <h2>3. Cost, Token &amp; Caching Economics</h2>
-  <p class="muted">Agent unit economics exclude <code>llm_judge</code> ledger rows. Prompt caching + tighter ACI tooling made <strong>v2 ~37% cheaper on mean cost</strong> and <strong>~50% cheaper at p50</strong> vs v1; v3 adds critic overhead.</p>
-  <div class="card chart-card"><div id="chart-cost"></div></div>
-  <div class="card" style="margin-top:1rem; overflow:auto;" id="token-table"></div>
-</section>
-
-<section id="difficulty">
-  <h2>4. Scenario Difficulty &amp; Failure Analysis</h2>
-  <div class="card chart-card"><div id="chart-difficulty"></div></div>
-  <div class="card" style="margin-top:1rem; overflow:auto;" id="difficulty-table"></div>
-  <div class="card" style="margin-top:1rem;" id="failure-notes"></div>
-</section>
-
-<section id="walkthrough">
-  <h2>5. Engineering &amp; Evaluation Walkthrough</h2>
-  <div class="card">
-    <ol>
-      <li><strong>Increment 1 — Deterministic foundation.</strong> Isolated SaaS margin math and approval tiers in Python/SQLite so golden cases are mathematically exact before any LLM reasoning.</li>
-      <li><strong>Increment 2 — ACI tools + Hybrid RAG + cost ledger.</strong> Poka-yoked schemas force decimal discounts, payment-term enums, and canonical legal flags; BM25 + dense cosine RRF retrieves policy/CUAD chunks; pinned Anthropic rate card (as of 2026-11-21) logs USD/latency.</li>
-      <li><strong>Increment 3 — Raw Messages agent.</strong> Versioned prompts, prompt caching, and an optional Evaluator-Optimizer critic produce a structured <code>DealDeskExecutiveMemo</code>.</li>
-      <li><strong>Increment 4 — Eval harness.</strong> Deterministic graders + independent Opus judge with resumable <code>eval_results</code> persistence.</li>
-      <li><strong>Increment 5 — 60-run empirical suite.</strong> v1→v2 closed the flag-taxonomy gap (85%→100% pass) while cutting p50 cost ~50% via caching. v3 kept 100% pass but only revised 5% of cases (GE-016 compound trap), so <strong>v2 is the Pareto-optimal default</strong>; v3 is reserved for high-stakes compound stacks.</li>
-      <li><strong>Operational fix.</strong> v3/GE-020 truncated JSON at <code>max_tokens=2048</code>; raising to 4096 completed the suite.</li>
-      <li><strong>Limitations.</strong> Local hashing embeddings (not neural); seeded SQLite warehouse; single-revision critic cap; judge spend excluded from agent unit economics by design.</li>
-    </ol>
-  </div>
-</section>
-
-<section id="explorer">
-  <h2>6. Interactive Case-Level Explorer</h2>
-  <div class="controls">
-    <select id="f-version"><option value="All">All versions</option><option>v1</option><option>v2</option><option>v3</option></select>
-    <select id="f-diff"><option value="All">All difficulties</option><option>standard</option><option>edge_margin</option><option>edge_legal</option><option>compound_trap</option></select>
-    <select id="f-status"><option value="All">All statuses</option><option>Passed</option><option>Partially Passed</option><option>Failed</option></select>
-    <input id="f-search" type="search" placeholder="Search case id or account…" style="min-width:220px;" />
-  </div>
-  <div class="card" style="overflow:auto;">
-    <table>
-      <thead>
-        <tr>
-          <th>Version</th><th>Case</th><th>Account</th><th>Difficulty</th><th>Status</th>
-          <th>Tier</th><th>Margin</th><th>Flag F1</th><th>Judge</th><th>Cost</th><th>Rev</th>
-        </tr>
-      </thead>
-      <tbody id="case-tbody"></tbody>
-    </table>
-  </div>
-  <div id="case-drawer" class="drawer"></div>
-</section>
-
-<section id="traceability">
-  <h2>7. Traceability &amp; Raw Artifacts</h2>
-  <div class="card" id="trace-box"></div>
-</section>
-
-<footer>
-  Generated by <code>python -m src.build_report</code>. Self-contained HTML — no CDNs, no localhost server required.
-</footer>
-</div>
-
-<script id="eval-data" type="application/json">@@EVAL_DATA@@</script>
-<script>
-(function() {
-  const DATA = JSON.parse(document.getElementById('eval-data').textContent);
-  const VERSIONS = ['v1','v2','v3'];
-  const COLORS = {v1:'#78716c', v2:'#0f766e', v3:'#1d4ed8'};
-
-  function el(tag, attrs, children) {
-    const n = document.createElement(tag);
-    if (attrs) Object.entries(attrs).forEach(([k,v]) => {
-      if (k === 'className') n.className = v;
-      else if (k === 'text') n.textContent = v;
-      else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2).toLowerCase(), v);
-      else n.setAttribute(k, v);
-    });
-    (children || []).forEach(c => n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
-    return n;
-  }
-
-  // Meta pills
-  const meta = DATA.meta;
-  const pills = document.getElementById('meta-pills');
-  [
-    'repo: ' + meta.repo,
-    'commit: ' + (meta.git.commit_sha || 'n/a'),
-    'branch: ' + (meta.git.branch || 'n/a'),
-    'generated: ' + meta.generated_at,
-    'agent: ' + meta.models.agent,
-    'judge: ' + meta.models.judge
-  ].forEach(t => pills.appendChild(el('span', {className:'pill', text:t})));
-
-  // KPIs
-  const k = DATA.kpis;
-  const kpiRoot = document.getElementById('kpi-cards');
-  [
-    ['Unit Tests', k.unit_tests_passed, 'pytest -v (read-only capture)'],
-    ['Benchmark Runs', k.benchmark_runs, '20 cases × 3 versions'],
-    ['v1 → v2 Pass Rate', k.v1_to_v2_pass_rate, 'Deterministic pass'],
-    ['v1 → v2 Legal Flag F1', k.v1_to_v2_flag_f1, 'Canonical redline taxonomy'],
-    ['v1 → v2 p50 Cost', '-' + k.v1_to_v2_p50_cost_reduction_pct + '%', '$' + k.v1_p50_cost_usd.toFixed(4) + ' → $' + k.v2_p50_cost_usd.toFixed(4)],
-    ['v2 Cache Hit Rate', k.v2_cache_hit_rate_pct.toFixed(1) + '%', 'Prompt caching savings']
-  ].forEach(([label, value, hint]) => {
-    kpiRoot.appendChild(el('div', {className:'card'}, [
-      el('div', {className:'label', text:label}),
-      el('div', {className:'value', text:String(value)}),
-      el('div', {className:'hint', text:hint})
-    ]));
-  });
-
-  // Status tables
-  function statusTable(title, counts) {
-    const rows = Object.entries(counts).map(([s,n]) =>
-      el('tr', {}, [el('td', {}, [el('span', {className:'badge ' + (s === 'Partially Passed' ? 'partial' : s), text:s})]), el('td', {text:String(n)})])
-    );
-    return el('div', {}, [
-      el('div', {className:'label', text:title}),
-      el('table', {}, [el('thead', {}, [el('tr', {}, [el('th',{text:'Status'}), el('th',{text:'Count'})])]), el('tbody', {}, rows)])
-    ]);
-  }
-  const st = document.getElementById('status-tables');
-  st.appendChild(statusTable('Unit tests', DATA.status_breakdown.unit_tests));
-  st.appendChild(el('div', {style:'height:0.8rem'}));
-  st.appendChild(statusTable('Benchmark runs (60)', DATA.status_breakdown.benchmark_runs));
-  st.appendChild(el('p', {className:'muted mono', text:'v3 producer_revision skipped (critic approved first pass): ' + DATA.status_breakdown.v3_producer_revision_skipped}));
-
-  // Summary comparison table
-  const sumRoot = document.getElementById('summary-table');
-  const fields = [
-    ['experiment_version','Version'],
-    ['cases_evaluated','Cases'],
-    ['deterministic_pass_rate_pct','Det. Pass %'],
-    ['tier_accuracy_pct','Tier %'],
-    ['margin_accuracy_pct','Margin %'],
-    ['mean_flag_recall','Flag Recall'],
-    ['mean_flag_precision','Flag Prec.'],
-    ['mean_flag_f1','Flag F1'],
-    ['mean_judge_score','Judge'],
-    ['revision_trigger_rate_pct','Rev %'],
-    ['mean_cost_usd','Mean $'],
-    ['p50_cost_usd','p50 $'],
-    ['avg_cache_hit_rate_pct','Cache %'],
-    ['p50_latency_s','p50 Lat (s)']
-  ];
-  sumRoot.appendChild(el('table', {}, [
-    el('thead', {}, [el('tr', {}, fields.map(([,h]) => el('th',{text:h})))]),
-    el('tbody', {}, DATA.benchmark_summary.map(row => el('tr', {}, fields.map(([k]) => {
-      let v = row[k];
-      if (typeof v === 'number' && k.includes('cost')) v = v.toFixed(4);
-      else if (typeof v === 'number' && (k.includes('flag') || k.includes('cache') || k.includes('latency') || k.includes('judge'))) v = Number(v).toFixed(3);
-      return el('td', {text:String(v)});
-    }))))
-  ]));
-
-  // SVG helpers
-  function svgEl(name, attrs) {
-    const n = document.createElementNS('http://www.w3.org/2000/svg', name);
-    Object.entries(attrs || {}).forEach(([k,v]) => n.setAttribute(k, v));
-    return n;
-  }
-  function groupedBars(containerId, seriesDefs, ymax, yLabel) {
-    // seriesDefs: [{key,label, getter(row)->number}]
-    const root = document.getElementById(containerId);
-    root.innerHTML = '';
-    const W=860, H=340, padL=58, padR=20, padT=24, padB=70;
-    const svg = svgEl('svg', {viewBox:`0 0 ${W} ${H}`, role:'img', 'aria-label':yLabel});
-    const plotW = W - padL - padR, plotH = H - padT - padB;
-    const groups = VERSIONS;
-    const gW = plotW / groups.length;
-    const barW = Math.min(18, (gW - 20) / seriesDefs.length);
-
-    // axes
-    svg.appendChild(svgEl('line', {x1:padL,y1:padT,x2:padL,y2:padT+plotH, stroke:'#a8a29e', 'stroke-width':'1'}));
-    svg.appendChild(svgEl('line', {x1:padL,y1:padT+plotH,x2:padL+plotW,y2:padT+plotH, stroke:'#a8a29e', 'stroke-width':'1'}));
-    for (let i=0;i<=5;i++){
-      const y = padT + plotH - (i/5)*plotH;
-      const val = (ymax * i/5);
-      svg.appendChild(svgEl('line', {x1:padL,y1:y,x2:padL+plotW,y2:y, stroke:'#e7e5e4', 'stroke-width':'1'}));
-      const t = svgEl('text', {x:padL-8, y:y+4, 'text-anchor':'end', 'font-size':'11', fill:'#57534e'});
-      t.textContent = String(Math.round(val*10)/10);
-      svg.appendChild(t);
-    }
-    const ytitle = svgEl('text', {x:16, y:16, 'font-size':'12', fill:'#57534e'});
-    ytitle.textContent = yLabel;
-    svg.appendChild(ytitle);
-
-    const by = Object.fromEntries(DATA.benchmark_summary.map(r => [r.experiment_version, r]));
-    groups.forEach((ver, gi) => {
-      const gx = padL + gi*gW + 16;
-      seriesDefs.forEach((s, si) => {
-        const val = s.get(by[ver]);
-        const h = (val / ymax) * plotH;
-        const x = gx + si*(barW+3);
-        const y = padT + plotH - h;
-        svg.appendChild(svgEl('rect', {x, y, width:barW, height:Math.max(0,h), fill:s.color || COLORS[ver], rx:'2'}));
-        const lab = svgEl('text', {x:x+barW/2, y:y-4, 'text-anchor':'middle', 'font-size':'9', fill:'#44403c'});
-        lab.textContent = (Math.round(val*10)/10).toString();
-        svg.appendChild(lab);
-      });
-      const tl = svgEl('text', {x:gx + (seriesDefs.length*(barW+3))/2, y:padT+plotH+18, 'text-anchor':'middle', 'font-size':'13', 'font-weight':'700', fill:COLORS[ver]});
-      tl.textContent = ver;
-      svg.appendChild(tl);
-    });
-
-    // legend
-    seriesDefs.forEach((s, i) => {
-      const x = padL + i*140;
-      svg.appendChild(svgEl('rect', {x, y:H-28, width:12, height:12, fill:s.color, rx:'2'}));
-      const t = svgEl('text', {x:x+18, y:H-18, 'font-size':'11', fill:'#44403c'});
-      t.textContent = s.label;
-      svg.appendChild(t);
-    });
-    root.appendChild(svg);
-  }
-
-  groupedBars('chart-quality', [
-    {label:'Det. Pass %', color:'#0f766e', get:r => r.deterministic_pass_rate_pct},
-    {label:'Tier Acc. %', color:'#1d4ed8', get:r => r.tier_accuracy_pct},
-    {label:'Margin Acc. %', color:'#b45309', get:r => r.margin_accuracy_pct},
-    {label:'Flag Recall %', color:'#7c3aed', get:r => r.mean_flag_recall*100},
-    {label:'Flag F1 %', color:'#be123c', get:r => r.mean_flag_f1*100},
-    {label:'Judge % of 5', color:'#334155', get:r => (r.mean_judge_score/5)*100}
-  ], 100, 'Percent');
-
-  groupedBars('chart-rubric', [
-    {label:'Commercial', color:'#0f766e', get:r => r.judge_commercial_accuracy},
-    {label:'Policy', color:'#1d4ed8', get:r => r.judge_policy_grounding},
-    {label:'Clarity', color:'#b45309', get:r => r.judge_executive_clarity},
-    {label:'Actionability', color:'#7c3aed', get:r => r.judge_actionability}
-  ], 5, 'Score (1–5)');
-
-  // Cost chart: p10/p50/p90 + stacked token mix as second panel
-  (function(){
-    const root = document.getElementById('chart-cost');
-    const W=900, H=360, padL=60, padR=20, padT=30, padB=80;
-    const svg = svgEl('svg', {viewBox:`0 0 ${W} ${H}`});
-    const plotW=W-padL-padR, plotH=H-padT-padB;
-    const by = Object.fromEntries(DATA.benchmark_summary.map(r => [r.experiment_version, r]));
-    const ymax = Math.max(...VERSIONS.map(v => by[v].p90_cost_usd)) * 1.15;
-    svg.appendChild(svgEl('line', {x1:padL,y1:padT+plotH,x2:padL+plotW,y2:padT+plotH,stroke:'#a8a29e'}));
-    for (let i=0;i<=4;i++){
-      const y=padT+plotH-(i/4)*plotH;
-      svg.appendChild(svgEl('line',{x1:padL,y1:y,x2:padL+plotW,y2:y,stroke:'#e7e5e4'}));
-      const t=svgEl('text',{x:padL-8,y:y+4,'text-anchor':'end','font-size':'11',fill:'#57534e'});
-      t.textContent = '$'+(ymax*i/4).toFixed(3);
-      svg.appendChild(t);
-    }
-    const title=svgEl('text',{x:padL,y:18,'font-size':'13',fill:'#44403c','font-weight':'700'});
-    title.textContent='USD cost percentiles per run (agent only)';
-    svg.appendChild(title);
-    const metrics=[['p10_cost_usd','#a8a29e'],['p50_cost_usd','#0f766e'],['p90_cost_usd','#b45309']];
-    const gW=plotW/3;
-    VERSIONS.forEach((ver,gi)=>{
-      const gx=padL+gi*gW+24;
-      metrics.forEach(([key,color],si)=>{
-        const val=by[ver][key];
-        const h=(val/ymax)*plotH;
-        const x=gx+si*28;
-        const y=padT+plotH-h;
-        svg.appendChild(svgEl('rect',{x,y,width:22,height:h,fill:color,rx:'2'}));
-        const lab=svgEl('text',{x:x+11,y:y-4,'text-anchor':'middle','font-size':'9',fill:'#444'});
-        lab.textContent=val.toFixed(3);
-        svg.appendChild(lab);
-      });
-      const tl=svgEl('text',{x:gx+40,y:padT+plotH+20,'text-anchor':'middle','font-size':'13','font-weight':'700',fill:COLORS[ver]});
-      tl.textContent=ver;
-      svg.appendChild(tl);
-    });
-    [['p10','#a8a29e'],['p50','#0f766e'],['p90','#b45309']].forEach(([lab,col],i)=>{
-      const x=padL+i*90;
-      svg.appendChild(svgEl('rect',{x,y:H-28,width:12,height:12,fill:col,rx:'2'}));
-      const t=svgEl('text',{x:x+18,y:H-18,'font-size':'11',fill:'#444'}); t.textContent=lab; svg.appendChild(t);
-    });
-    const note=svgEl('text',{x:padL+300,y:H-18,'font-size':'11',fill:'#57534e'});
-    note.textContent=`v1→v2 mean −${DATA.kpis.v1_to_v2_mean_cost_reduction_pct}% · p50 −${DATA.kpis.v1_to_v2_p50_cost_reduction_pct}% · v3 critic marginal overhead`;
-    svg.appendChild(note);
-    root.appendChild(svg);
-
-    // token mix table
-    const tt=document.getElementById('token-table');
-    const tb=el('tbody', {}, VERSIONS.map(ver => {
-      const t=DATA.token_by_version[ver];
-      const total=t.input_tokens+t.output_tokens+t.cache_creation_tokens+t.cache_read_tokens;
-      return el('tr', {}, [
-        el('td',{text:ver}),
-        el('td',{text:String(t.input_tokens)}),
-        el('td',{text:String(t.cache_creation_tokens)}),
-        el('td',{text:String(t.cache_read_tokens)}),
-        el('td',{text:String(t.output_tokens)}),
-        el('td',{text:String(total)}),
-        el('td',{text:String(t.agent_api_calls)}),
-        el('td',{text:(DATA.critic_stats[ver].revision_applied_count + '/' + DATA.critic_stats[ver].cases)})
-      ]);
-    }));
-    tt.appendChild(el('table', {}, [
-      el('thead', {}, [el('tr', {}, ['Version','Uncached Input Tok','Cache Creation','Cache Read','Output Tok','Total Tok','Agent API Calls','Revisions Applied'].map(h=>el('th',{text:h})))]),
-      tb
-    ]));
-  })();
-
-  // Difficulty chart + table
-  (function(){
-    const root=document.getElementById('chart-difficulty');
-    const diffs=['standard','edge_margin','edge_legal','compound_trap'];
-    const W=900,H=320,padL=60,padR=20,padT=28,padB=70;
-    const svg=svgEl('svg',{viewBox:`0 0 ${W} ${H}`});
-    const plotW=W-padL-padR, plotH=H-padT-padB;
-    const rows=DATA.difficulty_breakdown;
-    const key=(v,d)=>rows.find(r=>r.experiment_version===v && r.difficulty===d);
-    svg.appendChild(svgEl('line',{x1:padL,y1:padT+plotH,x2:padL+plotW,y2:padT+plotH,stroke:'#a8a29e'}));
-    for(let i=0;i<=4;i++){
-      const y=padT+plotH-(i/4)*plotH;
-      svg.appendChild(svgEl('line',{x1:padL,y1:y,x2:padL+plotW,y2:y,stroke:'#e7e5e4'}));
-      const t=svgEl('text',{x:padL-8,y:y+4,'text-anchor':'end','font-size':'11',fill:'#57534e'});
-      t.textContent=String(i*25); svg.appendChild(t);
-    }
-    const title=svgEl('text',{x:padL,y:18,'font-size':'13','font-weight':'700',fill:'#444'});
-    title.textContent='Deterministic pass rate % by difficulty'; svg.appendChild(title);
-    const gW=plotW/diffs.length;
-    diffs.forEach((d,di)=>{
-      VERSIONS.forEach((v,vi)=>{
-        const r=key(v,d); const val=r?Number(r.deterministic_pass_rate_pct):0;
-        const h=(val/100)*plotH; const x=padL+di*gW+18+vi*22; const y=padT+plotH-h;
-        svg.appendChild(svgEl('rect',{x,y,width:18,height:h,fill:COLORS[v],rx:'2'}));
-        const lab=svgEl('text',{x:x+9,y:y-3,'text-anchor':'middle','font-size':'9',fill:'#444'});
-        lab.textContent=String(val); svg.appendChild(lab);
-      });
-      const tl=svgEl('text',{x:padL+di*gW+gW/2,y:padT+plotH+22,'text-anchor':'middle','font-size':'11',fill:'#444'});
-      tl.textContent=d; svg.appendChild(tl);
-    });
-    VERSIONS.forEach((v,i)=>{
-      const x=padL+i*70; svg.appendChild(svgEl('rect',{x,y:H-24,width:12,height:12,fill:COLORS[v],rx:'2'}));
-      const t=svgEl('text',{x:x+18,y:H-14,'font-size':'11',fill:'#444'}); t.textContent=v; svg.appendChild(t);
-    });
-    root.appendChild(svg);
-
-    const dt=document.getElementById('difficulty-table');
-    dt.appendChild(el('table', {}, [
-      el('thead', {}, [el('tr', {}, ['Version','Difficulty','Cases','Det. Pass %','Mean Judge','p50 Cost $'].map(h=>el('th',{text:h})))]),
-      el('tbody', {}, rows.map(r => el('tr', {}, [
-        el('td',{text:r.experiment_version}), el('td',{text:r.difficulty}), el('td',{text:r.cases}),
-        el('td',{text:r.deterministic_pass_rate_pct}), el('td',{text:r.mean_judge_score}),
-        el('td',{text:Number(r.p50_cost_usd).toFixed(4)})
-      ])))
-    ]));
-
-    document.getElementById('failure-notes').innerHTML =
-      '<p><strong>v1 drops:</strong> <code>edge_legal</code> 50% and <code>compound_trap</code> 66.7% pass — GE-009 / GE-018 / GE-019 used non-canonical or prose-annotated flag strings while tier+margin stayed exact (Partially Passed).</p>' +
-      '<p><strong>v2:</strong> 100% pass across every difficulty bucket; legal redline F1 = 1.000.</p>' +
-      '<p><strong>v3:</strong> Critic revision on <code>' + DATA.notable.v3_revision_case + '</code> (compound_trap); overall revision rate ' + DATA.notable.v3_revision_rate_pct + '%. Minor false-positive precision dip to ' + DATA.notable.v3_flag_precision + '. ' + DATA.notable.max_tokens_fix + '.</p>';
-  })();
-
-  // Explorer
-  const tbody = document.getElementById('case-tbody');
-  const drawer = document.getElementById('case-drawer');
-  function renderCases() {
-    const ver = document.getElementById('f-version').value;
-    const diff = document.getElementById('f-diff').value;
-    const status = document.getElementById('f-status').value;
-    const q = (document.getElementById('f-search').value || '').toLowerCase();
-    tbody.innerHTML = '';
-    DATA.cases.filter(c => {
-      if (ver !== 'All' && c.experiment_version !== ver) return false;
-      if (diff !== 'All' && c.difficulty !== diff) return false;
-      if (status !== 'All' && c.status !== status) return false;
-      if (q && !(c.case_id.toLowerCase().includes(q) || (c.account_name||'').toLowerCase().includes(q))) return false;
-      return true;
-    }).forEach(c => {
-      const tr = el('tr', {className:'clickable'}, [
-        el('td',{text:c.experiment_version}),
-        el('td',{className:'mono', text:c.case_id}),
-        el('td',{text:c.account_name || '—'}),
-        el('td',{text:c.difficulty}),
-        el('td', {}, [el('span',{className:'badge ' + (c.status==='Partially Passed'?'partial':c.status), text:c.status})]),
-        el('td',{text:c.actual_approval_tier || '—'}),
-        el('td',{text:String(c.actual_gross_margin_pct)}),
-        el('td',{text:Number(c.flag_f1).toFixed(3)}),
-        el('td',{text:String(c.judge_overall_score)}),
-        el('td',{text:'$'+Number(c.total_cost_usd).toFixed(4)}),
-        el('td',{text:c.revision_applied ? 'Yes' : 'No'})
-      ]);
-      tr.addEventListener('click', () => showCase(c));
-      tbody.appendChild(tr);
-    });
-  }
-  function showCase(c) {
-    drawer.className = 'drawer open';
-    drawer.innerHTML = '';
-    drawer.appendChild(el('h3',{text:`${c.experiment_version} / ${c.case_id} — ${c.account_name}`}));
-    drawer.appendChild(el('p',{},[
-      el('span',{className:'badge ' + (c.status==='Partially Passed'?'partial':c.status), text:c.status}),
-      document.createTextNode(' · difficulty ' + c.difficulty + ' · run_id ' + c.run_id)
-    ]));
-    const grid = el('div',{className:'two-col'});
-    const left = el('div',{});
-    left.appendChild(el('h3',{text:'Expected vs Actual'}));
-    left.appendChild(el('table',{},[
-      el('tbody',{},[
-        el('tr',{},[el('th',{text:'Field'}),el('th',{text:'Expected'}),el('th',{text:'Actual'})]),
-        el('tr',{},[el('td',{text:'Approval tier'}),el('td',{text:String(c.expected_approval_tier)}),el('td',{text:String(c.actual_approval_tier)})]),
-        el('tr',{},[el('td',{text:'Gross margin %'}),el('td',{text:String(c.expected_gross_margin_pct)}),el('td',{text:String(c.actual_gross_margin_pct)})]),
-        el('tr',{},[el('td',{text:'Risk flags'}),el('td',{className:'mono',text:JSON.stringify(c.expected_risk_flags)}),el('td',{className:'mono',text:JSON.stringify(c.actual_risk_flags)})]),
-      ])
-    ]));
-    left.appendChild(el('h3',{text:'Opus Judge'}));
-    left.appendChild(el('p',{text:`Overall ${c.judge_overall_score} · C ${c.judge_commercial_accuracy} / P ${c.judge_policy_grounding} / E ${c.judge_executive_clarity} / A ${c.judge_actionability}`}));
-    left.appendChild(el('p',{className:'muted', text:c.judge_rationale || ''}));
-    left.appendChild(el('h3',{text:'Tokens & Cost (agent)'}));
-    left.appendChild(el('pre',{className:'json', text:JSON.stringify({agent:c.agent_token_totals, judge:c.judge_token_totals, cache_hit_rate_pct:c.cache_hit_rate_pct, total_latency_ms:c.total_latency_ms}, null, 2)}));
-    const right = el('div',{});
-    right.appendChild(el('h3',{text:'Deal payload'}));
-    right.appendChild(el('pre',{className:'json', text:JSON.stringify(c.deal_payload, null, 2)}));
-    right.appendChild(el('h3',{text:'Executive memo'}));
-    right.appendChild(el('pre',{className:'json', text:JSON.stringify(c.memo, null, 2)}));
-    grid.appendChild(left); grid.appendChild(right);
-    drawer.appendChild(grid);
-    drawer.scrollIntoView({behavior:'smooth', block:'nearest'});
-  }
-  ['f-version','f-diff','f-status','f-search'].forEach(id => document.getElementById(id).addEventListener('input', renderCases));
-  renderCases();
-
-  // Traceability
-  const trace = document.getElementById('trace-box');
-  trace.innerHTML =
-    `<p><strong>Git:</strong> <code>${meta.git.commit_sha}</code> on <code>${meta.git.branch}</code> (${meta.git.commit_timestamp || 'n/a'})</p>` +
-    `<p><strong>Reproduction:</strong> <code>python -m src.build_report</code></p>` +
-    `<p><strong>Source artifacts:</strong></p><ul>` +
-    Object.entries(meta.sources).map(([k,v]) => `<li>${k}: <code>${v}</code></li>`).join('') +
-    `</ul><p><strong>Copied for inspection:</strong> <code>results/data/benchmark_summary.json</code>, <code>benchmark_summary.csv</code>, <code>difficulty_breakdown.csv</code>, <code>case_level_evals.csv</code>, <code>unit_test_results.json</code>, <code>traceability_manifest.json</code>, <code>dashboard_dataset.json</code>.</p>` +
-    `<p class="muted">Charts and tables above are computed only from the embedded dataset (no network fetches).</p>`;
-})();
-</script>
-</body>
-</html>
-"""
+    return _load_html_template().replace("@@EVAL_DATA@@", payload)
 
 
 def build(output_dir: Path | None = None) -> dict[str, Any]:

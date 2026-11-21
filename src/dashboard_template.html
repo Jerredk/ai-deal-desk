@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>enterprise-deal-desk — Experiment Analysis &amp; Decision Report</title>
+<style>
+:root {
+  --bg: #f4f1ea; --ink: #1c1917; --muted: #57534e; --card: #fffcf7; --line: #d6d3d1;
+  --grid: #e7e5e4; --accent: #0f766e;
+  --v1: #78716c; --v2: #0f766e; --v3: #2563eb;
+  --pass-text: #15803d; --pass-fill: #dcfce7; --pass-zone: #f0fdf4;
+  --caution-text: #b45309; --caution-fill: #fef3c7; --caution-zone: #fffbeb;
+  --fail-text: #b91c1c; --fail-fill: #fee2e2;
+  --tok-cache-read: #14b8a6; --tok-cache-create: #99f6e4; --tok-uncached: #d6d3d1; --tok-output: #d97706;
+  --shadow: 0 1px 2px rgba(28,25,22,.06), 0 8px 24px rgba(28,25,22,.06);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --ui: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; color: var(--ink); font-family: var(--ui); line-height: 1.45;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #efe6d6 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #d9ece8 0%, transparent 50%),
+    var(--bg);
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem 4rem; }
+nav.top {
+  position: sticky; top: 0; z-index: 40; backdrop-filter: blur(10px);
+  background: rgba(244,241,234,.92); border-bottom: 1px solid var(--line);
+}
+nav.top .inner { display:flex; flex-wrap:wrap; gap:.75rem 1rem; align-items:center; justify-content:space-between; padding:.75rem 1.25rem; max-width:1180px; margin:0 auto; }
+nav.top .brand { font-weight:700; }
+nav.top .links { display:flex; flex-wrap:wrap; gap:.5rem .75rem; font-size:.82rem; }
+header.hero { padding: 2rem 0 1rem; }
+header.hero h1 { font-family: var(--sans); font-size: clamp(1.8rem, 3vw, 2.5rem); margin:0 0 .4rem; line-height:1.15; }
+header.hero .sub { color: var(--muted); max-width: 70ch; }
+.meta-row { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1rem; }
+.pill { display:inline-flex; align-items:center; gap:.35rem; border:1px solid var(--line); background:var(--card); padding:.25rem .6rem; border-radius:999px; font-size:.78rem; color:var(--muted); font-family:var(--mono); }
+.delta-pill { display:inline-flex; padding:.15rem .5rem; border-radius:999px; font-size:.75rem; font-weight:700; font-family:var(--mono); }
+.delta-pill.good { background: var(--pass-fill); color: var(--pass-text); }
+.delta-pill.warn { background: var(--caution-fill); color: var(--caution-text); }
+.delta-pill.bad { background: var(--fail-fill); color: var(--fail-text); }
+.delta-pill.neutral { background: #e7e5e4; color: var(--muted); }
+section { margin: 2.5rem 0; scroll-margin-top: 4.5rem; }
+section h2 { font-family: var(--sans); font-size:1.55rem; margin:0 0 .75rem; border-bottom:1px solid var(--line); padding-bottom:.4rem; }
+section h3 { margin:1.25rem 0 .5rem; font-size:1.05rem; }
+.chart-title { font-family: var(--sans); font-size:1.08rem; font-weight:700; margin:0 0 .25rem; }
+.chart-takeaway { color: var(--muted); font-size:.9rem; margin:0 0 .85rem; max-width: 80ch; }
+.grid { display:grid; gap:1rem; }
+.grid.kpis { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.grid.two { grid-template-columns: 1fr 1fr; gap:1rem; }
+.grid.two-panel { grid-template-columns: 1fr 1.1fr; gap:1rem; }
+@media (max-width: 960px) { .grid.two, .grid.two-panel { grid-template-columns: 1fr; } }
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1rem 1.1rem; box-shadow:var(--shadow); }
+.card .label { color:var(--muted); font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; }
+.card .value { font-size:1.3rem; font-weight:700; margin-top:.25rem; font-family:var(--mono); }
+.card .hint { color:var(--muted); font-size:.8rem; margin-top:.3rem; }
+.decision-banner {
+  background: var(--card); border:1px solid var(--line); border-left:5px solid var(--v2);
+  border-radius:14px; padding:1.1rem 1.25rem; box-shadow:var(--shadow); margin-bottom:1rem;
+}
+.decision-banner .rec-badge {
+  display:inline-block; background: var(--pass-fill); color: var(--pass-text);
+  font-weight:700; font-size:.78rem; letter-spacing:.04em; padding:.25rem .65rem; border-radius:999px; margin-bottom:.55rem;
+}
+.decision-banner h3 { font-family: var(--sans); font-size:1.15rem; margin:0 0 .55rem; line-height:1.35; }
+.decision-banner ul { margin:.35rem 0 0; padding-left:1.15rem; }
+.decision-banner li { margin:.3rem 0; }
+.callout {
+  border-left: 4px solid var(--caution-text); background: var(--caution-zone);
+  padding: .75rem 1rem; border-radius: 0 10px 10px 0; margin: .75rem 0;
+}
+.callout.pass { border-left-color: var(--pass-text); background: var(--pass-zone); }
+.callout.info { border-left-color: var(--v3); background: #eff6ff; }
+.callout.gap { border-left-color: var(--muted); background: #f5f5f4; }
+.badge { display:inline-block; padding:.15rem .5rem; border-radius:999px; font-size:.75rem; font-weight:600; }
+.badge.Passed { background:var(--pass-fill); color:var(--pass-text); }
+.badge.Partially\ Passed, .badge.partial { background:var(--caution-fill); color:var(--caution-text); }
+.badge.Failed { background:var(--fail-fill); color:var(--fail-text); }
+.badge.Skipped { background:#e7e5e4; color:var(--muted); }
+.badge.hyp { background:#e0e7ff; color:#3730a3; }
+.badge.obs { background:var(--pass-fill); color:var(--pass-text); }
+.badge.interp { background:var(--caution-fill); color:var(--caution-text); }
+table { width:100%; border-collapse:collapse; font-size:.88rem; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+th, td { padding:.5rem .6rem; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:#ebe6dc; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); }
+tr:last-child td { border-bottom:none; }
+.chart-card { padding:1.05rem 1.1rem 1.2rem; }
+.chart-card svg { width:100%; height:auto; display:block; }
+.chart-summary-pill {
+  display:inline-flex; background: var(--pass-fill); color: var(--pass-text);
+  border-radius:999px; padding:.35rem .75rem; font-size:.82rem; font-weight:600; margin-bottom:.75rem;
+}
+.muted { color:var(--muted); }
+.mono { font-family:var(--mono); font-size:.82rem; }
+.controls { display:flex; flex-wrap:wrap; gap:.6rem; margin: .8rem 0 1rem; }
+.controls input, .controls select, .controls button {
+  border:1px solid var(--line); background:#fff; border-radius:8px; padding:.45rem .6rem; font:inherit;
+}
+.drawer { display:none; margin-top:.6rem; padding:1rem; border:1px dashed var(--line); border-radius:12px; background:#fffef9; }
+.drawer.open { display:block; }
+pre.json {
+  white-space:pre-wrap; word-break:break-word; background:#1c1917; color:#f5f5f4;
+  padding:1rem; border-radius:10px; font-size:.75rem; max-height:320px; overflow:auto;
+}
+.list-tight li { margin:.3rem 0; }
+.version-card { border-top: 3px solid var(--line); }
+.version-card.v1 { border-top-color: var(--v1); }
+.version-card.v2 { border-top-color: var(--v2); }
+.version-card.v3 { border-top-color: var(--v3); }
+.proj-row { display:flex; flex-wrap:wrap; gap:1rem; align-items:end; margin:.75rem 0; }
+.proj-row label { display:flex; flex-direction:column; gap:.25rem; font-size:.85rem; color:var(--muted); }
+.proj-row input[type=range] { width: 220px; }
+.proj-out { font-family: var(--mono); font-size:1.05rem; font-weight:700; }
+.delta-up { color: var(--fail-text); }
+.delta-down { color: var(--pass-text); }
+.legend-inline { display:flex; flex-wrap:wrap; gap:.5rem; margin:.5rem 0 .75rem; font-size:.8rem; }
+footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem; }
+.clickable { cursor:pointer; }
+.clickable:hover { background:#f7f3ea; }
+#chart-tooltip {
+  position: fixed; z-index: 80; pointer-events: none; display: none;
+  background: #1c1917; color: #fafaf9; font-size: .78rem; font-family: var(--mono);
+  padding: .55rem .7rem; border-radius: 8px; max-width: 300px; line-height: 1.4;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+#chart-tooltip .tt-title { font-weight: 700; margin-bottom: .2rem; color: #fff; font-family: var(--ui); }
+.abbr { border-bottom: 1px dotted var(--muted); cursor: help; }
+</style>
+</head>
+<body>
+<nav class="top">
+  <div class="inner">
+    <div class="brand">enterprise-deal-desk</div>
+    <div class="links">
+      <a href="#overview">1 Overview</a>
+      <a href="#comparison">2 Comparison</a>
+      <a href="#accuracy">3 Accuracy</a>
+      <a href="#economics">4 Economics</a>
+      <a href="#performance">5 Latency</a>
+      <a href="#failures">6 Failures</a>
+      <a href="#confidence">7 Confidence</a>
+      <a href="#walkthrough">8 Walkthrough</a>
+      <a href="#next">9 Next Experiments</a>
+      <a href="#explorer">10 Explorer</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+<header class="hero">
+  <h1>Experiment Analysis &amp; Decision Report</h1>
+  <p class="sub">Self-contained analytical report of the 60-run <code>v1</code>/<code>v2</code>/<code>v3</code> Deal-Desk agent evaluation. Opens via <code>file://</code> with zero network dependencies. Metrics below are recalculated from embedded evaluation outputs — not invented.</p>
+  <div class="meta-row" id="meta-pills"></div>
+  <p class="muted" style="margin-top:.75rem;font-size:.85rem;"><strong>Legend:</strong>
+    <span class="badge obs">Observed</span> measured result ·
+    <span class="badge interp">Interpretation</span> analytical reading ·
+    <span class="badge hyp">Hypothesis</span> unproven / needs further runs ·
+    <abbr class="abbr" title="Deterministic Pass Rate: share of cases where approval tier, gross margin, and risk-flag recall all match golden labels">DPR</abbr> ·
+    <abbr class="abbr" title="Median (50th percentile)">p50</abbr> ·
+    <abbr class="abbr" title="90th percentile">p90</abbr> ·
+    <abbr class="abbr" title="Large Language Model used as automated grader">LLM-as-a-Judge</abbr>
+  </p>
+</header>
+
+<!-- ========== 1. EXECUTIVE OVERVIEW ========== -->
+<section id="overview">
+  <h2>1. Executive Overview</h2>
+  <div class="decision-banner" id="exec-banner"></div>
+  <div class="grid kpis" id="kpi-cards"></div>
+  <div class="callout" id="exec-limitations"></div>
+  <h3>Version progression</h3>
+  <div class="grid two" id="version-narratives" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))"></div>
+  <h3>Deployment recommendation</h3>
+  <div class="card" id="deploy-rec"></div>
+  <h3>Execution completion vs evaluation success</h3>
+  <div class="card" id="exec-success"></div>
+</section>
+
+<!-- ========== 2. COMPARISON ========== -->
+<section id="comparison">
+  <h2>2. Version &amp; Experiment Comparison</h2>
+  <p class="muted">Absolute values plus changes versus the previous version. Green/red indicators treat lower cost and latency as improvements; higher pass rate, precision, recall, F1, and cache hit rate as improvements.</p>
+  <div class="card" style="overflow:auto" id="comparison-matrix"></div>
+  <div class="card chart-card" style="margin-top:1rem">
+    <div class="chart-title">Cost vs Quality Pareto Frontier</div>
+    <p class="chart-takeaway">Observed trade-off surface: v2 is Pareto-dominant on deterministic pass rate at lowest median cost; v3 matches pass rate at higher spend.</p>
+    <div id="chart-pareto"></div>
+  </div>
+</section>
+
+<!-- ========== 3. ACCURACY ========== -->
+<section id="accuracy">
+  <h2>3. Accuracy &amp; Quality Analysis</h2>
+  <h3>Deterministic correctness</h3>
+  <p class="muted">Machine-checkable graders: approval-tier exact match, gross-margin tolerance, and risk-flag precision/recall/F1. A correct tier does <em>not</em> guarantee the executive memo is complete or safe to act on — that requires qualitative review.</p>
+  <div class="card" style="overflow:auto" id="deterministic-table"></div>
+  <div class="card chart-card" style="margin-top:1rem">
+    <div class="chart-title">Discriminating Quality Metrics by Version</div>
+    <p class="chart-takeaway">Flag taxonomy — not tier or margin math — separates versions. Approval-tier and margin accuracy are 100% across all versions.</p>
+    <div class="chart-summary-pill">Approval Tier Accuracy and Gross Margin Accuracy = 100.0% across all versions (20/20 each).</div>
+    <div id="chart-quality"></div>
+  </div>
+  <h3>LLM-as-a-Judge (Opus)</h3>
+  <div class="card" id="judge-analysis"></div>
+  <div class="card chart-card" style="margin-top:1rem">
+    <div class="chart-title">Opus Judge Rubric (zoomed)</div>
+    <p class="chart-takeaway">Scores cluster in the ceiling band (≥ 4.90); useful as a floor check, weak as a between-version discriminator.</p>
+    <div id="chart-rubric"></div>
+  </div>
+</section>
+
+<!-- ========== 4. ECONOMICS ========== -->
+<section id="economics">
+  <h2>4. Cost &amp; Unit Economics</h2>
+  <div class="callout info" id="cost-semantics"></div>
+  <h3>Cost distributions (agent unit economics)</h3>
+  <div class="card" style="overflow:auto" id="cost-dist-table"></div>
+  <p class="muted" id="mean-median-note"></p>
+  <div class="grid two-panel" style="margin-top:1rem">
+    <div class="card chart-card">
+      <div class="chart-title">Cost Distribution per Deal</div>
+      <p class="chart-takeaway">p10–p90 ranges with median bars and mean diamonds. Mean &gt; median when a long right tail of expensive deals pulls the average up.</p>
+      <div id="chart-cost-dist"></div>
+    </div>
+    <div class="card chart-card">
+      <div class="chart-title">Token Mix &amp; Prompt Caching</div>
+      <p class="chart-takeaway">Cache-read tokens dominate v2/v3 input mix; v1 has zero cache hits.</p>
+      <div id="chart-token-mix"></div>
+    </div>
+  </div>
+  <h3>Cost breakdown (agent vs critic vs judge)</h3>
+  <div class="card" style="overflow:auto" id="cost-breakdown-table"></div>
+  <h3>Interactive monthly projection</h3>
+  <div class="card">
+    <p class="muted">Projection uses observed evaluation agent costs. Labelled as an estimate — not guaranteed production spend (mix, caching, and prompt length will differ).</p>
+    <div class="proj-row">
+      <label>Monthly deal volume
+        <input type="range" id="deal-volume" min="50" max="5000" step="50" value="500" />
+        <span id="deal-volume-label" class="mono">500</span>
+      </label>
+    </div>
+    <div class="grid kpis" id="projection-cards"></div>
+  </div>
+</section>
+
+<!-- ========== 5. PERFORMANCE ========== -->
+<section id="performance">
+  <h2>5. Performance &amp; Latency</h2>
+  <p class="muted">Latency figures are end-to-end agent transaction times recorded in <code>eval_results.total_latency_ms</code> (model calls + tool loop + optional critic/repair). Judge latency is excluded from these unit metrics and shown separately in the step ledger.</p>
+  <div class="card" style="overflow:auto" id="latency-table"></div>
+  <div class="card" style="margin-top:1rem" id="latency-investigation"></div>
+  <div class="card" style="margin-top:1rem; overflow:auto" id="step-latency-table"></div>
+</section>
+
+<!-- ========== 6. FAILURES ========== -->
+<section id="failures">
+  <h2>6. Failure &amp; Scenario Analysis</h2>
+  <div class="card chart-card">
+    <div class="chart-title">Scenario Difficulty Matrix</div>
+    <p class="chart-takeaway">Small subgroups show exact k/n. Legal (n=2) and compound (n=3) percentages are unstable — interpret cautiously.</p>
+    <div id="chart-heatmap"></div>
+  </div>
+  <h3>Failure taxonomy</h3>
+  <div class="card" id="failure-taxonomy"></div>
+  <div class="callout gap" id="unavailable-failures"></div>
+  <h3>Scenario-level paired comparison</h3>
+  <div class="controls">
+    <select id="sc-filter">
+      <option value="all">All scenarios</option>
+      <option value="improved">v1→v2 pass improved</option>
+      <option value="f1reg">v2→v3 F1/precision regression</option>
+      <option value="costup">v2→v3 cost increase &gt; $0.02</option>
+    </select>
+  </div>
+  <div class="card" style="overflow:auto; max-height:480px" id="scenario-compare"></div>
+</section>
+
+<!-- ========== 7. CONFIDENCE ========== -->
+<section id="confidence">
+  <h2>7. Evaluation Confidence &amp; Statistical Validity</h2>
+  <div class="card" id="stats-overview"></div>
+  <div class="grid two" style="margin-top:1rem">
+    <div class="card" id="wilson-card"></div>
+    <div class="card" id="mcnemar-card"></div>
+  </div>
+  <div class="card" style="margin-top:1rem" id="paired-continuous-card"></div>
+  <div class="callout gap" id="data-gaps"></div>
+</section>
+
+<!-- ========== 8. WALKTHROUGH ========== -->
+<section id="walkthrough">
+  <h2>8. Engineering Walkthrough</h2>
+  <div class="card">
+    <ol>
+      <li><strong>Increment 1 — Deterministic foundation.</strong> SaaS margin math and approval tiers in Python/SQLite (18% list-ARR COGS, $150/hr services, Net-60/90 penalties, 72% hard floor).</li>
+      <li><strong>Increment 2 — ACI tools + Hybrid RAG + cost ledger.</strong> Poka-yoked schemas; local 384-d hashing embeddings + BM25 with Reciprocal Rank Fusion; pinned Anthropic rate card (as of 2026-11-21).</li>
+      <li><strong>Increment 3 — Raw Messages agent.</strong> Versioned prompts: <code>v1</code> baseline BM25 + basic tools (no cache); <code>v2</code> poka-yoke tools + hybrid RAG + prompt caching; <code>v3</code> = v2 + Evaluator-Optimizer critic.</li>
+      <li><strong>Increment 4 — Eval harness.</strong> Deterministic graders + independent Opus judge (<code>claude-opus-4-6</code>; agent <code>claude-sonnet-4-6</code>).</li>
+      <li><strong>Increment 5 — 60-run empirical suite.</strong> 20 golden cases × 3 versions. Operational fix: v3/GE-020 required <code>max_tokens</code> 2048 → 4096 after JSON truncation.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ========== 9. NEXT EXPERIMENTS ========== -->
+<section id="next">
+  <h2>9. Recommended Next Experiments</h2>
+  <p class="muted">Proposed work — <strong>not completed</strong>. Prioritised to resolve uncertainties in the current deployment recommendation.</p>
+  <div class="card" style="overflow:auto" id="next-experiments"></div>
+</section>
+
+<!-- ========== 10. EXPLORER ========== -->
+<section id="explorer">
+  <h2>10. Case Explorer &amp; Traceability</h2>
+  <div class="controls">
+    <select id="f-version"><option value="All">All versions</option><option>v1</option><option>v2</option><option>v3</option></select>
+    <select id="f-diff"><option value="All">All difficulties</option><option>standard</option><option>edge_margin</option><option>edge_legal</option><option>compound_trap</option></select>
+    <select id="f-status"><option value="All">All statuses</option><option>Passed</option><option>Partially Passed</option><option>Failed</option></select>
+    <input id="f-search" type="search" placeholder="Search case id or account…" style="min-width:220px;" />
+  </div>
+  <div class="card" style="overflow:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Version</th><th>Case</th><th>Account</th><th>Difficulty</th><th>Status</th>
+          <th>Tier</th><th>Margin</th><th>Flag F1</th><th>Judge</th><th>Cost</th><th>Rev</th>
+        </tr>
+      </thead>
+      <tbody id="case-tbody"></tbody>
+    </table>
+  </div>
+  <div id="case-drawer" class="drawer"></div>
+  <h3>Traceability</h3>
+  <div class="card" id="trace-box"></div>
+</section>
+
+<footer>
+  Generated by <code>python -m src.build_report</code>. Self-contained HTML — no CDNs, no localhost server required. Raw copies under <code>results/data/</code>.
+</footer>
+</div>
+
+<div id="chart-tooltip"></div>
+<script id="eval-data" type="application/json">@@EVAL_DATA@@</script>
+<script>
+(function() {
+  const DATA = JSON.parse(document.getElementById('eval-data').textContent);
+  const A = DATA.analytics;
+  const VERSIONS = ['v1','v2','v3'];
+  const COLORS = {v1:'#78716c', v2:'#0f766e', v3:'#2563eb'};
+  const PASS = {text:'#15803d', fill:'#dcfce7', zone:'#f0fdf4'};
+  const CAUTION = {text:'#b45309', fill:'#fef3c7', zone:'#fffbeb'};
+  const FAIL = {text:'#b91c1c', fill:'#fee2e2'};
+  const TOK = {cacheRead:'#14b8a6', cacheCreate:'#99f6e4', uncached:'#d6d3d1', output:'#d97706'};
+  const GRID = '#e7e5e4';
+  const byVer = Object.fromEntries(DATA.benchmark_summary.map(r => [r.experiment_version, r]));
+  const v1 = byVer.v1, v2 = byVer.v2, v3 = byVer.v3;
+  const meta = DATA.meta;
+  const tip = document.getElementById('chart-tooltip');
+
+  function el(tag, attrs, children) {
+    const n = document.createElement(tag);
+    if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+      if (k === 'className') n.className = v;
+      else if (k === 'text') n.textContent = v;
+      else if (k === 'html') n.innerHTML = v;
+      else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2).toLowerCase(), v);
+      else n.setAttribute(k, v);
+    });
+    (children || []).forEach(c => { if (c != null) n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function svgEl(name, attrs, children) {
+    const n = document.createElementNS('http://www.w3.org/2000/svg', name);
+    if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+      if (k === 'text') n.textContent = v;
+      else n.setAttribute(k, v);
+    });
+    (children || []).forEach(c => { if (c) n.appendChild(c); });
+    return n;
+  }
+  function fmtPct(x,d){ return Number(x).toFixed(d==null?1:d)+'%'; }
+  function fmtUsd(x,d){ return '$'+Number(x).toFixed(d==null?3:d); }
+  function fmtNum(x,d){ return Number(x).toFixed(d==null?2:d); }
+  function deltaPct(cur, base){ return base ? 100*(cur-base)/base : 0; }
+  function scoreTone(pct){
+    if (pct >= 99.95) return PASS;
+    if (pct >= 60) return CAUTION;
+    return FAIL;
+  }
+  function showTip(evt, html) {
+    tip.innerHTML = html; tip.style.display = 'block';
+    let x = evt.clientX+14, y = evt.clientY+14;
+    const r = tip.getBoundingClientRect();
+    if (x+r.width > innerWidth-8) x = evt.clientX - r.width - 14;
+    if (y+r.height > innerHeight-8) y = evt.clientY - r.height - 14;
+    tip.style.left = x+'px'; tip.style.top = y+'px';
+  }
+  function hideTip(){ tip.style.display='none'; }
+  function bindTip(node, fn){
+    node.style.cursor='pointer';
+    node.addEventListener('mousemove', e => showTip(e, fn()));
+    node.addEventListener('mouseleave', hideTip);
+  }
+  function axisLabel(svg,x,y,text,opts){
+    opts=opts||{};
+    const t=svgEl('text',{x,y,fill:'#57534e','font-size':opts.size||11,'text-anchor':opts.anchor||'middle','font-family':'Avenir Next, Segoe UI, system-ui, sans-serif', text});
+    if(opts.rotate) t.setAttribute('transform','rotate('+opts.rotate+' '+x+' '+y+')');
+    svg.appendChild(t);
+  }
+  function legend(svg, items, x, y){
+    let cx=x;
+    items.forEach(it=>{
+      if(it.type==='line') svg.appendChild(svgEl('line',{x1:cx,y1:y-3,x2:cx+16,y2:y-3,stroke:it.color,'stroke-width':2,'stroke-dasharray':it.dash||''}));
+      else if(it.type==='rect'||it.type==='swatch') svg.appendChild(svgEl('rect',{x:cx,y:y-9,width:12,height:12,fill:it.color,stroke:it.stroke||'none'}));
+      else svg.appendChild(svgEl('circle',{cx:cx+6,cy:y-3,r:5,fill:it.color,stroke:it.stroke||'none','stroke-width':2}));
+      const t=svgEl('text',{x:cx+18,y:y,fill:'#44403c','font-size':11,text:it.label});
+      svg.appendChild(t);
+      cx += 18 + (it.label.length*6.2) + 12;
+    });
+  }
+  function deltaClass(val, lowerIsBetter){
+    if (val == null || val === 0) return 'neutral';
+    const good = lowerIsBetter ? val < 0 : val > 0;
+    return good ? 'good' : 'bad';
+  }
+  function deltaPill(text, cls){ return el('span',{className:'delta-pill '+cls, text}); }
+
+  // Meta
+  [
+    'git '+(meta.git.commit_sha||'n/a'),
+    'branch '+(meta.git.branch||'?'),
+    'agent '+meta.models.agent,
+    'judge '+meta.models.judge,
+    'generated '+(meta.generated_at||'').slice(0,19)+'Z',
+    '60 eval runs'
+  ].forEach(t => document.getElementById('meta-pills').appendChild(el('span',{className:'pill',text:t})));
+
+  // ===== 1. Executive =====
+  const ex = A.execution_vs_success;
+  document.getElementById('exec-banner').innerHTML =
+    '<div class="rec-badge">RECOMMENDED BASELINE: v2</div>'+
+    '<h3>Deploy v2 as the default Deal-Desk agent: 100% deterministic pass (20/20) at roughly half v1 median cost, with the strongest observed accuracy–cost–latency trade-off.</h3>'+
+    '<ul>'+
+    '<li><span class="badge obs">Observed</span> <strong>v2</strong> — DPR 100% (20/20); flag P/R/F1 = 1.00/1.00/1.00; p50 cost '+fmtUsd(v2.p50_cost_usd,3)+' (−'+DATA.kpis.v1_to_v2_p50_cost_reduction_pct+'% vs v1); mean cost '+fmtUsd(v2.mean_cost_usd,3)+' (−'+DATA.kpis.v1_to_v2_mean_cost_reduction_pct+'% vs v1); p50 latency '+fmtNum(v2.p50_latency_s,1)+'s; p90 '+fmtNum(v2.p90_latency_s,1)+'s; cache hit '+fmtPct(v2.avg_cache_hit_rate_pct,1)+'.</li>'+
+    '<li><span class="badge obs">Observed</span> <strong>v1</strong> — DPR 85% (17/20); three Partially Passed cases (GE-009/018/019) from non-canonical or spurious flag strings; p50 cost '+fmtUsd(v1.p50_cost_usd,3)+'; zero cache.</li>'+
+    '<li><span class="badge obs">Observed</span> <strong>v3</strong> — DPR 100% (20/20) matching v2; mean flag precision 0.975 (GE-016 false positive after revision); p50 cost '+fmtUsd(v3.p50_cost_usd,3)+' (+'+fmtNum(deltaPct(v3.p50_cost_usd,v2.p50_cost_usd),1)+'% vs v2); critic revised 1/20 cases.</li>'+
+    '<li><span class="badge hyp">Hypothesis</span> Reserving v3 for “high-stakes compound deals” is <em>not</em> supported by scenario evidence yet (n=1 revision; precision regression on that case). Treat as a testable hypothesis.</li>'+
+    '</ul>';
+
+  const kpiHost = document.getElementById('kpi-cards');
+  [
+    {label:'Recommended version', value:'v2', hint:'Pareto-best observed trade-off'},
+    {label:'v2 Deterministic pass', value:'20/20 (100%)', hint:'Wilson 95% CI '+A.wilson_ci.v2.lo+'–'+A.wilson_ci.v2.hi+'%', delta:'+15.0 pp vs v1', dcls:'good'},
+    {label:'v2 Flag P / R / F1', value:'1.00 / 1.00 / 1.00', hint:'Canonical taxonomy closed'},
+    {label:'v2 Median cost (p50)', value:fmtUsd(v2.p50_cost_usd,3), hint:'Mean '+fmtUsd(v2.mean_cost_usd,3), delta:fmtNum(deltaPct(v2.p50_cost_usd,v1.p50_cost_usd),1)+'% vs v1', dcls:'good'},
+    {label:'v2 Latency p50 / p90', value:fmtNum(v2.p50_latency_s,1)+'s / '+fmtNum(v2.p90_latency_s,1)+'s', hint:'End-to-end agent transaction', delta:fmtNum(deltaPct(v2.p50_latency_s,v1.p50_latency_s),1)+'% p50 vs v1', dcls:'good'},
+    {label:'Sample size', value:'20 cases × 3 versions', hint:'60 completed eval rows; single run each'},
+  ].forEach(k=>{
+    const card=el('div',{className:'card'},[
+      el('div',{className:'label',text:k.label}),
+      el('div',{className:'value',text:k.value}),
+      el('div',{className:'hint',text:k.hint})
+    ]);
+    if(k.delta) card.appendChild(el('div',{style:'margin-top:.4rem'},[deltaPill(k.delta,k.dcls)]));
+    kpiHost.appendChild(card);
+  });
+
+  document.getElementById('exec-limitations').innerHTML =
+    '<strong>Key limitations (observed gaps):</strong> single run per case×version (no consistency estimate); '+
+    'McNemar v1→v2 underpowered (3 discordant pairs, exact p=0.25 — not significant at α=0.05); '+
+    'Opus judge scores near ceiling; legal/compound subgroups n=2/n=3; '+
+    'v3 high-stakes benefit unproven.';
+
+  const narratives = [
+    {ver:'v1', title:'v1 — Baseline', body:
+      '<p><strong>What changed:</strong> Initial production-shaped loop — BM25 retrieval, basic tools, no prompt caching, no critic.</p>'+
+      '<p><strong>Why:</strong> Establish a measurable baseline before poka-yoke tooling and caching.</p>'+
+      '<p><strong>Results:</strong> DPR 85% (17/20). Tier/margin already perfect; failures were flag-label taxonomy (GE-018/019) and spurious flags on a clean expected set (GE-009). Mean cost '+fmtUsd(v1.mean_cost_usd,3)+'; p50 '+fmtUsd(v1.p50_cost_usd,3)+'; heavy JSON-repair usage (15 calls).</p>'+
+      '<p><strong>Improvement delivered:</strong> N/A (baseline). Exposed the canonical-flag gap that v2 targets.</p>'},
+    {ver:'v2', title:'v2 — Tools + Hybrid RAG + Cache', body:
+      '<p><strong>What changed vs v1:</strong> Poka-yoked ACI tool schemas, hybrid RAG (dense+BM25 RRF), Anthropic prompt caching on system+tools, stronger canonical-flag prompting.</p>'+
+      '<p><strong>Why:</strong> Close machine-checkable flag failures and cut unit cost/latency.</p>'+
+      '<p><strong>Results:</strong> DPR 100% (20/20); F1 1.00; rescued GE-009/018/019; p50 cost −'+DATA.kpis.v1_to_v2_p50_cost_reduction_pct+'%; mean cost −'+DATA.kpis.v1_to_v2_mean_cost_reduction_pct+'%; cache hit '+fmtPct(v2.avg_cache_hit_rate_pct,1)+'; JSON repairs down to 4 calls.</p>'+
+      '<p><strong>Improvement delivered:</strong> <span class="badge obs">Yes — measured</span> on accuracy, cost, and latency versus the same 20 scenarios.</p>'},
+    {ver:'v3', title:'v3 — Critic loop on top of v2', body:
+      '<p><strong>What changed vs v2:</strong> Same tools/RAG/cache plus Evaluator-Optimizer critic; revision applied only when critic requests changes.</p>'+
+      '<p><strong>Why:</strong> Test whether an independent critic improves hard compound deals.</p>'+
+      '<p><strong>Results:</strong> DPR unchanged at 100%. Revision on 1/20 (GE-016) with +cost/latency and flag precision drop to 0.5. Critic overhead ~'+fmtUsd(A.step_rollup.v3.critic_overhead_per_deal_usd,4)+'/deal average.</p>'+
+      '<p><strong>Improvement delivered:</strong> <span class="badge hyp">Not demonstrated</span> on deterministic accuracy; economics regressed vs v2.</p>'}
+  ];
+  const vn = document.getElementById('version-narratives');
+  narratives.forEach(n=>{
+    vn.appendChild(el('div',{className:'card version-card '+n.ver},[
+      el('h3',{text:n.title, style:'color:'+COLORS[n.ver]}),
+    ]));
+    vn.lastChild.insertAdjacentHTML('beforeend', n.body);
+  });
+
+  document.getElementById('deploy-rec').innerHTML =
+    '<p><strong>Recommend: v2</strong> as the default production baseline.</p>'+
+    '<ul class="list-tight">'+
+    '<li><strong>Evidence:</strong> Paired rescue of all 3 v1 partial failures; 20/20 pass; best p50/mean cost; best p50 latency; 57% cache hit.</li>'+
+    '<li><strong>Advantages:</strong> Full deterministic correctness on the golden suite; roughly half v1 median cost; materially lower repair overhead.</li>'+
+    '<li><strong>Disadvantages:</strong> No critic second-look; single-run evaluation cannot speak to production consistency; judge suite is near ceiling so qualitative residual risk is weakly measured.</li>'+
+    '<li><strong>Outstanding risks:</strong> Unseen deal types beyond the 20 golden cases; prompt/cache behaviour under different traffic patterns; no human audit of memo actionability.</li>'+
+    '<li><strong>When another version might be preferable:</strong> Prefer <code>v1</code> only for ablation/debugging. Prefer <code>v3</code> only after a targeted experiment shows critic net benefit on a larger compound-trap set — <em>not</em> on current evidence.</li>'+
+    '</ul>';
+
+  document.getElementById('exec-success').innerHTML =
+    '<p>'+ex.note+'</p>'+
+    '<table><thead><tr><th>Category</th><th>Count</th><th>Meaning</th></tr></thead><tbody>'+
+    '<tr><td>Benchmark runs completed</td><td><strong>'+ex.benchmark_runs_completed+'/60</strong></td><td>Execution finished and scored</td></tr>'+
+    '<tr><td>Full deterministic passes</td><td><strong>'+ex.deterministic_full_pass+'</strong></td><td>tier + margin + full flag recall</td></tr>'+
+    '<tr><td>Partially Passed</td><td><strong>'+ex.partial_pass+'</strong> (v1: '+DATA.status_breakdown.partial_pass_cases.join(', ')+')</td><td>tier+margin OK; flag recall incomplete</td></tr>'+
+    '<tr><td>Failed</td><td><strong>'+ex.failed+'</strong></td><td>tier or margin miss</td></tr>'+
+    '<tr><td>Unit tests (separate)</td><td><strong>'+DATA.kpis.unit_tests_passed+'</strong></td><td>pytest on regenerate — not agent evals</td></tr>'+
+    '</tbody></table>';
+
+  // ===== 2. Comparison matrix =====
+  (function(){
+    const host = document.getElementById('comparison-matrix');
+    const rows = A.comparison_matrix;
+    const head = ['Metric','v1','v2','Δ v1→v2','v3','Δ v2→v3'];
+    function cellDelta(val, lowerIsBetter, suffix){
+      if (val == null) return '—';
+      const cls = deltaClass(val, lowerIsBetter);
+      const sign = val > 0 ? '+' : '';
+      return '<span class="delta-pill '+cls+'">'+sign+val+suffix+'</span>';
+    }
+    const metrics = [
+      ['Pass rate', r=>r.pass_count+'/'+r.n+' ('+r.pass_rate_pct+'%)', d=>cellDelta(d&&d.pass_rate_pp,false,' pp')],
+      ['Flag precision', r=>fmtNum(r.flag_precision,4), d=>'—'],
+      ['Flag recall', r=>fmtNum(r.flag_recall,4), d=>'—'],
+      ['Flag F1', r=>fmtNum(r.flag_f1,4), d=>cellDelta(d&&d.flag_f1,false,'')],
+      ['Mean cost', r=>fmtUsd(r.mean_cost_usd,4), d=>cellDelta(d&&d.mean_cost_pct,true,'%')],
+      ['Median cost (p50)', r=>fmtUsd(r.p50_cost_usd,4), d=>cellDelta(d&&d.p50_cost_pct,true,'%')],
+      ['p50 latency', r=>fmtNum(r.p50_latency_s,1)+'s', d=>cellDelta(d&&d.p50_latency_pct,true,'%')],
+      ['p90 latency', r=>fmtNum(r.p90_latency_s,1)+'s', d=>cellDelta(d&&d.p90_latency_pct,true,'%')],
+      ['Cache hit rate', r=>fmtPct(r.cache_hit_rate_pct,1), d=>cellDelta(d&&d.cache_hit_pp,false,' pp')],
+      ['Mean judge score', r=>fmtNum(r.mean_judge_score,2), d=>cellDelta(d&&d.judge_overall,false,'')],
+      ['Revision rate', r=>fmtPct(r.revision_rate_pct,1), d=>'—'],
+      ['JSON repair API calls', r=>String(r.json_repair_calls), d=>'—'],
+    ];
+    let html = '<table><thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>';
+    metrics.forEach(([label, getter, dgetter])=>{
+      const r1=rows[0], r2=rows[1], r3=rows[2];
+      html += '<tr><td>'+label+'</td><td>'+getter(r1)+'</td><td>'+getter(r2)+'</td><td>'+dgetter(r2.deltas_vs_prev)+'</td><td>'+getter(r3)+'</td><td>'+dgetter(r3.deltas_vs_prev)+'</td></tr>';
+    });
+    html += '</tbody></table>';
+    // Fix precision delta column - use separate for precision
+    host.innerHTML = html;
+  })();
+
+  // ===== Charts (pareto, quality, rubric, cost, tokens, heatmap) — compact ports =====
+  (function chartPareto(){
+    const host=document.getElementById('chart-pareto');
+    const W=720,H=400,m={l:64,r:28,t:48,b:56};
+    const iw=W-m.l-m.r, ih=H-m.t-m.b;
+    const x=v=>m.l+((v-0)/0.12)*iw, y=v=>m.t+((105-v)/(105-75))*ih;
+    const svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H, role:'img'});
+    svg.appendChild(svgEl('rect',{x:x(0),y:y(105),width:x(0.07)-x(0),height:y(98)-y(105),fill:PASS.zone}));
+    svg.appendChild(svgEl('rect',{x:x(0.07),y:y(105),width:x(0.12)-x(0.07),height:y(98)-y(105),fill:CAUTION.zone}));
+    axisLabel(svg,(x(0)+x(0.07))/2,y(105)+14,'Optimal Production Zone',{size:10});
+    axisLabel(svg,(x(0.07)+x(0.12))/2,y(105)+14,'Diminishing Returns Zone',{size:10});
+    for(let c=0;c<=0.12+1e-9;c+=0.02){ const xx=x(c); svg.appendChild(svgEl('line',{x1:xx,y1:m.t,x2:xx,y2:m.t+ih,stroke:GRID,'stroke-dasharray':'3 4'})); axisLabel(svg,xx,H-m.b+18,'$'+c.toFixed(2),{size:11}); }
+    for(let p=75;p<=105;p+=5){ const yy=y(p); svg.appendChild(svgEl('line',{x1:m.l,y1:yy,x2:m.l+iw,y2:yy,stroke:GRID,'stroke-dasharray':'3 4'})); axisLabel(svg,m.l-8,yy+4,p+'%',{size:11,anchor:'end'}); }
+    svg.appendChild(svgEl('line',{x1:m.l,y1:m.t,x2:m.l,y2:m.t+ih,stroke:'#44403c','stroke-width':1.5}));
+    svg.appendChild(svgEl('line',{x1:m.l,y1:m.t+ih,x2:m.l+iw,y2:m.t+ih,stroke:'#44403c','stroke-width':1.5}));
+    svg.appendChild(svgEl('line',{x1:m.l,y1:y(100),x2:m.l+iw,y2:y(100),stroke:PASS.text,'stroke-width':1.5,'stroke-dasharray':'6 4'}));
+    axisLabel(svg,m.l+iw-4,y(100)-6,'100% Target',{size:10,anchor:'end'});
+    axisLabel(svg,m.l+iw/2,H-12,'Median Cost per Deal (p50 USD)',{size:12});
+    axisLabel(svg,16,m.t+ih/2,'Deterministic Pass Rate (%)',{size:12,rotate:-90});
+    legend(svg,[{label:'v1',color:COLORS.v1},{label:'v2',color:COLORS.v2,stroke:PASS.text},{label:'v3',color:COLORS.v3}],m.l,22);
+    const pts=VERSIONS.map(ver=>({ver,cost:byVer[ver].p50_cost_usd,pass:byVer[ver].deterministic_pass_rate_pct,lat:byVer[ver].p50_latency_s,n:20}));
+    const latMin=Math.min(...pts.map(p=>p.lat)), latMax=Math.max(...pts.map(p=>p.lat));
+    const rB=lat=>10+16*((lat-latMin)/(latMax-latMin||1));
+    for(let i=0;i<2;i++){ const a=pts[i],b=pts[i+1]; svg.appendChild(svgEl('line',{x1:x(a.cost),y1:y(a.pass),x2:x(b.cost),y2:y(b.pass),stroke:'#a8a29e','stroke-width':1.5})); }
+    pts.forEach(p=>{
+      const g=svgEl('g'); const cx=x(p.cost),cy=y(p.pass),rr=rB(p.lat);
+      if(p.ver==='v2') g.appendChild(svgEl('circle',{cx,cy,r:rr+5,fill:'none',stroke:PASS.text,'stroke-width':2.5}));
+      g.appendChild(svgEl('circle',{cx,cy,r:rr,fill:COLORS[p.ver],stroke:'#fffcf7','stroke-width':2}));
+      g.appendChild(svgEl('text',{x:cx,y:cy-rr-8,fill:COLORS[p.ver],'font-size':12,'font-weight':700,'text-anchor':'middle',text:p.ver}));
+      g.appendChild(svgEl('text',{x:cx,y:cy+rr+14,fill:'#44403c','font-size':10,'text-anchor':'middle',text:fmtUsd(p.cost,3)+' · '+fmtPct(p.pass,1)}));
+      bindTip(g,()=>'<div class="tt-title">'+p.ver+'</div>Pass '+fmtPct(p.pass,1)+' (n='+p.n+')<br/>p50 cost '+fmtUsd(p.cost,4)+' ('+fmtNum(deltaPct(p.cost,v1.p50_cost_usd),1)+'% vs v1)<br/>p50 latency '+fmtNum(p.lat,1)+'s');
+      svg.appendChild(g);
+    });
+    host.appendChild(svg);
+  })();
+
+  (function chartQuality(){
+    const host=document.getElementById('chart-quality');
+    const metrics=[
+      {key:'deterministic_pass_rate_pct',label:['Deterministic','Pass Rate'],scale:1},
+      {key:'mean_flag_precision',label:['Flag','Precision'],scale:100},
+      {key:'mean_flag_recall',label:['Flag','Recall'],scale:100},
+      {key:'mean_flag_f1',label:['Flag F1'],scale:100}
+    ];
+    const W=720,H=380,m={l:56,r:20,t:36,b:58};
+    const iw=W-m.l-m.r, ih=H-m.t-m.b;
+    const svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H});
+    for(let t=0;t<=100;t+=25){ const yy=m.t+ih*(1-t/100); svg.appendChild(svgEl('line',{x1:m.l,y1:yy,x2:m.l+iw,y2:yy,stroke:GRID,'stroke-dasharray':'3 4'})); axisLabel(svg,m.l-8,yy+4,t+'%',{size:11,anchor:'end'}); }
+    svg.appendChild(svgEl('line',{x1:m.l,y1:m.t,x2:m.l,y2:m.t+ih,stroke:'#44403c','stroke-width':1.5}));
+    svg.appendChild(svgEl('line',{x1:m.l,y1:m.t+ih,x2:m.l+iw,y2:m.t+ih,stroke:'#44403c','stroke-width':1.5}));
+    axisLabel(svg,16,m.t+ih/2,'Score (%)',{size:12,rotate:-90});
+    legend(svg,VERSIONS.map(v=>({label:v,color:COLORS[v]})),m.l,18);
+    const groupW=iw/metrics.length, barW=Math.min(28,(groupW-16)/3);
+    metrics.forEach((met,mi)=>{
+      const gx=m.l+mi*groupW+groupW/2;
+      met.label.forEach((line,li)=>axisLabel(svg,gx,H-m.b+16+li*12,line,{size:11}));
+      VERSIONS.forEach((ver,vi)=>{
+        const pct=byVer[ver][met.key]*met.scale;
+        const h=ih*(pct/100), bx=gx-(3*barW+8)/2+vi*(barW+4), by=m.t+ih-h;
+        const g=svgEl('g');
+        g.appendChild(svgEl('rect',{x:bx,y:by,width:barW,height:Math.max(h,0),fill:COLORS[ver],rx:3}));
+        const label=fmtPct(pct,1), tone=scoreTone(pct);
+        if(pct>=99.95) g.appendChild(svgEl('text',{x:bx+barW/2,y:by-6,fill:PASS.text,'font-size':10,'font-weight':700,'text-anchor':'middle',text:label}));
+        else {
+          g.appendChild(svgEl('rect',{x:bx+barW/2-20,y:by-20,width:40,height:15,rx:8,fill:tone.fill}));
+          g.appendChild(svgEl('text',{x:bx+barW/2,y:by-9,fill:tone.text,'font-size':10,'font-weight':700,'text-anchor':'middle',text:label}));
+        }
+        bindTip(g,()=>'<div class="tt-title">'+ver+' · '+met.label.join(' ')+'</div>'+fmtPct(pct,2)+'<br/>n=20<br/>Δ vs v1: '+fmtNum(pct-byVer.v1[met.key]*met.scale,1)+' pp');
+        svg.appendChild(g);
+      });
+    });
+    host.appendChild(svg);
+  })();
+
+  (function chartRubric(){
+    const host=document.getElementById('chart-rubric');
+    const rows=[
+      {label:'Overall Score', get:r=>r.mean_judge_score},
+      {label:'Commercial Accuracy', get:r=>r.judge_commercial_accuracy},
+      {label:'Policy Grounding', get:r=>r.judge_policy_grounding},
+      {label:'Executive Clarity', get:r=>r.judge_executive_clarity},
+      {label:'Actionability', get:r=>r.judge_actionability}
+    ];
+    const W=720,H=340,m={l:150,r:36,t:44,b:48};
+    const iw=W-m.l-m.r, ih=H-m.t-m.b;
+    const x=v=>m.l+((v-4.5)/(5-4.5))*iw;
+    const svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H});
+    svg.appendChild(svgEl('rect',{x:x(4.9),y:m.t,width:x(5)-x(4.9),height:ih,fill:PASS.zone}));
+    axisLabel(svg,(x(4.9)+x(5))/2,m.t+14,'Ceiling Excellence Band (≥ 4.90)',{size:10});
+    svg.appendChild(svgEl('line',{x1:x(5),y1:m.t,x2:x(5),y2:m.t+ih,stroke:PASS.text,'stroke-width':1.5}));
+    for(let t=4.5;t<=5.001;t+=0.1){ const xx=x(+t.toFixed(2)); svg.appendChild(svgEl('line',{x1:xx,y1:m.t,x2:xx,y2:m.t+ih,stroke:GRID,'stroke-dasharray':'3 4'})); axisLabel(svg,xx,H-m.b+18,t.toFixed(2),{size:11}); }
+    svg.appendChild(svgEl('line',{x1:m.l,y1:m.t+ih,x2:m.l+iw,y2:m.t+ih,stroke:'#44403c','stroke-width':1.5}));
+    axisLabel(svg,m.l+iw/2,H-12,'Opus Judge Score (zoomed 4.50–5.00)',{size:12});
+    legend(svg,VERSIONS.map(v=>({label:v,color:COLORS[v]})),m.l,22);
+    const rowH=ih/rows.length;
+    rows.forEach((row,ri)=>{
+      const cy=m.t+rowH*ri+rowH/2;
+      axisLabel(svg,m.l-10,cy+4,row.label,{size:12,anchor:'end'});
+      const vals=VERSIONS.map(ver=>({ver,v:Number(row.get(byVer[ver]))}));
+      const minV=Math.min(...vals.map(d=>d.v)), maxV=Math.max(...vals.map(d=>d.v));
+      svg.appendChild(svgEl('line',{x1:x(minV),y1:cy,x2:x(maxV),y2:cy,stroke:'#d6d3d1','stroke-width':6,'stroke-linecap':'round'}));
+      vals.forEach((d,vi)=>{
+        const yDot=cy+(vi-1)*9; const g=svgEl('g');
+        g.appendChild(svgEl('circle',{cx:x(d.v),cy:yDot,r:6.5,fill:COLORS[d.ver],stroke:'#fff','stroke-width':1.5}));
+        const side=d.v>=4.97?-1:1;
+        g.appendChild(svgEl('text',{x:x(d.v)+side*10,y:yDot+3.5,fill:COLORS[d.ver],'font-size':10,'font-weight':700,'text-anchor':side<0?'end':'start',text:d.v.toFixed(2)}));
+        bindTip(g,()=>'<div class="tt-title">'+d.ver+' · '+row.label+'</div>'+d.v.toFixed(2)+'<br/>n=20');
+        svg.appendChild(g);
+      });
+    });
+    host.appendChild(svg);
+  })();
+
+  // Deterministic table
+  document.getElementById('deterministic-table').innerHTML =
+    '<table><thead><tr><th>Version</th><th>Pass</th><th>Tier Acc.</th><th>Margin Acc.</th><th>Flag P</th><th>Flag R</th><th>Flag F1</th></tr></thead><tbody>'+
+    VERSIONS.map(ver=>{
+      const r=byVer[ver], d=A.distributions[ver];
+      return '<tr><td style="font-weight:700;color:'+COLORS[ver]+'">'+ver+'</td><td>'+d.pass_count+'/'+d.n+' ('+r.deterministic_pass_rate_pct+'%)</td><td>'+r.tier_accuracy_pct+'%</td><td>'+r.margin_accuracy_pct+'%</td><td>'+fmtNum(r.mean_flag_precision,4)+'</td><td>'+fmtNum(r.mean_flag_recall,4)+'</td><td>'+fmtNum(r.mean_flag_f1,4)+'</td></tr>';
+    }).join('')+'</tbody></table>';
+
+  // Judge analysis
+  const ja=A.judge_analysis;
+  document.getElementById('judge-analysis').innerHTML =
+    '<p><span class="badge interp">Interpretation</span> '+ja.note+'</p>'+
+    '<p><strong>Available stored dimensions:</strong> '+ja.available_dimensions.join(', ')+'.</p>'+
+    '<p><strong>Requested but unavailable without new evals:</strong></p><ul>'+
+    ja.unavailable_requested_dimensions.map(u=>'<li><code>'+u.name+'</code> — '+u.reason+'</li>').join('')+
+    '</ul><p class="muted">A correct approval tier means the escalation path matched the golden label; it does not certify that commercial recommendations, risk narrative, or memo completeness are safe to act on without human review.</p>';
+
+
+  // ===== 4 Economics =====
+  document.getElementById('cost-semantics').innerHTML =
+    '<strong>Cost semantics:</strong> '+A.cost_semantics.agent_unit_economics+' '+A.cost_semantics.evaluation_overhead;
+
+  document.getElementById('cost-dist-table').innerHTML =
+    '<table><thead><tr><th>Version</th><th>Mean</th><th>Median</th><th>P10</th><th>P50</th><th>P90</th><th>Max</th><th>Stdev</th><th>IQR</th></tr></thead><tbody>'+
+    VERSIONS.map(ver=>{
+      const c=A.distributions[ver].cost_usd;
+      return '<tr><td style="font-weight:700;color:'+COLORS[ver]+'">'+ver+'</td><td>'+fmtUsd(c.mean,4)+'</td><td>'+fmtUsd(c.median,4)+'</td><td>'+fmtUsd(c.p10,4)+'</td><td>'+fmtUsd(c.p50,4)+'</td><td>'+fmtUsd(c.p90,4)+'</td><td>'+fmtUsd(c.max,4)+'</td><td>'+fmtUsd(c.stdev,4)+'</td><td>'+fmtUsd(c.iqr,4)+'</td></tr>';
+    }).join('')+'</tbody></table>';
+
+  document.getElementById('mean-median-note').textContent =
+    'Mean vs median: v1 mean $'+v1.mean_cost_usd.toFixed(4)+' is below its median $'+v1.p50_cost_usd.toFixed(4)+
+    ' (left-leaning cheap standard deals). v2/v3 means exceed medians when expensive edge_margin/compound tails pull the average up. Use median for typical-deal budgeting; mean for total expected spend.';
+
+  // Cost dist chart 3A
+  (function(){
+    const host=document.getElementById('chart-cost-dist');
+    const W=420,H=360,m={l:52,r:16,t:48,b:48};
+    const iw=W-m.l-m.r, ih=H-m.t-m.b;
+    const y=v=>m.t+((0.14-v)/0.14)*ih;
+    const svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H});
+    for(let c=0;c<=0.14+1e-9;c+=0.02){ const yy=y(c); svg.appendChild(svgEl('line',{x1:m.l,y1:yy,x2:m.l+iw,y2:yy,stroke:GRID,'stroke-dasharray':'3 4'})); axisLabel(svg,m.l-8,yy+4,'$'+c.toFixed(2),{size:10,anchor:'end'}); }
+    svg.appendChild(svgEl('line',{x1:m.l,y1:m.t,x2:m.l,y2:m.t+ih,stroke:'#44403c','stroke-width':1.5}));
+    svg.appendChild(svgEl('line',{x1:m.l,y1:m.t+ih,x2:m.l+iw,y2:m.t+ih,stroke:'#44403c','stroke-width':1.5}));
+    axisLabel(svg,14,m.t+ih/2,'Cost per Deal (USD)',{size:11,rotate:-90});
+    const colW=iw/3;
+    VERSIONS.forEach((ver,i)=>{
+      const r=byVer[ver], d=A.distributions[ver].cost_usd;
+      const cx=m.l+colW*i+colW/2; const g=svgEl('g');
+      const y10=y(d.p10), y90=y(d.p90), y50=y(d.p50), ym=y(d.mean);
+      g.appendChild(svgEl('rect',{x:cx-18,y:Math.min(y10,y90),width:36,height:Math.abs(y90-y10),fill:COLORS[ver],opacity:0.22,rx:4}));
+      g.appendChild(svgEl('line',{x1:cx-22,y1:y50,x2:cx+22,y2:y50,stroke:COLORS[ver],'stroke-width':3.5,'stroke-linecap':'round'}));
+      g.appendChild(svgEl('text',{x:cx,y:y50-8,fill:COLORS[ver],'font-size':11,'font-weight':700,'text-anchor':'middle',text:fmtUsd(d.p50,3)}));
+      g.appendChild(svgEl('polygon',{points:[cx,ym-6,cx+6,ym,cx,ym+6,cx-6,ym].join(' '),fill:COLORS[ver],stroke:'#fffcf7'}));
+      axisLabel(svg,cx,H-m.b+18,ver,{size:12});
+      if(ver==='v2'){ const dlt=deltaPct(r.p50_cost_usd,v1.p50_cost_usd); g.appendChild(svgEl('rect',{x:cx-32,y:m.t-4,width:64,height:16,rx:8,fill:PASS.fill})); g.appendChild(svgEl('text',{x:cx,y:m.t+8,fill:PASS.text,'font-size':10,'font-weight':700,'text-anchor':'middle',text:fmtNum(dlt,1)+'% p50'})); }
+      if(ver==='v3'){ const dlt=deltaPct(r.p50_cost_usd,v2.p50_cost_usd); g.appendChild(svgEl('rect',{x:cx-32,y:m.t-4,width:64,height:16,rx:8,fill:CAUTION.fill})); g.appendChild(svgEl('text',{x:cx,y:m.t+8,fill:CAUTION.text,'font-size':10,'font-weight':700,'text-anchor':'middle',text:'+'+fmtNum(dlt,1)+'% p50'})); }
+      bindTip(g,()=>'<div class="tt-title">'+ver+'</div>p10 '+fmtUsd(d.p10,4)+'<br/>p50 '+fmtUsd(d.p50,4)+'<br/>p90 '+fmtUsd(d.p90,4)+'<br/>mean '+fmtUsd(d.mean,4)+'<br/>max '+fmtUsd(d.max,4)+'<br/>n=20');
+      svg.appendChild(g);
+    });
+    host.appendChild(svg);
+  })();
+
+  (function(){
+    const host=document.getElementById('chart-token-mix');
+    const W=520,H=280,m={l:48,r:90,t:48,b:44};
+    const iw=W-m.l-m.r, ih=H-m.t-m.b;
+    const x=v=>m.l+(v/550)*iw;
+    const svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H});
+    for(let t=0;t<=550;t+=110){ const xx=x(t); svg.appendChild(svgEl('line',{x1:xx,y1:m.t,x2:xx,y2:m.t+ih,stroke:GRID,'stroke-dasharray':'3 4'})); axisLabel(svg,xx,H-m.b+16,t+'k',{size:10}); }
+    svg.appendChild(svgEl('line',{x1:m.l,y1:m.t+ih,x2:m.l+iw,y2:m.t+ih,stroke:'#44403c','stroke-width':1.5}));
+    axisLabel(svg,m.l+iw/2,H-10,'Total Tokens across 20 Runs (k)',{size:11});
+    legend(svg,[{type:'rect',label:'Cache Read',color:TOK.cacheRead},{type:'rect',label:'Cache Create',color:TOK.cacheCreate,stroke:'#0f766e'},{type:'rect',label:'Uncached',color:TOK.uncached},{type:'rect',label:'Output',color:TOK.output}],m.l,18);
+    const rowH=ih/3;
+    VERSIONS.forEach((ver,i)=>{
+      const tok=DATA.token_by_version[ver];
+      const segs=[{v:tok.cache_read_tokens,color:TOK.cacheRead},{v:tok.cache_creation_tokens,color:TOK.cacheCreate,stroke:'#0f766e'},{v:tok.input_tokens,color:TOK.uncached},{v:tok.output_tokens,color:TOK.output}];
+      const total=segs.reduce((a,s)=>a+s.v,0), totalK=total/1000, cacheHit=byVer[ver].avg_cache_hit_rate_pct;
+      const cy=m.t+rowH*i+rowH/2; let cursor=0; const g=svgEl('g');
+      axisLabel(svg,m.l-8,cy+4,ver,{size:12,anchor:'end'});
+      segs.forEach(s=>{ const w=x(s.v/1000)-x(0); if(w<=0) return; g.appendChild(svgEl('rect',{x:x(cursor),y:cy-11,width:Math.max(w,0.5),height:22,fill:s.color,stroke:s.stroke||'none'})); cursor+=s.v/1000; });
+      g.appendChild(svgEl('text',{x:x(totalK)+6,y:cy-2,fill:'#44403c','font-size':10,'font-weight':700,text:totalK.toFixed(1)+'k'}));
+      let fill='#e7e5e4', ink='#57534e';
+      if(cacheHit>=55){ fill=PASS.fill; ink=PASS.text; } else if(cacheHit>1){ fill='#ccfbf1'; ink='#0f766e'; }
+      g.appendChild(svgEl('rect',{x:x(totalK)+6,y:cy+4,width:48,height:14,rx:7,fill}));
+      g.appendChild(svgEl('text',{x:x(totalK)+30,y:cy+14,fill:ink,'font-size':9,'font-weight':700,'text-anchor':'middle',text:fmtPct(cacheHit,1)}));
+      svg.appendChild(g);
+    });
+    host.appendChild(svg);
+  })();
+
+  document.getElementById('cost-breakdown-table').innerHTML =
+    '<table><thead><tr><th>Version</th><th>Agent total (20)</th><th>Agent $/deal</th><th>Producer</th><th>JSON repair</th><th>Critic</th><th>Revision</th><th>Judge (eval only)</th><th>Critic overhead $/deal</th></tr></thead><tbody>'+
+    VERSIONS.map(ver=>{
+      const s=A.step_rollup[ver], b=s.buckets;
+      return '<tr><td style="font-weight:700;color:'+COLORS[ver]+'">'+ver+'</td><td>'+fmtUsd(s.agent_total_usd,4)+'</td><td>'+fmtUsd(s.agent_mean_per_deal_usd,4)+'</td><td>'+fmtUsd(b.producer.cost_usd,4)+' ('+b.producer.calls+' calls)</td><td>'+fmtUsd(b.json_repair.cost_usd,4)+' ('+b.json_repair.calls+')</td><td>'+fmtUsd(b.critic.cost_usd,4)+' ('+b.critic.calls+')</td><td>'+fmtUsd(b.producer_revision.cost_usd,4)+' ('+b.producer_revision.calls+')</td><td>'+fmtUsd(s.judge_total_usd,4)+'</td><td>'+fmtUsd(s.critic_overhead_per_deal_usd,4)+'</td></tr>';
+    }).join('')+'</tbody></table>'+
+    '<p class="muted" style="margin-top:.5rem">Judge costs are evaluation overhead and are <strong>not</strong> included in agent $/deal or the interactive projection.</p>';
+
+  // Projection
+  function renderProjection(){
+    const vol=Number(document.getElementById('deal-volume').value);
+    document.getElementById('deal-volume-label').textContent=String(vol);
+    const host=document.getElementById('projection-cards');
+    host.innerHTML='';
+    VERSIONS.forEach(ver=>{
+      const med=byVer[ver].p50_cost_usd, mean=byVer[ver].mean_cost_usd;
+      const medM=med*vol, meanM=mean*vol;
+      const saveMed=(v1.p50_cost_usd-med)*vol, saveMean=(v1.mean_cost_usd-mean)*vol;
+      const card=el('div',{className:'card'},[
+        el('div',{className:'label',text:ver+' projected monthly'}),
+        el('div',{className:'value',text:fmtUsd(medM,2)+' p50'}),
+        el('div',{className:'hint',text:'Mean basis '+fmtUsd(meanM,2)}),
+      ]);
+      if(ver!=='v1') card.appendChild(el('div',{style:'margin-top:.4rem'},[
+        deltaPill((saveMed>=0?'saves ':'extra ')+fmtUsd(Math.abs(saveMed),2)+' vs v1 (p50)', saveMed>=0?'good':'warn')
+      ]));
+      host.appendChild(card);
+    });
+    // v3 vs v2
+    const extra=(v3.p50_cost_usd-v2.p50_cost_usd)*vol;
+    host.appendChild(el('div',{className:'card'},[
+      el('div',{className:'label',text:'v3 premium vs v2 (p50)'}),
+      el('div',{className:'value',text:fmtUsd(extra,2)+'/mo'}),
+      el('div',{className:'hint',text:'Projection only — observed eval costs × volume'})
+    ]));
+  }
+  document.getElementById('deal-volume').addEventListener('input', renderProjection);
+  renderProjection();
+
+  // ===== 5 Latency =====
+  document.getElementById('latency-table').innerHTML =
+    '<table><thead><tr><th>Version</th><th>Mean</th><th>p50</th><th>p90</th><th>Max</th><th>Stdev</th><th>IQR</th></tr></thead><tbody>'+
+    VERSIONS.map(ver=>{
+      const L=A.distributions[ver].latency_s;
+      return '<tr><td style="font-weight:700;color:'+COLORS[ver]+'">'+ver+'</td><td>'+fmtNum(L.mean,1)+'s</td><td>'+fmtNum(L.p50,1)+'s</td><td>'+fmtNum(L.p90,1)+'s</td><td>'+fmtNum(L.max,1)+'s</td><td>'+fmtNum(L.stdev,1)+'s</td><td>'+fmtNum(L.iqr,1)+'s</td></tr>';
+    }).join('')+'</tbody></table>';
+
+  const li=A.latency_investigation;
+  document.getElementById('latency-investigation').innerHTML =
+    '<p><span class="badge obs">Observed</span> '+li.observation+'</p>'+
+    '<p>Slowest v3 case: <code>'+li.max_case.case_id+'</code> — '+li.max_case.latency_s+'s, $'+Number(li.max_case.cost_usd).toFixed(4)+
+    ', revision_applied='+li.max_case.revision_applied+' ('+li.max_case.difficulty+').</p>'+
+    '<p><span class="badge interp">Interpretation</span> '+li.evidence+'</p>'+
+    '<p><span class="badge hyp">Hypothesis / not proven</span> '+li.hypothesis_not_proven+'</p>';
+
+  document.getElementById('step-latency-table').innerHTML =
+    '<table><thead><tr><th>Version</th><th>Producer latency (sum)</th><th>JSON repair</th><th>Critic</th><th>Revision</th><th>Judge (eval)</th><th>Agent API calls</th></tr></thead><tbody>'+
+    VERSIONS.map(ver=>{
+      const b=A.step_rollup[ver].buckets;
+      const calls=b.producer.calls+b.json_repair.calls+b.critic.calls+b.producer_revision.calls;
+      return '<tr><td style="font-weight:700;color:'+COLORS[ver]+'">'+ver+'</td><td>'+fmtNum(b.producer.latency_s,1)+'s ('+b.producer.calls+' calls)</td><td>'+fmtNum(b.json_repair.latency_s,1)+'s ('+b.json_repair.calls+')</td><td>'+fmtNum(b.critic.latency_s,1)+'s ('+b.critic.calls+')</td><td>'+fmtNum(b.producer_revision.latency_s,1)+'s ('+b.producer_revision.calls+')</td><td>'+fmtNum(b.llm_judge.latency_s,1)+'s</td><td>'+calls+'</td></tr>';
+    }).join('')+'</tbody></table>';
+
+  // ===== 6 Failures / heatmap =====
+  (function(){
+    const host=document.getElementById('chart-heatmap');
+    const diffs=['standard','edge_margin','edge_legal','compound_trap'];
+    const labels={standard:'standard (n=10)',edge_margin:'edge_margin (n=5)',edge_legal:'edge_legal (n=2)',compound_trap:'compound_trap (n=3)'};
+    const lookup={};
+    DATA.difficulty_breakdown.forEach(r=>{ lookup[r.experiment_version+'|'+r.difficulty]=r; });
+    const W=720,H=320,m={l:150,r:24,t:40,b:24};
+    const cellW=(W-m.l-m.r)/3, cellH=(H-m.t-m.b)/4;
+    const svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H});
+    legend(svg,[{type:'rect',label:'100% pass',color:PASS.fill},{type:'rect',label:'60–99.9%',color:CAUTION.fill},{type:'rect',label:'<60%',color:FAIL.fill}],m.l,18);
+    VERSIONS.forEach((ver,vi)=>axisLabel(svg,m.l+cellW*vi+cellW/2,m.t-8,ver,{size:13}));
+    diffs.forEach((diff,di)=>{
+      axisLabel(svg,m.l-10,m.t+cellH*di+cellH/2+4,labels[diff],{size:11,anchor:'end'});
+      VERSIONS.forEach((ver,vi)=>{
+        const r=lookup[ver+'|'+diff];
+        const pass=Number(r.deterministic_pass_rate_pct), n=Number(r.cases), k=Math.round(pass/100*n), p50=Number(r.p50_cost_usd);
+        const tone=scoreTone(pass);
+        const x0=m.l+cellW*vi+4, y0=m.t+cellH*di+4, w=cellW-8, h=cellH-8;
+        const g=svgEl('g');
+        g.appendChild(svgEl('rect',{x:x0,y:y0,width:w,height:h,rx:8,fill:tone.fill,stroke:'#e7e5e4'}));
+        g.appendChild(svgEl('text',{x:x0+w/2,y:y0+h/2-4,fill:tone.text,'font-size':13,'font-weight':700,'text-anchor':'middle',text:fmtPct(pass,1)+' ('+k+'/'+n+')'}));
+        g.appendChild(svgEl('text',{x:x0+w/2,y:y0+h/2+14,fill:p50<=0.06?PASS.text:'#57534e','font-size':11,'text-anchor':'middle',text:'p50: '+fmtUsd(p50,3)}));
+        bindTip(g,()=>'<div class="tt-title">'+ver+' · '+diff+'</div>'+fmtPct(pass,2)+' ('+k+'/'+n+')<br/>p50 '+fmtUsd(p50,4));
+        svg.appendChild(g);
+      });
+    });
+    host.appendChild(svg);
+  })();
+
+  document.getElementById('failure-taxonomy').innerHTML =
+    A.failure_taxonomy.map(t=>{
+      const counts=VERSIONS.map(v=>v+': '+t.counts_by_version[v]+(t.cases_by_version[v].length? ' ('+t.cases_by_version[v].join(', ')+')':'')).join(' · ');
+      return '<div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--line)">'+
+        '<h3 style="margin:0 0 .35rem">'+t.label+'</h3>'+
+        '<p>'+t.description+'</p>'+
+        '<p class="mono" style="font-size:.8rem">'+counts+'</p>'+
+        '<p class="muted">Resolved in: '+(t.resolved_in||'unresolved / none observed')+'. '+t.notes+'</p>'+
+        '<p class="muted"><em>'+t.evidence+'</em></p></div>';
+    }).join('');
+
+  document.getElementById('unavailable-failures').innerHTML =
+    '<strong>Not measurable with current outputs:</strong> '+
+    A.unavailable_failure_categories.map(u=>'<code>'+u.label+'</code> ('+u.reason+')').join(' · ');
+
+  function renderScenarioCompare(){
+    const mode=document.getElementById('sc-filter').value;
+    let rows=A.scenario_compare.slice();
+    if(mode==='improved') rows=rows.filter(r=>r.v1_to_v2 && r.v1_to_v2.pass_change>0);
+    if(mode==='f1reg') rows=rows.filter(r=>r.v2_to_v3 && (r.v2_to_v3.f1_change<0 || r.v2_to_v3.precision_change<0));
+    if(mode==='costup') rows=rows.filter(r=>r.v2_to_v3 && r.v2_to_v3.cost_change_usd>0.02);
+    let html='<table><thead><tr><th>Case</th><th>Diff</th><th>v1</th><th>v2</th><th>v3</th><th>v1→v2</th><th>v2→v3</th></tr></thead><tbody>';
+    rows.forEach(r=>{
+      const cell=ver=>{
+        const c=r[ver]; if(!c) return '—';
+        return c.status+' · F1 '+fmtNum(c.flag_f1,2)+'<br/><span class="mono">'+fmtUsd(c.total_cost_usd,3)+' · '+fmtNum(c.total_latency_ms/1000,1)+'s'+(c.revision_applied?' · REV':'')+'</span>';
+      };
+      const d12=r.v1_to_v2?('pass '+r.v1_to_v2.pass_change+' · F1 '+r.v1_to_v2.f1_change+' · cost '+fmtUsd(r.v1_to_v2.cost_change_usd,3)):'—';
+      const d23=r.v2_to_v3?('pass '+r.v2_to_v3.pass_change+' · F1 '+r.v2_to_v3.f1_change+' · P '+r.v2_to_v3.precision_change+' · cost '+fmtUsd(r.v2_to_v3.cost_change_usd,3)):'—';
+      html+='<tr><td class="mono">'+r.case_id+'</td><td>'+r.difficulty+'</td><td>'+cell('v1')+'</td><td>'+cell('v2')+'</td><td>'+cell('v3')+'</td><td>'+d12+'</td><td>'+d23+'</td></tr>';
+    });
+    html+='</tbody></table>';
+    document.getElementById('scenario-compare').innerHTML=html;
+  }
+  document.getElementById('sc-filter').addEventListener('change', renderScenarioCompare);
+  renderScenarioCompare();
+
+  // ===== 7 Confidence =====
+  document.getElementById('stats-overview').innerHTML =
+    '<p>Each version evaluated the <strong>same 20 golden scenarios</strong> (paired design). Prefer paired tests over independent two-sample tests.</p>'+
+    '<ul class="list-tight">'+
+    VERSIONS.map(ver=>{
+      const w=A.wilson_ci[ver], d=A.distributions[ver];
+      return '<li><strong>'+ver+'</strong>: '+w.k+'/'+w.n+' pass ('+w.rate+'%); Wilson 95% CI <strong>'+w.lo+'–'+w.hi+'%</strong>; cost stdev '+fmtUsd(d.cost_usd.stdev,4)+'; latency stdev '+fmtNum(d.latency_s.stdev,1)+'s</li>';
+    }).join('')+'</ul>';
+
+  document.getElementById('wilson-card').innerHTML =
+    '<h3>95% Wilson CIs (pass rate)</h3>'+
+    '<p class="muted">Accounts for small n; intervals are wide — especially overlapping for v1 vs v2/v3 at the upper end.</p>'+
+    '<table><thead><tr><th>Version</th><th>k/n</th><th>Rate</th><th>95% CI</th></tr></thead><tbody>'+
+    VERSIONS.map(ver=>{ const w=A.wilson_ci[ver]; return '<tr><td>'+ver+'</td><td>'+w.k+'/'+w.n+'</td><td>'+w.rate+'%</td><td>'+w.lo+'% – '+w.hi+'%</td></tr>'; }).join('')+
+    '</tbody></table>';
+
+  const m12=A.mcnemar.v1_v2, m23=A.mcnemar.v2_v3;
+  document.getElementById('mcnemar-card').innerHTML =
+    '<h3>McNemar paired pass tests</h3>'+
+    '<p><strong>v1 → v2:</strong> discordant b='+m12.b+' (improved: '+m12.improved_cases.join(', ')+'), c='+m12.c+
+    '; exact two-sided p='+m12.exact_p_two_sided+
+    (m12.significant_at_0_05?' (significant at α=0.05)':' <strong>(not significant at α=0.05)</strong>')+
+    '.</p><p class="muted">'+m12.note+' Practical improvement is clear on the 3 rescued cases; statistical significance is not established at conventional α with n_discordant=3.</p>'+
+    '<p><strong>v2 → v3:</strong> '+m23.note+' (unchanged_count='+m23.unchanged_count+').</p>';
+
+  const pc=A.paired_continuous;
+  document.getElementById('paired-continuous-card').innerHTML =
+    '<h3>Paired continuous deltas (bootstrap 95% CI of mean difference)</h3>'+
+    '<table><thead><tr><th>Contrast</th><th>Mean Δ</th><th>Median Δ</th><th>Boot 95% CI</th></tr></thead><tbody>'+
+    '<tr><td>Cost v2−v1 (USD)</td><td>'+pc.cost_v1_v2.mean_delta+'</td><td>'+pc.cost_v1_v2.median_delta+'</td><td>['+pc.cost_v1_v2.boot_ci95_mean_lo+', '+pc.cost_v1_v2.boot_ci95_mean_hi+']</td></tr>'+
+    '<tr><td>Cost v3−v2 (USD)</td><td>'+pc.cost_v2_v3.mean_delta+'</td><td>'+pc.cost_v2_v3.median_delta+'</td><td>['+pc.cost_v2_v3.boot_ci95_mean_lo+', '+pc.cost_v2_v3.boot_ci95_mean_hi+']</td></tr>'+
+    '<tr><td>Latency v2−v1 (s)</td><td>'+pc.latency_v1_v2.mean_delta+'</td><td>'+pc.latency_v1_v2.median_delta+'</td><td>['+pc.latency_v1_v2.boot_ci95_mean_lo+', '+pc.latency_v1_v2.boot_ci95_mean_hi+']</td></tr>'+
+    '<tr><td>Latency v3−v2 (s)</td><td>'+pc.latency_v2_v3.mean_delta+'</td><td>'+pc.latency_v2_v3.median_delta+'</td><td>['+pc.latency_v2_v3.boot_ci95_mean_lo+', '+pc.latency_v2_v3.boot_ci95_mean_hi+']</td></tr>'+
+    '</tbody></table><p class="muted">'+pc.cost_v1_v2.interpretation+' Cost v2−v1 CI is entirely negative (consistent savings). Cost v3−v2 CI is entirely positive (consistent overhead).</p>';
+
+  document.getElementById('data-gaps').innerHTML =
+    '<strong>Evidence gaps:</strong><ul>'+A.data_gaps.map(g=>'<li>'+g+'</li>').join('')+'</ul>';
+
+  // ===== 9 Next experiments =====
+  const experiments = [
+    {pri:'P0', hyp:'A larger compound-trap / legal set will show whether the critic net-improves precision and escalation quality without the GE-016 regression.', why:'Current v3 “high-stakes” claim is unsupported (n=1 revision).', benefit:'Decide keep/cut critic with evidence.', success:'Pre-registered McNemar/precision deltas on ≥30 compound/legal cases; no precision regression on revised set.', metrics:'DPR, flag P/R/F1, revision rate, critic $/deal, paired latency'},
+    {pri:'P0', hyp:'Repeated runs (k≥3) per case×version will quantify output consistency for flags and memo fields.', why:'Single-run design cannot support production consistency claims.', benefit:'Confidence intervals on stability; catch non-determinism.', success:'Within-case agreement rates for flags/tier; variance bands on cost/latency.', metrics:'Flag set Jaccard across runs; tier agreement; cost CV'},
+    {pri:'P1', hyp:'Human evaluation of memos will reveal quality gaps invisible to near-ceiling Opus scores.', why:'Judge ceiling effect limits discrimination.', benefit:'Calibrate automation vs human risk.', success:'Inter-rater reliability ≥ target; identify failure modes for taxonomy.', metrics:'Human rubric scores; disagreement with Opus'},
+    {pri:'P1', hyp:'Tightening critic trigger conditions will cut overhead while preserving any true catches.', why:'19/20 critic passes with revision skipped; still pay critic cost every deal.', benefit:'Lower v3 unit cost if critic retained.', success:'≥30% critic cost cut with no DPR drop on expanded set.', metrics:'Critic $/deal, revision precision/recall of defects'},
+    {pri:'P2', hyp:'Further reducing JSON-repair frequency (v2: 4 calls, v3: 6) will improve p90 latency.', why:'Repair steps remain a measurable latency/cost tail.', benefit:'Snappier p90 without quality loss.', success:'Repair calls ≤2/20; p90 latency ≤ v2 baseline.', metrics:'Repair calls, p90 latency, cost'},
+    {pri:'P2', hyp:'Expanding standard+edge_margin diversity will test whether 100% DPR generalises.', why:'Golden set is only 20 cases.', benefit:'Broader deployment confidence.', success:'DPR ≥98% on held-out ≥40 cases.', metrics:'DPR with Wilson CI; difficulty-stratified k/n'}
+  ];
+  document.getElementById('next-experiments').innerHTML =
+    '<table><thead><tr><th>Priority</th><th>Hypothesis</th><th>Why test</th><th>Expected benefit</th><th>Success criteria</th><th>Metrics</th></tr></thead><tbody>'+
+    experiments.map(e=>'<tr><td><span class="badge hyp">'+e.pri+'</span></td><td>'+e.hyp+'</td><td>'+e.why+'</td><td>'+e.benefit+'</td><td>'+e.success+'</td><td class="mono">'+e.metrics+'</td></tr>').join('')+
+    '</tbody></table>';
+
+  // ===== 10 Explorer (preserved) =====
+  const tbody=document.getElementById('case-tbody');
+  const drawer=document.getElementById('case-drawer');
+  function renderCases(){
+    const ver=document.getElementById('f-version').value;
+    const diff=document.getElementById('f-diff').value;
+    const status=document.getElementById('f-status').value;
+    const q=(document.getElementById('f-search').value||'').toLowerCase();
+    tbody.innerHTML='';
+    DATA.cases.filter(c=>{
+      if(ver!=='All'&&c.experiment_version!==ver) return false;
+      if(diff!=='All'&&c.difficulty!==diff) return false;
+      if(status!=='All'&&c.status!==status) return false;
+      if(q&&!(c.case_id.toLowerCase().includes(q)||(c.account_name||'').toLowerCase().includes(q))) return false;
+      return true;
+    }).forEach(c=>{
+      const tr=el('tr',{className:'clickable'},[
+        el('td',{text:c.experiment_version}),
+        el('td',{className:'mono',text:c.case_id}),
+        el('td',{text:c.account_name||'—'}),
+        el('td',{text:c.difficulty}),
+        el('td',{},[el('span',{className:'badge '+(c.status==='Partially Passed'?'partial':c.status),text:c.status})]),
+        el('td',{text:c.actual_approval_tier||'—'}),
+        el('td',{text:String(c.actual_gross_margin_pct)}),
+        el('td',{text:Number(c.flag_f1).toFixed(3)}),
+        el('td',{text:String(c.judge_overall_score)}),
+        el('td',{text:'$'+Number(c.total_cost_usd).toFixed(4)}),
+        el('td',{text:c.revision_applied?'Yes':'No'})
+      ]);
+      tr.addEventListener('click',()=>showCase(c));
+      tbody.appendChild(tr);
+    });
+  }
+  function showCase(c){
+    drawer.className='drawer open'; drawer.innerHTML='';
+    drawer.appendChild(el('h3',{text:c.experiment_version+' / '+c.case_id+' — '+c.account_name}));
+    drawer.appendChild(el('p',{},[
+      el('span',{className:'badge '+(c.status==='Partially Passed'?'partial':c.status),text:c.status}),
+      document.createTextNode(' · '+c.difficulty+' · '+c.run_id)
+    ]));
+    const grid=el('div',{className:'grid two'});
+    const left=el('div',{});
+    left.appendChild(el('h3',{text:'Expected vs Actual'}));
+    left.appendChild(el('table',{},[el('tbody',{},[
+      el('tr',{},[el('th',{text:'Field'}),el('th',{text:'Expected'}),el('th',{text:'Actual'})]),
+      el('tr',{},[el('td',{text:'Approval tier'}),el('td',{text:String(c.expected_approval_tier)}),el('td',{text:String(c.actual_approval_tier)})]),
+      el('tr',{},[el('td',{text:'Gross margin %'}),el('td',{text:String(c.expected_gross_margin_pct)}),el('td',{text:String(c.actual_gross_margin_pct)})]),
+      el('tr',{},[el('td',{text:'Risk flags'}),el('td',{className:'mono',text:JSON.stringify(c.expected_risk_flags)}),el('td',{className:'mono',text:JSON.stringify(c.actual_risk_flags)})]),
+    ])]));
+    left.appendChild(el('h3',{text:'Opus Judge'}));
+    left.appendChild(el('p',{text:'Overall '+c.judge_overall_score+' · C '+c.judge_commercial_accuracy+' / P '+c.judge_policy_grounding+' / E '+c.judge_executive_clarity+' / A '+c.judge_actionability}));
+    left.appendChild(el('p',{className:'muted',text:c.judge_rationale||''}));
+    left.appendChild(el('h3',{text:'Tokens & Cost'}));
+    left.appendChild(el('pre',{className:'json',text:JSON.stringify({agent:c.agent_token_totals,judge:c.judge_token_totals,cache_hit_rate_pct:c.cache_hit_rate_pct,total_latency_ms:c.total_latency_ms},null,2)}));
+    const right=el('div',{});
+    right.appendChild(el('h3',{text:'Deal payload'}));
+    right.appendChild(el('pre',{className:'json',text:JSON.stringify(c.deal_payload,null,2)}));
+    right.appendChild(el('h3',{text:'Executive memo'}));
+    right.appendChild(el('pre',{className:'json',text:JSON.stringify(c.memo,null,2)}));
+    grid.appendChild(left); grid.appendChild(right); drawer.appendChild(grid);
+    drawer.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  ['f-version','f-diff','f-status','f-search'].forEach(id=>document.getElementById(id).addEventListener('input',renderCases));
+  renderCases();
+
+  document.getElementById('trace-box').innerHTML =
+    '<p><strong>Git:</strong> <code>'+meta.git.commit_sha+'</code> on <code>'+meta.git.branch+'</code> ('+(meta.git.commit_timestamp||'n/a')+')</p>'+
+    '<p><strong>Reproduction:</strong> <code>python -m src.build_report</code></p>'+
+    '<p><strong>Sources:</strong></p><ul>'+Object.entries(meta.sources).map(([k,v])=>'<li>'+k+': <code>'+v+'</code></li>').join('')+'</ul>'+
+    '<p>Copied under <code>results/data/</code>: benchmark_summary.json/csv, difficulty_breakdown.csv, case_level_evals.csv, unit_test_results.json, traceability_manifest.json, dashboard_dataset.json (includes <code>analytics</code>).</p>'+
+    '<p class="muted">All charts/tables derive from the embedded dataset. No network fetches.</p>';
+})();
+</script>
+</body>
+</html>

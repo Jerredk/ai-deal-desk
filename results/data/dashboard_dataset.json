@@ -1,12 +1,12 @@
 {
   "meta": {
     "repo": "enterprise-deal-desk",
-    "generated_at": "2026-11-21T00:48:13.052080+00:00",
+    "generated_at": "2026-11-21T01:17:16.277246+00:00",
     "git": {
-      "commit_sha": "642634d",
-      "commit_full": "642634d327f929c33ff785bbd14cd657af488e60",
+      "commit_sha": "b468246",
+      "commit_full": "b4682461c8d2a1dee170973990ddd9b54c7d36d9",
       "branch": "main",
-      "commit_timestamp": "2026-11-21T11:27:14+11:00"
+      "commit_timestamp": "2026-11-21T11:50:27+11:00"
     },
     "models": {
       "agent": "claude-sonnet-4-6",
@@ -31,16 +31,26 @@
       "failed": 0,
       "skipped": 0,
       "errors": 0,
-      "duration_s": 1.4
+      "duration_s": 1.89
     },
+    "benchmark_runs_completed": "60/60",
     "benchmark_runs": "60/60",
+    "deterministic_full_pass": 57,
+    "partial_pass": 3,
     "v1_to_v2_pass_rate": "85.0% \u2192 100.0%",
     "v1_to_v2_flag_f1": "0.7567 \u2192 1.0000",
     "v1_to_v2_p50_cost_reduction_pct": 50.0,
+    "v1_to_v2_mean_cost_reduction_pct": 37.3,
     "v1_p50_cost_usd": 0.10287,
     "v2_p50_cost_usd": 0.051395,
+    "v2_mean_cost_usd": 0.060637,
+    "v2_p50_latency_s": 47.009,
+    "v2_p90_latency_s": 76.776,
     "v2_cache_hit_rate_pct": 57.012,
-    "v1_to_v2_mean_cost_reduction_pct": 37.3
+    "v2_flag_precision": 1.0,
+    "v2_flag_recall": 1.0,
+    "v2_flag_f1": 1.0,
+    "sample_size_per_version": 20
   },
   "status_breakdown": {
     "unit_tests": {
@@ -54,6 +64,13 @@
       "Partially Passed": 3,
       "Failed": 0,
       "Skipped": 0
+    },
+    "execution_vs_success": {
+      "benchmark_runs_completed": 60,
+      "deterministic_full_pass": 57,
+      "partial_pass": 3,
+      "failed": 0,
+      "note": "60/60 means every case\u00d7version produced a scored eval_results row (execution complete). Only rows with deterministic_pass=1 are full evaluation passes. v1 contributes 3 Partially Passed rows (tier+margin exact, flag recall incomplete)."
     },
     "v3_producer_revision_skipped": 19,
     "partial_pass_cases": [
@@ -349,6 +366,1672 @@
       "critic_api_calls": 21,
       "producer_revision_api_calls": 1,
       "producer_revision_skipped": 19
+    }
+  },
+  "analytics": {
+    "distributions": {
+      "v1": {
+        "cost_usd": {
+          "n": 20,
+          "mean": 0.096726,
+          "median": 0.10287,
+          "p10": 0.05777,
+          "p50": 0.10287,
+          "p90": 0.120238,
+          "max": 0.159702,
+          "min": 0.049842,
+          "stdev": 0.027685,
+          "iqr": 0.028767
+        },
+        "latency_s": {
+          "n": 20,
+          "mean": 67.786581,
+          "median": 73.065298,
+          "p10": 42.23691,
+          "p50": 73.065298,
+          "p90": 86.016996,
+          "max": 95.165118,
+          "min": 36.505815,
+          "stdev": 17.66012,
+          "iqr": 26.257878
+        },
+        "pass_count": 17,
+        "n": 20
+      },
+      "v2": {
+        "cost_usd": {
+          "n": 20,
+          "mean": 0.060637,
+          "median": 0.051395,
+          "p10": 0.043481,
+          "p50": 0.051395,
+          "p90": 0.100891,
+          "max": 0.106167,
+          "min": 0.03681,
+          "stdev": 0.022218,
+          "iqr": 0.009533
+        },
+        "latency_s": {
+          "n": 20,
+          "mean": 48.829715,
+          "median": 47.008889,
+          "p10": 28.385773,
+          "p50": 47.008889,
+          "p90": 76.775576,
+          "max": 79.516084,
+          "min": 26.925012,
+          "stdev": 17.064634,
+          "iqr": 22.305042
+        },
+        "pass_count": 20,
+        "n": 20
+      },
+      "v3": {
+        "cost_usd": {
+          "n": 20,
+          "mean": 0.08129,
+          "median": 0.063999,
+          "p10": 0.051226,
+          "p50": 0.063999,
+          "p90": 0.117943,
+          "max": 0.198501,
+          "min": 0.048015,
+          "stdev": 0.037669,
+          "iqr": 0.056027
+        },
+        "latency_s": {
+          "n": 20,
+          "mean": 60.200418,
+          "median": 51.396389,
+          "p10": 32.817742,
+          "p50": 51.396389,
+          "p90": 88.303235,
+          "max": 163.458629,
+          "min": 26.880319,
+          "stdev": 31.347583,
+          "iqr": 34.934327
+        },
+        "pass_count": 20,
+        "n": 20
+      }
+    },
+    "wilson_ci": {
+      "v1": {
+        "k": 17,
+        "n": 20,
+        "rate": 85.0,
+        "lo": 63.96,
+        "hi": 94.76
+      },
+      "v2": {
+        "k": 20,
+        "n": 20,
+        "rate": 100.0,
+        "lo": 83.89,
+        "hi": 100.0
+      },
+      "v3": {
+        "k": 20,
+        "n": 20,
+        "rate": 100.0,
+        "lo": 83.89,
+        "hi": 100.0
+      }
+    },
+    "mcnemar": {
+      "v1_v2": {
+        "b": 3,
+        "c": 0,
+        "n_discordant": 3,
+        "exact_p_two_sided": 0.25,
+        "significant_at_0_05": false,
+        "note": "Exact McNemar (binomial) on discordant pairs only. Small discordant counts limit power; non-significance does not imply practical equivalence.",
+        "baseline": "v1",
+        "challenger": "v2",
+        "improved_cases": [
+          "GE-009",
+          "GE-018",
+          "GE-019"
+        ],
+        "regressed_cases": [],
+        "unchanged_count": 17
+      },
+      "v2_v3": {
+        "b": 0,
+        "c": 0,
+        "n_discordant": 0,
+        "exact_p_two_sided": 1.0,
+        "significant_at_0_05": false,
+        "note": "No discordant pairs \u2014 versions identical on this binary outcome.",
+        "baseline": "v2",
+        "challenger": "v3",
+        "improved_cases": [],
+        "regressed_cases": [],
+        "unchanged_count": 20
+      }
+    },
+    "paired_continuous": {
+      "cost_v1_v2": {
+        "n_pairs": 20,
+        "mean_delta": -0.036089,
+        "median_delta": -0.044355,
+        "boot_ci95_mean_lo": -0.047293,
+        "boot_ci95_mean_hi": -0.025506,
+        "interpretation": "Bootstrap 95% CI for mean paired delta (challenger \u2212 baseline). CI excluding 0 suggests a consistent directional shift under resampling."
+      },
+      "cost_v2_v3": {
+        "n_pairs": 20,
+        "mean_delta": 0.020653,
+        "median_delta": 0.012228,
+        "boot_ci95_mean_lo": 0.007748,
+        "boot_ci95_mean_hi": 0.037477,
+        "interpretation": "Bootstrap 95% CI for mean paired delta (challenger \u2212 baseline). CI excluding 0 suggests a consistent directional shift under resampling."
+      },
+      "latency_v1_v2": {
+        "n_pairs": 20,
+        "mean_delta": -18.956866,
+        "median_delta": -17.157491,
+        "boot_ci95_mean_lo": -24.899559,
+        "boot_ci95_mean_hi": -13.35296,
+        "interpretation": "Bootstrap 95% CI for mean paired delta (challenger \u2212 baseline). CI excluding 0 suggests a consistent directional shift under resampling."
+      },
+      "latency_v2_v3": {
+        "n_pairs": 20,
+        "mean_delta": 11.370703,
+        "median_delta": 3.911294,
+        "boot_ci95_mean_lo": 1.980669,
+        "boot_ci95_mean_hi": 24.114552,
+        "interpretation": "Bootstrap 95% CI for mean paired delta (challenger \u2212 baseline). CI excluding 0 suggests a consistent directional shift under resampling."
+      }
+    },
+    "step_rollup": {
+      "v1": {
+        "buckets": {
+          "producer": {
+            "cost_usd": 1.295352,
+            "latency_s": 963.257,
+            "calls": 62,
+            "cost_per_deal_usd": 0.064768
+          },
+          "json_repair": {
+            "cost_usd": 0.639162,
+            "latency_s": 392.474,
+            "calls": 15,
+            "cost_per_deal_usd": 0.031958
+          },
+          "critic": {
+            "cost_usd": 0.0,
+            "latency_s": 0.0,
+            "calls": 0,
+            "cost_per_deal_usd": 0.0
+          },
+          "producer_revision": {
+            "cost_usd": 0.0,
+            "latency_s": 0.0,
+            "calls": 0,
+            "cost_per_deal_usd": 0.0
+          },
+          "llm_judge": {
+            "cost_usd": 0.276525,
+            "latency_s": 115.385,
+            "calls": 20,
+            "cost_per_deal_usd": 0.013826
+          },
+          "other_agent": {
+            "cost_usd": 0.0,
+            "latency_s": 0.0,
+            "calls": 0,
+            "cost_per_deal_usd": 0.0
+          }
+        },
+        "agent_total_usd": 1.934514,
+        "agent_mean_per_deal_usd": 0.096726,
+        "judge_total_usd": 0.276525,
+        "judge_mean_per_deal_usd": 0.013826,
+        "critic_overhead_total_usd": 0.0,
+        "critic_overhead_per_deal_usd": 0.0,
+        "json_repair_calls": 15,
+        "json_repair_cases_estimate": 15,
+        "n_deals": 20
+      },
+      "v2": {
+        "buckets": {
+          "producer": {
+            "cost_usd": 1.036535,
+            "latency_s": 885.503,
+            "calls": 58,
+            "cost_per_deal_usd": 0.051827
+          },
+          "json_repair": {
+            "cost_usd": 0.176199,
+            "latency_s": 91.091,
+            "calls": 4,
+            "cost_per_deal_usd": 0.00881
+          },
+          "critic": {
+            "cost_usd": 0.0,
+            "latency_s": 0.0,
+            "calls": 0,
+            "cost_per_deal_usd": 0.0
+          },
+          "producer_revision": {
+            "cost_usd": 0.0,
+            "latency_s": 0.0,
+            "calls": 0,
+            "cost_per_deal_usd": 0.0
+          },
+          "llm_judge": {
+            "cost_usd": 0.27599,
+            "latency_s": 114.046,
+            "calls": 20,
+            "cost_per_deal_usd": 0.0138
+          },
+          "other_agent": {
+            "cost_usd": 0.0,
+            "latency_s": 0.0,
+            "calls": 0,
+            "cost_per_deal_usd": 0.0
+          }
+        },
+        "agent_total_usd": 1.212734,
+        "agent_mean_per_deal_usd": 0.060637,
+        "judge_total_usd": 0.27599,
+        "judge_mean_per_deal_usd": 0.0138,
+        "critic_overhead_total_usd": 0.0,
+        "critic_overhead_per_deal_usd": 0.0,
+        "json_repair_calls": 4,
+        "json_repair_cases_estimate": 4,
+        "n_deals": 20
+      },
+      "v3": {
+        "buckets": {
+          "producer": {
+            "cost_usd": 1.062087,
+            "latency_s": 977.278,
+            "calls": 59,
+            "cost_per_deal_usd": 0.053104
+          },
+          "json_repair": {
+            "cost_usd": 0.275985,
+            "latency_s": 173.295,
+            "calls": 6,
+            "cost_per_deal_usd": 0.013799
+          },
+          "critic": {
+            "cost_usd": 0.268311,
+            "latency_s": 49.725,
+            "calls": 20,
+            "cost_per_deal_usd": 0.013416
+          },
+          "producer_revision": {
+            "cost_usd": 0.019419,
+            "latency_s": 3.711,
+            "calls": 1,
+            "cost_per_deal_usd": 0.000971
+          },
+          "llm_judge": {
+            "cost_usd": 0.289195,
+            "latency_s": 112.381,
+            "calls": 20,
+            "cost_per_deal_usd": 0.01446
+          },
+          "other_agent": {
+            "cost_usd": 0.0,
+            "latency_s": 0.0,
+            "calls": 0,
+            "cost_per_deal_usd": 0.0
+          }
+        },
+        "agent_total_usd": 1.625802,
+        "agent_mean_per_deal_usd": 0.08129,
+        "judge_total_usd": 0.289195,
+        "judge_mean_per_deal_usd": 0.01446,
+        "critic_overhead_total_usd": 0.28773,
+        "critic_overhead_per_deal_usd": 0.014387,
+        "json_repair_calls": 6,
+        "json_repair_cases_estimate": 6,
+        "n_deals": 20
+      }
+    },
+    "failure_taxonomy": [
+      {
+        "id": "non_canonical_flag_labels",
+        "label": "Non-canonical / prose risk-flag labels",
+        "description": "Agent included the right legal concept but emitted verbose prose instead of the exact canonical code, so deterministic flag matching scored recall = 0 (tier and margin were already exact).",
+        "cases_by_version": {
+          "v1": [
+            "GE-018",
+            "GE-019"
+          ],
+          "v2": [],
+          "v3": []
+        },
+        "counts_by_version": {
+          "v1": 2,
+          "v2": 0,
+          "v3": 0
+        },
+        "resolved_in": "v2",
+        "notes": "Both cases became deterministic passes with flag F1 = 1.0 under v2 and v3.",
+        "evidence": "Observed from golden expected flags vs memo detected_risk_flags and deterministic graders."
+      },
+      {
+        "id": "spurious_flags_on_clean_expected",
+        "label": "Spurious flags when golden expected set is empty",
+        "description": "Golden expected_risk_flags was empty, but the memo emitted annotated discount/payment flags; graders recorded precision = recall = 0 and Partially Passed.",
+        "cases_by_version": {
+          "v1": [
+            "GE-009"
+          ],
+          "v2": [],
+          "v3": []
+        },
+        "counts_by_version": {
+          "v1": 1,
+          "v2": 0,
+          "v3": 0
+        },
+        "resolved_in": "v2",
+        "notes": "v2/v3 emit no spurious flags on GE-009 (pass with F1 = 1.0).",
+        "evidence": "Observed from golden expected flags vs memo detected_risk_flags and deterministic graders."
+      },
+      {
+        "id": "false_positive_extra_flags",
+        "label": "False-positive extra risk flags (still deterministic pass)",
+        "description": "Recall of required flags was complete, but additional non-expected flags reduced precision. Deterministic pass still holds because the harness requires full recall, not perfect precision.",
+        "cases_by_version": {
+          "v1": [
+            "GE-011",
+            "GE-012",
+            "GE-013",
+            "GE-014",
+            "GE-015",
+            "GE-016"
+          ],
+          "v2": [],
+          "v3": [
+            "GE-016"
+          ]
+        },
+        "counts_by_version": {
+          "v1": 6,
+          "v2": 0,
+          "v3": 1
+        },
+        "resolved_in": "mostly_v2",
+        "notes": "v2 eliminated these false positives on the paired cases. v3 re-introduced a false-positive NON_STANDARD_AUDIT on GE-016 after critic revision (precision 0.5) while remaining a deterministic pass.",
+        "evidence": "Observed from golden expected flags vs memo detected_risk_flags and deterministic graders."
+      },
+      {
+        "id": "incorrect_approval_tier",
+        "label": "Incorrect approval tier",
+        "description": "Predicted required_approval_tier did not exact-match the golden label.",
+        "cases_by_version": {
+          "v1": [],
+          "v2": [],
+          "v3": []
+        },
+        "counts_by_version": {
+          "v1": 0,
+          "v2": 0,
+          "v3": 0
+        },
+        "resolved_in": null,
+        "notes": "0 / 60 runs. Tier accuracy = 100% in every version.",
+        "evidence": "Observed from golden expected flags vs memo detected_risk_flags and deterministic graders."
+      },
+      {
+        "id": "margin_calculation_error",
+        "label": "Margin calculation error",
+        "description": "Predicted gross margin outside the deterministic tolerance versus golden.",
+        "cases_by_version": {
+          "v1": [],
+          "v2": [],
+          "v3": []
+        },
+        "counts_by_version": {
+          "v1": 0,
+          "v2": 0,
+          "v3": 0
+        },
+        "resolved_in": null,
+        "notes": "0 / 60 runs. Margin accuracy = 100% in every version.",
+        "evidence": "Observed from golden expected flags vs memo detected_risk_flags and deterministic graders."
+      },
+      {
+        "id": "critic_precision_regression",
+        "label": "Critic revision associated with precision regression",
+        "description": "On the only revised v3 case (GE-016), revision_applied=1 and flag precision fell from 1.0 (v2) to 0.5 (extra NON_STANDARD_AUDIT). Deterministic pass still held via full recall.",
+        "cases_by_version": {
+          "v1": [],
+          "v2": [],
+          "v3": [
+            "GE-016"
+          ]
+        },
+        "counts_by_version": {
+          "v1": 0,
+          "v2": 0,
+          "v3": 1
+        },
+        "resolved_in": null,
+        "notes": "This is an observed association on n=1 revised case \u2014 not evidence that the critic improves high-stakes compound deals. Hypothesis for further testing.",
+        "evidence": "Observed from golden expected flags vs memo detected_risk_flags and deterministic graders."
+      }
+    ],
+    "unavailable_failure_categories": [
+      {
+        "id": "missing_escalation_recommendations",
+        "label": "Missing escalation recommendations",
+        "reason": "No dedicated deterministic grader for escalation completeness in the current harness."
+      },
+      {
+        "id": "unsupported_commercial_recommendations",
+        "label": "Unsupported commercial recommendations",
+        "reason": "Judge rationale is free text; no structured extraction of unsupported claims was stored."
+      },
+      {
+        "id": "incomplete_executive_memos",
+        "label": "Incomplete executive memos",
+        "reason": "Schema presence is enforced; qualitative completeness is only reflected indirectly in Opus scores near ceiling."
+      }
+    ],
+    "scenario_compare": [
+      {
+        "case_id": "GE-001",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.09615,
+          "total_latency_ms": 55799.653,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.049468,
+          "total_latency_ms": 26925.012,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.048015,
+          "total_latency_ms": 26880.319,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.046682,
+          "latency_change_s": -28.875
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.001453,
+          "latency_change_s": -0.045,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-002",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.062259,
+          "total_latency_ms": 44167.97,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.054436,
+          "total_latency_ms": 33757.912,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 4.75,
+          "total_cost_usd": 0.053952,
+          "total_latency_ms": 33248.285,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.007823,
+          "latency_change_s": -10.41
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.000484,
+          "latency_change_s": -0.51,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-003",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.05805,
+          "total_latency_ms": 42391.052,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.053167,
+          "total_latency_ms": 34380.506,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.051525,
+          "total_latency_ms": 36114.732,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.004883,
+          "latency_change_s": -8.011
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.001642,
+          "latency_change_s": 1.734,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-004",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.055254,
+          "total_latency_ms": 40849.633,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.050407,
+          "total_latency_ms": 28534.305,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.059001,
+          "total_latency_ms": 38804.347,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.004847,
+          "latency_change_s": -12.315
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.008594,
+          "latency_change_s": 10.27,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-005",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.049842,
+          "total_latency_ms": 36505.815,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.042721,
+          "total_latency_ms": 27048.985,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.048537,
+          "total_latency_ms": 28942.854,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.007121,
+          "latency_change_s": -9.457
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.005816,
+          "latency_change_s": 1.894,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-006",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 4.75,
+          "total_cost_usd": 0.062667,
+          "total_latency_ms": 44242.144,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 4.75,
+          "total_cost_usd": 0.043566,
+          "total_latency_ms": 35708.967,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.061197,
+          "total_latency_ms": 47820.46,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.019101,
+          "latency_change_s": -8.533
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.017631,
+          "latency_change_s": 12.111,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-007",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.118932,
+          "total_latency_ms": 72920.723,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.047427,
+          "total_latency_ms": 46124.604,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.059655,
+          "total_latency_ms": 53239.06,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.071505,
+          "latency_change_s": -26.796
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.012228,
+          "latency_change_s": 7.114,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-008",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.103668,
+          "total_latency_ms": 73209.873,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 4.75,
+          "total_cost_usd": 0.03681,
+          "total_latency_ms": 33579.321,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.113916,
+          "total_latency_ms": 76405.254,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.066858,
+          "latency_change_s": -39.631
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.077106,
+          "latency_change_s": 42.826,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-009",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Partially Passed",
+          "deterministic_pass": 0,
+          "flag_precision": 0.0,
+          "flag_recall": 0.0,
+          "flag_f1": 0.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.096228,
+          "total_latency_ms": 64600.766,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.051873,
+          "total_latency_ms": 47443.275,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.063387,
+          "total_latency_ms": 43440.235,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 1,
+          "f1_change": 1.0,
+          "cost_change_usd": -0.044355,
+          "latency_change_s": -17.157
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.011514,
+          "latency_change_s": -4.003,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-010",
+        "difficulty": "standard",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.101577,
+          "total_latency_ms": 79191.09,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.050916,
+          "total_latency_ms": 46574.504,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.064611,
+          "total_latency_ms": 49553.718,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.050661,
+          "latency_change_s": -32.617
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.013695,
+          "latency_change_s": 2.979,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-011",
+        "difficulty": "edge_margin",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 0.5,
+          "flag_recall": 1.0,
+          "flag_f1": 0.6667,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.109605,
+          "total_latency_ms": 85640.926,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.058872,
+          "total_latency_ms": 55805.19,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.070587,
+          "total_latency_ms": 55010.793,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.3333,
+          "cost_change_usd": -0.050733,
+          "latency_change_s": -29.836
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.011715,
+          "latency_change_s": -0.794,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-012",
+        "difficulty": "edge_margin",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 0.5,
+          "flag_recall": 1.0,
+          "flag_f1": 0.6667,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.104991,
+          "total_latency_ms": 72818.504,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.09978,
+          "total_latency_ms": 73510.638,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.113934,
+          "total_latency_ms": 79646.598,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.3333,
+          "cost_change_usd": -0.005211,
+          "latency_change_s": 0.692
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.014154,
+          "latency_change_s": 6.136,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-013",
+        "difficulty": "edge_margin",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 0.5,
+          "flag_recall": 1.0,
+          "flag_f1": 0.6667,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.105498,
+          "total_latency_ms": 74952.796,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.10452,
+          "total_latency_ms": 79516.084,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.119277,
+          "total_latency_ms": 87431.866,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.3333,
+          "cost_change_usd": -0.000978,
+          "latency_change_s": 4.563
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.014757,
+          "latency_change_s": 7.916,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-014",
+        "difficulty": "edge_margin",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 0.6667,
+          "flag_recall": 1.0,
+          "flag_f1": 0.8,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.10899,
+          "total_latency_ms": 77065.471,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.100488,
+          "total_latency_ms": 76745.04,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.117795,
+          "total_latency_ms": 80656.334,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.2,
+          "cost_change_usd": -0.008502,
+          "latency_change_s": -0.32
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.017307,
+          "latency_change_s": 3.911,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-015",
+        "difficulty": "edge_margin",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 0.5,
+          "flag_recall": 1.0,
+          "flag_f1": 0.6667,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.131991,
+          "total_latency_ms": 83357.603,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.058665,
+          "total_latency_ms": 58704.029,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.115722,
+          "total_latency_ms": 96145.558,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.3333,
+          "cost_change_usd": -0.073326,
+          "latency_change_s": -24.654
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.057057,
+          "latency_change_s": 37.442,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-016",
+        "difficulty": "compound_trap",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 0.5,
+          "flag_recall": 1.0,
+          "flag_f1": 0.6667,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.105204,
+          "total_latency_ms": 75033.677,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.050745,
+          "total_latency_ms": 50715.105,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 0.5,
+          "flag_recall": 1.0,
+          "flag_f1": 0.6667,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.198501,
+          "total_latency_ms": 163458.629,
+          "revision_applied": 1
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.3333,
+          "cost_change_usd": -0.054459,
+          "latency_change_s": -24.319
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": -0.3333,
+          "cost_change_usd": 0.147756,
+          "latency_change_s": 112.744,
+          "precision_change": -0.5
+        }
+      },
+      {
+        "case_id": "GE-017",
+        "difficulty": "edge_legal",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.08628,
+          "total_latency_ms": 69256.675,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.04833,
+          "total_latency_ms": 43918.785,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.05457,
+          "total_latency_ms": 43918.795,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.03795,
+          "latency_change_s": -25.338
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.00624,
+          "latency_change_s": 0.0,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-018",
+        "difficulty": "edge_legal",
+        "v1": {
+          "status": "Partially Passed",
+          "deterministic_pass": 0,
+          "flag_precision": 0.0,
+          "flag_recall": 0.0,
+          "flag_f1": 0.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.102072,
+          "total_latency_ms": 79160.508,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.049782,
+          "total_latency_ms": 48374.217,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.060009,
+          "total_latency_ms": 47499.609,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 1,
+          "f1_change": 1.0,
+          "cost_change_usd": -0.05229,
+          "latency_change_s": -30.786
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.010227,
+          "latency_change_s": -0.875,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-019",
+        "difficulty": "compound_trap",
+        "v1": {
+          "status": "Partially Passed",
+          "deterministic_pass": 0,
+          "flag_precision": 0.0,
+          "flag_recall": 0.0,
+          "flag_f1": 0.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.115554,
+          "total_latency_ms": 95165.118,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.054594,
+          "total_latency_ms": 52177.416,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.073767,
+          "total_latency_ms": 56453.794,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 1,
+          "f1_change": 1.0,
+          "cost_change_usd": -0.06096,
+          "latency_change_s": -42.988
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": 0.019173,
+          "latency_change_s": 4.276,
+          "precision_change": 0.0
+        }
+      },
+      {
+        "case_id": "GE-020",
+        "difficulty": "compound_trap",
+        "v1": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.159702,
+          "total_latency_ms": 89401.628,
+          "revision_applied": 0
+        },
+        "v2": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.106167,
+          "total_latency_ms": 77050.405,
+          "revision_applied": 0
+        },
+        "v3": {
+          "status": "Passed",
+          "deterministic_pass": 1,
+          "flag_precision": 1.0,
+          "flag_recall": 1.0,
+          "flag_f1": 1.0,
+          "judge_overall_score": 5.0,
+          "total_cost_usd": 0.077844,
+          "total_latency_ms": 59337.126,
+          "revision_applied": 0
+        },
+        "v1_to_v2": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.053535,
+          "latency_change_s": -12.351
+        },
+        "v2_to_v3": {
+          "pass_change": 0,
+          "f1_change": 0.0,
+          "cost_change_usd": -0.028323,
+          "latency_change_s": -17.713,
+          "precision_change": 0.0
+        }
+      }
+    ],
+    "judge_analysis": {
+      "dimensions": {
+        "judge_overall_score": {
+          "min": 4.75,
+          "max": 5.0,
+          "mean": 4.9833,
+          "n_at_5": 56,
+          "n": 60
+        },
+        "judge_commercial_accuracy": {
+          "min": 5.0,
+          "max": 5.0,
+          "mean": 5.0,
+          "n_at_5": 60,
+          "n": 60
+        },
+        "judge_policy_grounding": {
+          "min": 5.0,
+          "max": 5.0,
+          "mean": 5.0,
+          "n_at_5": 60,
+          "n": 60
+        },
+        "judge_executive_clarity": {
+          "min": 5.0,
+          "max": 5.0,
+          "mean": 5.0,
+          "n_at_5": 60,
+          "n": 60
+        },
+        "judge_actionability": {
+          "min": 4.0,
+          "max": 5.0,
+          "mean": 4.9333,
+          "n_at_5": 56,
+          "n": 60
+        }
+      },
+      "ceiling_effect": true,
+      "note": "Observed Opus scores concentrate at 4.90\u20135.00 across all versions. Commercial accuracy, policy grounding, and executive clarity are saturated at 5.0 in the version-level means. This ceiling effect limits the judge suite as a between-version discriminator; deterministic flag metrics carry the comparative signal.",
+      "available_dimensions": [
+        "commercial_accuracy",
+        "policy_grounding",
+        "executive_clarity",
+        "actionability",
+        "overall_score"
+      ],
+      "unavailable_requested_dimensions": [
+        {
+          "name": "factual_correctness",
+          "reason": "Not a separate stored rubric field; closest proxy is commercial_accuracy."
+        },
+        {
+          "name": "completeness",
+          "reason": "Not separately scored in stored judge outputs."
+        },
+        {
+          "name": "evidence_grounding",
+          "reason": "Closest stored field is policy_grounding; no distinct evidence-span score."
+        },
+        {
+          "name": "consistency",
+          "reason": "Single run per case\u00d7version; no repeated-run consistency metric exists."
+        }
+      ]
+    },
+    "latency_investigation": {
+      "observation": "v3 p90 latency (88.3s) exceeds v2 p90 (76.8s).",
+      "max_case": {
+        "case_id": "GE-016",
+        "latency_s": 163.459,
+        "cost_usd": 0.198501,
+        "revision_applied": 1,
+        "difficulty": "compound_trap"
+      },
+      "evidence": "The single slowest v3 run is GE-016 (revision_applied=1) at ~163.5s and $0.199 \u2014 far above other v3 cases. Critic steps add ~49.7s total ledger latency across 20 runs (~2.49s mean per deal), and JSON repair remains present (6 calls). Attribution of the p90 gap is therefore mixed: the extreme tail is coincident with the only critic revision, while non-revised heavy cases (e.g. GE-015) still approach ~96s.",
+      "hypothesis_not_proven": "We cannot claim the critic universally improves high-stakes outcomes; only 1/20 cases revised, and that revision coincided with a precision regression."
+    },
+    "comparison_matrix": [
+      {
+        "version": "v1",
+        "pass_rate_pct": 85.0,
+        "pass_count": 17,
+        "n": 20,
+        "flag_precision": 0.7083,
+        "flag_recall": 0.85,
+        "flag_f1": 0.7567,
+        "tier_accuracy_pct": 100.0,
+        "margin_accuracy_pct": 100.0,
+        "mean_cost_usd": 0.096726,
+        "p50_cost_usd": 0.10287,
+        "p90_cost_usd": 0.120238,
+        "max_cost_usd": 0.159702,
+        "stdev_cost_usd": 0.027685,
+        "p50_latency_s": 73.065,
+        "p90_latency_s": 86.017,
+        "max_latency_s": 95.165118,
+        "mean_latency_s": 67.786581,
+        "cache_hit_rate_pct": 0.0,
+        "mean_judge_score": 4.99,
+        "revision_rate_pct": 0.0,
+        "agent_api_calls": 77,
+        "json_repair_calls": 15,
+        "deltas_vs_prev": null
+      },
+      {
+        "version": "v2",
+        "pass_rate_pct": 100.0,
+        "pass_count": 20,
+        "n": 20,
+        "flag_precision": 1.0,
+        "flag_recall": 1.0,
+        "flag_f1": 1.0,
+        "tier_accuracy_pct": 100.0,
+        "margin_accuracy_pct": 100.0,
+        "mean_cost_usd": 0.060637,
+        "p50_cost_usd": 0.051395,
+        "p90_cost_usd": 0.100891,
+        "max_cost_usd": 0.106167,
+        "stdev_cost_usd": 0.022218,
+        "p50_latency_s": 47.009,
+        "p90_latency_s": 76.776,
+        "max_latency_s": 79.516084,
+        "mean_latency_s": 48.829715,
+        "cache_hit_rate_pct": 57.012,
+        "mean_judge_score": 4.97,
+        "revision_rate_pct": 0.0,
+        "agent_api_calls": 62,
+        "json_repair_calls": 4,
+        "deltas_vs_prev": {
+          "pass_rate_pp": 15.0,
+          "flag_f1": 0.2433,
+          "mean_cost_pct": -37.31,
+          "p50_cost_pct": -50.04,
+          "p50_latency_pct": -35.66,
+          "p90_latency_pct": -10.74,
+          "cache_hit_pp": 57.01,
+          "judge_overall": -0.02
+        }
+      },
+      {
+        "version": "v3",
+        "pass_rate_pct": 100.0,
+        "pass_count": 20,
+        "n": 20,
+        "flag_precision": 0.975,
+        "flag_recall": 1.0,
+        "flag_f1": 0.9833,
+        "tier_accuracy_pct": 100.0,
+        "margin_accuracy_pct": 100.0,
+        "mean_cost_usd": 0.08129,
+        "p50_cost_usd": 0.063999,
+        "p90_cost_usd": 0.117943,
+        "max_cost_usd": 0.198501,
+        "stdev_cost_usd": 0.037669,
+        "p50_latency_s": 51.396,
+        "p90_latency_s": 88.303,
+        "max_latency_s": 163.458629,
+        "mean_latency_s": 60.200418,
+        "cache_hit_rate_pct": 49.4015,
+        "mean_judge_score": 4.99,
+        "revision_rate_pct": 5.0,
+        "agent_api_calls": 86,
+        "json_repair_calls": 6,
+        "deltas_vs_prev": {
+          "pass_rate_pp": 0.0,
+          "flag_f1": -0.0167,
+          "mean_cost_pct": 34.06,
+          "p50_cost_pct": 24.52,
+          "p50_latency_pct": 9.33,
+          "p90_latency_pct": 15.01,
+          "cache_hit_pp": -7.61,
+          "judge_overall": 0.02
+        }
+      }
+    ],
+    "data_gaps": [
+      "No repeated-run consistency: each case\u00d7version was executed once.",
+      "No human audit scores populated (human_audit_score column unused).",
+      "Judge rubric lacks separate factual-correctness / completeness / consistency dimensions.",
+      "Small legal/compound subgroups (n=2 and n=3) make subgroup percentages unstable.",
+      "McNemar v1\u2192v2 has only 3 discordant pairs (exact p=0.25) \u2014 underpowered for \u03b1=0.05 significance claims.",
+      "v3 high-stakes benefit remains a hypothesis (1/20 revisions; precision regression on that case)."
+    ],
+    "cost_semantics": {
+      "agent_unit_economics": "eval_results.total_cost_usd and benchmark cost percentiles exclude llm_judge rows (production-relevant agent inference including critic/repair when present).",
+      "evaluation_overhead": "llm_judge costs are experimental evaluation overhead and are reported separately."
+    },
+    "execution_vs_success": {
+      "benchmark_runs_completed": 60,
+      "deterministic_full_pass": 57,
+      "partial_pass": 3,
+      "failed": 0,
+      "note": "60/60 means every case\u00d7version produced a scored eval_results row (execution complete). Only rows with deterministic_pass=1 are full evaluation passes. v1 contributes 3 Partially Passed rows (tier+margin exact, flag recall incomplete)."
     }
   },
   "cases": [
@@ -8507,7 +10190,7 @@
       "failed": 0,
       "skipped": 0,
       "errors": 0,
-      "duration_s": 1.4
+      "duration_s": 1.89
     },
     "tests": [
       {
@@ -8635,7 +10318,7 @@
         "outcome": "Passed"
       }
     ],
-    "raw_tail": "tests/test_tools_and_rag.py::test_query_historical_benchmarks_both_segments PASSED [ 83%]\ntests/test_tools_and_rag.py::test_local_embed_query_matches_stored_vectors PASSED [ 87%]\ntests/test_tools_and_rag.py::test_bm25_and_hybrid_retrieve_mfn_exact_and_paraphrase PASSED [ 90%]\ntests/test_tools_and_rag.py::test_search_filters_by_source_type PASSED   [ 93%]\ntests/test_tools_and_rag.py::test_execute_tool_returns_structured_errors PASSED [ 96%]\ntests/test_tools_and_rag.py::test_dual_aci_schema_registries PASSED      [100%]\n\n============================== 31 passed in 1.40s =============================="
+    "raw_tail": "tests/test_tools_and_rag.py::test_query_historical_benchmarks_both_segments PASSED [ 83%]\ntests/test_tools_and_rag.py::test_local_embed_query_matches_stored_vectors PASSED [ 87%]\ntests/test_tools_and_rag.py::test_bm25_and_hybrid_retrieve_mfn_exact_and_paraphrase PASSED [ 90%]\ntests/test_tools_and_rag.py::test_search_filters_by_source_type PASSED   [ 93%]\ntests/test_tools_and_rag.py::test_execute_tool_returns_structured_errors PASSED [ 96%]\ntests/test_tools_and_rag.py::test_dual_aci_schema_registries PASSED      [100%]\n\n============================== 31 passed in 1.89s =============================="
   },
   "notable": {
     "v1_partial_pass_cases": [
