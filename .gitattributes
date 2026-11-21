@@ -1,4 +1,12 @@
-# Keep GitHub language stats focused on source, not generated report artifacts.
+# Exclude report HTML/JSON from GitHub language stats (Python is the source language).
+*.html linguist-detectable=false
 results/** linguist-generated=true
+results/** linguist-vendored=true
+results/* linguist-generated=true
+results/* linguist-vendored=true
+results/data/** linguist-generated=true
+results/data/** linguist-vendored=true
 outputs/** linguist-generated=true
-src/dashboard_template.html linguist-detectable=false
+outputs/** linguist-vendored=true
+outputs/* linguist-generated=true
+outputs/* linguist-vendored=true
