@@ -41,3 +41,6 @@ Thumbs.db
 tmp/
 temp/
 .cursor/
+
+# Generated companion dashboard (rebuild with: python -m src.build_report)
+results/index.html

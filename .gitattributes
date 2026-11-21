@@ -1,16 +1,7 @@
-# Explicit Linguist overrides (wildcards have been unreliable for this repo's language bar).
-results/index.html linguist-generated=true
-results/index.html linguist-vendored=true
-results/index.html linguist-detectable=false
-results/index.html linguist-language=Python
-src/dashboard_template.html linguist-generated=true
-src/dashboard_template.html linguist-vendored=true
-src/dashboard_template.html linguist-detectable=false
-src/dashboard_template.html linguist-language=Python
-
-results/data/dashboard_dataset.json linguist-generated=true
-results/data/dashboard_dataset.json linguist-vendored=true
-results/data/unit_test_results.json linguist-generated=true
-results/data/traceability_manifest.json linguist-generated=true
-results/data/benchmark_summary.json linguist-generated=true
-outputs/benchmark_summary.json linguist-generated=true
+# Exclude generated report chrome from GitHub language statistics.
+results/index.html linguist-generated
+results/index.html linguist-vendored
+src/dashboard_template.html linguist-generated
+src/dashboard_template.html linguist-vendored
+results/data/** linguist-generated
+outputs/** linguist-generated
