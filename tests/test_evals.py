@@ -36,7 +36,7 @@ def _memo(**overrides):
         "deal_id": "GE-001",
         "account_name": "Test Co",
         "executive_recommendation": "APPROVE",
-        "required_approval_tier": "Auto-Approve",
+        "required_approval_lane": "Auto-Approve",
         "calculated_gross_margin_pct": 78.42,
         "margin_floor_pct": 72.0,
         "detected_risk_flags": [],
@@ -56,7 +56,7 @@ def _case(**overrides):
         "difficulty": "standard",
         "deal_payload_json": json.dumps({"account_name": "Test Co"}),
         "expected_gross_margin_pct": 78.42,
-        "expected_approval_tier": "Auto-Approve",
+        "expected_approval_lane": "Auto-Approve",
         "expected_risk_flags_json": "[]",
     }
     base.update(overrides)
@@ -68,7 +68,7 @@ def _case(**overrides):
 # ---------------------------------------------------------------------------
 def test_grade_deterministic_exact_match_empty_flags():
     result = grade_deterministic(_case(), _memo())
-    assert result["tier_exact_match"] == 1
+    assert result["lane_exact_match"] == 1
     assert result["margin_exact_match"] == 1
     assert result["flag_precision"] == 1.0
     assert result["flag_recall"] == 1.0
@@ -91,12 +91,12 @@ def test_grade_deterministic_margin_tolerance_and_misses():
     assert miss["margin_exact_match"] == 0
     assert miss["deterministic_pass"] == 0
 
-    tier_miss = grade_deterministic(
+    lane_miss = grade_deterministic(
         _case(),
-        _memo(required_approval_tier="VP-Sales"),
+        _memo(required_approval_lane="VP-Sales"),
     )
-    assert tier_miss["tier_exact_match"] == 0
-    assert tier_miss["deterministic_pass"] == 0
+    assert lane_miss["lane_exact_match"] == 0
+    assert lane_miss["deterministic_pass"] == 0
 
 
 def test_grade_deterministic_flag_precision_recall_partial():
@@ -107,7 +107,7 @@ def test_grade_deterministic_flag_precision_recall_partial():
     )
     # Predicted 2 correct + 1 false positive → precision 2/3, recall 2/3
     memo = _memo(
-        required_approval_tier="CFO-And-Legal",
+        required_approval_lane="CFO-And-Legal",
         calculated_gross_margin_pct=60.0,
         detected_risk_flags=[
             "MARGIN_BELOW_FLOOR",
@@ -115,20 +115,20 @@ def test_grade_deterministic_flag_precision_recall_partial():
             "PRICE_CAP_AUTO_RENEWAL",
         ],
     )
-    case["expected_approval_tier"] = "CFO-And-Legal"
+    case["expected_approval_lane"] = "CFO-And-Legal"
     case["expected_gross_margin_pct"] = 60.0
     result = grade_deterministic(case, memo)
     assert result["flag_precision"] == pytest.approx(2 / 3, rel=1e-3)
     assert result["flag_recall"] == pytest.approx(2 / 3, rel=1e-3)
     assert result["flag_f1"] == pytest.approx(2 / 3, rel=1e-3)
-    # recall < 1.0 → deterministic_pass = 0 even if tier/margin match
+    # recall < 1.0 → deterministic_pass = 0 even if lane/margin match
     assert result["deterministic_pass"] == 0
 
     # Perfect recall but extra FP → still pass (recall==1)
     perfect_recall = grade_deterministic(
         case,
         _memo(
-            required_approval_tier="CFO-And-Legal",
+            required_approval_lane="CFO-And-Legal",
             calculated_gross_margin_pct=60.0,
             detected_risk_flags=[
                 "MARGIN_BELOW_FLOOR",
@@ -226,7 +226,7 @@ def _fake_agent_result(case_id: str, version: str, revision: bool = False):
         "experiment_version": version,
         "memo": _memo(
             deal_id=case_id,
-            required_approval_tier="CFO-And-Legal",
+            required_approval_lane="CFO-And-Legal",
             calculated_gross_margin_pct=59.78,
             detected_risk_flags=["MARGIN_BELOW_FLOOR", "NET_90_WORKING_CAPITAL"],
             executive_recommendation="ESCALATE_WITH_CONDITIONS",
@@ -258,7 +258,7 @@ def test_run_benchmark_resume_and_export(seeded_db, tmp_path):
         """
         INSERT INTO eval_results (
             eval_id, run_id, experiment_version, case_id, difficulty,
-            tier_exact_match, margin_exact_match, flag_precision, flag_recall,
+            lane_exact_match, margin_exact_match, flag_precision, flag_recall,
             flag_f1, deterministic_pass, judge_model, judge_commercial_accuracy,
             judge_policy_grounding, judge_executive_clarity, judge_actionability,
             judge_overall_score, judge_rationale, revision_applied, total_cost_usd,
@@ -295,11 +295,11 @@ def test_run_benchmark_resume_and_export(seeded_db, tmp_path):
             latency_ms=200.0,
         )
         result = _fake_agent_result(case_row["case_id"], experiment_version)
-        # Use real expected margin/tier from case for deterministic grading path
+        # Use real expected margin/lane from case for deterministic grading path
         result["memo"]["calculated_gross_margin_pct"] = case_row[
             "expected_gross_margin_pct"
         ]
-        result["memo"]["required_approval_tier"] = case_row["expected_approval_tier"]
+        result["memo"]["required_approval_lane"] = case_row["expected_approval_lane"]
         result["memo"]["detected_risk_flags"] = json.loads(
             case_row["expected_risk_flags_json"]
         )

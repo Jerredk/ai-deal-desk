@@ -61,8 +61,8 @@ def init_db(db_path: str = "db/deal_desk.db") -> sqlite3.Connection:
             ),
             deal_payload_json TEXT NOT NULL,
             expected_gross_margin_pct REAL NOT NULL,
-            expected_approval_tier TEXT NOT NULL CHECK (
-                expected_approval_tier IN (
+            expected_approval_lane TEXT NOT NULL CHECK (
+                expected_approval_lane IN (
                     'Auto-Approve',
                     'VP-Sales',
                     'CFO-And-Legal'
@@ -77,8 +77,8 @@ def init_db(db_path: str = "db/deal_desk.db") -> sqlite3.Connection:
         "ON golden_eval_cases(difficulty)"
     )
     cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_golden_eval_tier "
-        "ON golden_eval_cases(expected_approval_tier)"
+        "CREATE INDEX IF NOT EXISTS idx_golden_eval_lane "
+        "ON golden_eval_cases(expected_approval_lane)"
     )
 
     cursor.execute(
@@ -140,7 +140,7 @@ def init_db(db_path: str = "db/deal_desk.db") -> sqlite3.Connection:
             experiment_version TEXT NOT NULL,
             case_id TEXT NOT NULL,
             difficulty TEXT NOT NULL,
-            tier_exact_match INTEGER NOT NULL CHECK (tier_exact_match IN (0, 1)),
+            lane_exact_match INTEGER NOT NULL CHECK (lane_exact_match IN (0, 1)),
             margin_exact_match INTEGER NOT NULL CHECK (margin_exact_match IN (0, 1)),
             flag_precision REAL NOT NULL,
             flag_recall REAL NOT NULL,

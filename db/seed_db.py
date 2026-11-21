@@ -21,7 +21,7 @@ from src.deal_economics import (
     SERVICES_HOURLY_RATE,
     WORKING_CAPITAL_PENALTY,
     compute_gross_margin_pct,
-    determine_approval_tier,
+    determine_approval_lane,
 )
 from src.hybrid_rag import LOCAL_EMBEDDING_DIM, local_embed_text
 
@@ -38,7 +38,7 @@ __all__ = [
     "HIGH_RISK_LEGAL_FLAGS",
     "DEFAULT_DB_PATH",
     "compute_gross_margin_pct",
-    "determine_approval_tier",
+    "determine_approval_lane",
     "seed_db",
 ]
 
@@ -813,7 +813,7 @@ def build_golden_eval_cases() -> list[dict]:
             spec["payment_terms"],
             spec["services_hours"],
         )
-        tier = determine_approval_tier(
+        lane = determine_approval_lane(
             spec["discount_pct"],
             margin,
             spec["payment_terms"],
@@ -836,7 +836,7 @@ def build_golden_eval_cases() -> list[dict]:
                 "difficulty": spec["difficulty"],
                 "deal_payload_json": json.dumps(payload),
                 "expected_gross_margin_pct": margin,
-                "expected_approval_tier": tier,
+                "expected_approval_lane": lane,
                 "expected_risk_flags_json": json.dumps(spec["risk_flags"]),
             }
         )
@@ -894,10 +894,10 @@ def insert_golden_cases(conn: sqlite3.Connection, cases: list[dict]) -> None:
         """
         INSERT INTO golden_eval_cases (
             case_id, scenario_name, difficulty, deal_payload_json,
-            expected_gross_margin_pct, expected_approval_tier, expected_risk_flags_json
+            expected_gross_margin_pct, expected_approval_lane, expected_risk_flags_json
         ) VALUES (
             :case_id, :scenario_name, :difficulty, :deal_payload_json,
-            :expected_gross_margin_pct, :expected_approval_tier, :expected_risk_flags_json
+            :expected_gross_margin_pct, :expected_approval_lane, :expected_risk_flags_json
         )
         """,
         cases,
@@ -934,11 +934,11 @@ def seed_db(db_path: str = DEFAULT_DB_PATH) -> dict[str, int]:
     for t in traps:
         payload = json.loads(t["deal_payload_json"])
         logger.info(
-            "%s discount=%.0f%% margin=%.2f%% tier=%s",
+            "%s discount=%.0f%% margin=%.2f%% lane=%s",
             t["case_id"],
             payload["discount_pct"] * 100,
             t["expected_gross_margin_pct"],
-            t["expected_approval_tier"],
+            t["expected_approval_lane"],
         )
 
     conn.close()

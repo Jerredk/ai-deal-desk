@@ -2,7 +2,7 @@
   {
     "cases_evaluated": 20,
     "deterministic_pass_rate_pct": 85.0,
-    "tier_accuracy_pct": 100.0,
+    "lane_accuracy_pct": 100.0,
     "margin_accuracy_pct": 100.0,
     "mean_flag_precision": 0.7083,
     "mean_flag_recall": 0.85,
@@ -25,7 +25,7 @@
   {
     "cases_evaluated": 20,
     "deterministic_pass_rate_pct": 100.0,
-    "tier_accuracy_pct": 100.0,
+    "lane_accuracy_pct": 100.0,
     "margin_accuracy_pct": 100.0,
     "mean_flag_precision": 1.0,
     "mean_flag_recall": 1.0,
@@ -48,7 +48,7 @@
   {
     "cases_evaluated": 20,
     "deterministic_pass_rate_pct": 100.0,
-    "tier_accuracy_pct": 100.0,
+    "lane_accuracy_pct": 100.0,
     "margin_accuracy_pct": 100.0,
     "mean_flag_precision": 0.975,
     "mean_flag_recall": 1.0,

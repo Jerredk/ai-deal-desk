@@ -84,8 +84,8 @@ def grade_deterministic(case_row: dict, memo: dict) -> dict:
     expected_flags = set(json.loads(case_row["expected_risk_flags_json"]))
     predicted_flags = set(memo.get("detected_risk_flags") or [])
 
-    tier_exact_match = int(
-        memo.get("required_approval_tier") == case_row["expected_approval_tier"]
+    lane_exact_match = int(
+        memo.get("required_approval_lane") == case_row["expected_approval_lane"]
     )
     margin_delta = abs(
         float(memo.get("calculated_gross_margin_pct", 0.0))
@@ -94,12 +94,12 @@ def grade_deterministic(case_row: dict, memo: dict) -> dict:
     margin_exact_match = int(margin_delta <= MARGIN_TOLERANCE)
     metrics = _flag_metrics(predicted_flags, expected_flags)
     deterministic_pass = int(
-        tier_exact_match == 1
+        lane_exact_match == 1
         and margin_exact_match == 1
         and metrics["flag_recall"] == 1.0
     )
     return {
-        "tier_exact_match": tier_exact_match,
+        "lane_exact_match": lane_exact_match,
         "margin_exact_match": margin_exact_match,
         "flag_precision": metrics["flag_precision"],
         "flag_recall": metrics["flag_recall"],
@@ -135,7 +135,7 @@ def grade_with_llm_judge(
         "deal_payload": payload_obj,
         "ground_truth": {
             "expected_gross_margin_pct": case_row["expected_gross_margin_pct"],
-            "expected_approval_tier": case_row["expected_approval_tier"],
+            "expected_approval_lane": case_row["expected_approval_lane"],
             "expected_risk_flags": json.loads(case_row["expected_risk_flags_json"]),
         },
         "agent_memo": memo,
@@ -232,14 +232,14 @@ def _persist_eval_result(db_path: str, row: dict) -> None:
             """
             INSERT OR REPLACE INTO eval_results (
                 eval_id, run_id, experiment_version, case_id, difficulty,
-                tier_exact_match, margin_exact_match, flag_precision, flag_recall,
+                lane_exact_match, margin_exact_match, flag_precision, flag_recall,
                 flag_f1, deterministic_pass, judge_model, judge_commercial_accuracy,
                 judge_policy_grounding, judge_executive_clarity, judge_actionability,
                 judge_overall_score, judge_rationale, revision_applied, total_cost_usd,
                 total_latency_ms, cache_hit_rate_pct, memo_json, created_at
             ) VALUES (
                 :eval_id, :run_id, :experiment_version, :case_id, :difficulty,
-                :tier_exact_match, :margin_exact_match, :flag_precision, :flag_recall,
+                :lane_exact_match, :margin_exact_match, :flag_precision, :flag_recall,
                 :flag_f1, :deterministic_pass, :judge_model, :judge_commercial_accuracy,
                 :judge_policy_grounding, :judge_executive_clarity, :judge_actionability,
                 :judge_overall_score, :judge_rationale, :revision_applied, :total_cost_usd,
@@ -331,7 +331,7 @@ def _evaluate_one_case(
         "experiment_version": experiment_version,
         "case_id": case_row["case_id"],
         "difficulty": case_row["difficulty"],
-        "tier_exact_match": det["tier_exact_match"],
+        "lane_exact_match": det["lane_exact_match"],
         "margin_exact_match": det["margin_exact_match"],
         "flag_precision": det["flag_precision"],
         "flag_recall": det["flag_recall"],
@@ -478,7 +478,7 @@ def _summarize_version(rows: list[dict]) -> dict:
         return {
             "cases_evaluated": 0,
             "deterministic_pass_rate_pct": 0.0,
-            "tier_accuracy_pct": 0.0,
+            "lane_accuracy_pct": 0.0,
             "margin_accuracy_pct": 0.0,
             "mean_flag_precision": 0.0,
             "mean_flag_recall": 0.0,
@@ -505,8 +505,8 @@ def _summarize_version(rows: list[dict]) -> dict:
         "deterministic_pass_rate_pct": round(
             100.0 * sum(int(r["deterministic_pass"]) for r in rows) / n, 2
         ),
-        "tier_accuracy_pct": round(
-            100.0 * sum(int(r["tier_exact_match"]) for r in rows) / n, 2
+        "lane_accuracy_pct": round(
+            100.0 * sum(int(r["lane_exact_match"]) for r in rows) / n, 2
         ),
         "margin_accuracy_pct": round(
             100.0 * sum(int(r["margin_exact_match"]) for r in rows) / n, 2
@@ -569,7 +569,7 @@ def export_benchmark_reports(
         "experiment_version",
         "cases_evaluated",
         "deterministic_pass_rate_pct",
-        "tier_accuracy_pct",
+        "lane_accuracy_pct",
         "margin_accuracy_pct",
         "mean_flag_precision",
         "mean_flag_recall",
@@ -658,7 +658,7 @@ def export_benchmark_reports(
         "experiment_version",
         "case_id",
         "difficulty",
-        "tier_exact_match",
+        "lane_exact_match",
         "margin_exact_match",
         "flag_precision",
         "flag_recall",

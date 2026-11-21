@@ -88,7 +88,7 @@ def _valid_memo_json(**overrides) -> str:
         "deal_id": "GE-015",
         "account_name": "Silverline Media Co",
         "executive_recommendation": "ESCALATE_WITH_CONDITIONS",
-        "required_approval_tier": "CFO-And-Legal",
+        "required_approval_lane": "CFO-And-Legal",
         "calculated_gross_margin_pct": 59.78,
         "margin_floor_pct": 72.0,
         "detected_risk_flags": ["MARGIN_BELOW_FLOOR", "NET_90_WORKING_CAPITAL"],
@@ -223,7 +223,7 @@ def test_multiturn_tool_use_logs_cost_ledger(seeded_db_path, sample_case):
         "query_historical_benchmarks",
     }
     memo = DealDeskExecutiveMemo.model_validate(result["memo"])
-    assert memo.required_approval_tier == "CFO-And-Legal"
+    assert memo.required_approval_lane == "CFO-And-Legal"
     assert memo.calculated_gross_margin_pct == pytest.approx(59.78)
 
     cost = result["cost_summary"]

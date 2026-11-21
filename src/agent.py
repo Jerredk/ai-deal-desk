@@ -35,7 +35,7 @@ class DealDeskExecutiveMemo(BaseModel):
     executive_recommendation: Literal[
         "APPROVE", "ESCALATE_WITH_CONDITIONS", "REJECT_OR_RESTRUCTURE"
     ]
-    required_approval_tier: Literal["Auto-Approve", "VP-Sales", "CFO-And-Legal"]
+    required_approval_lane: Literal["Auto-Approve", "VP-Sales", "CFO-And-Legal"]
     calculated_gross_margin_pct: float
     margin_floor_pct: float
     detected_risk_flags: list[str] = Field(default_factory=list)
@@ -100,11 +100,11 @@ def _coerce_memo_dict(data: dict) -> dict:
                 out["executive_recommendation"] = lit
                 break
 
-    tier = out.get("required_approval_tier")
-    if isinstance(tier, str):
+    lane = out.get("required_approval_lane")
+    if isinstance(lane, str):
         for lit in _TIER_LITERALS:
-            if lit.lower() in tier.lower().replace("_", "-"):
-                out["required_approval_tier"] = lit
+            if lit.lower() in lane.lower().replace("_", "-"):
+                out["required_approval_lane"] = lit
                 break
 
     for field in _STRING_FIELDS:
@@ -359,7 +359,7 @@ class DealDeskAgent:
                         "Return ONLY a corrected JSON object. Rules: "
                         "executive_recommendation must be exactly one of "
                         "APPROVE | ESCALATE_WITH_CONDITIONS | REJECT_OR_RESTRUCTURE; "
-                        "required_approval_tier must be exactly Auto-Approve | VP-Sales | "
+                        "required_approval_lane must be exactly Auto-Approve | VP-Sales | "
                         "CFO-And-Legal; commercial_and_margin_analysis and "
                         "legal_and_policy_findings must be plain strings (not objects); "
                         "detected_risk_flags and required_redline_fallbacks must be string arrays."
@@ -711,7 +711,7 @@ def main() -> None:
     print(f"run_id:              {result['run_id']}")
     print(f"case_id:             {result['case_id']}")
     print(f"experiment_version:  {result['experiment_version']}")
-    print(f"approval_tier:       {memo['required_approval_tier']}")
+    print(f"approval_lane:       {memo['required_approval_lane']}")
     print(f"gross_margin_pct:    {memo['calculated_gross_margin_pct']}")
     print(f"detected_flags:      {memo['detected_risk_flags']}")
     print(f"recommendation:      {memo['executive_recommendation']}")

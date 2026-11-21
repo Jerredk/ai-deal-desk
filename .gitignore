@@ -44,3 +44,5 @@ temp/
 
 # Generated companion dashboard (rebuild with: python -m src.build_report)
 results/index.html
+exports/
+figures/

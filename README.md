@@ -36,9 +36,9 @@ Custom deals: pass `--deal-json <path>` with an AE deal payload JSON (account, A
 
 **Unstructured Retrieval Corpus.** Six B2B SaaS Deal-Desk policy documents covering discount authority bands, the 72.0% hard margin floor (with 82% baseline margin at 0% discount / 18% list-ARR COGS), working-capital penalties for Net-60/90, onboarding services COGS, and the escalation matrix—plus ten commercial contract clauses modeled on CUAD categories (Most Favored Customer pricing parity, uncapped liability, 30-day termination for convenience, on-site audit rights, auto-renewal/price-cap, and five standard/acceptable baseline clauses so retrieval must discriminate). Dense embeddings for Hybrid RAG are computed locally and stored in SQLite (`rag_chunks.embedding_json`); no third-party embedding API is required.
 
-**Structured Warehouse & Golden Eval Suite.** Two hundred fifty seeded historical B2B SaaS deals (`random.seed(42)`) with realistic win-rate decay at extreme discounts and longer cycles when legal redlines are present. Twenty adversarial golden cases: 5 Auto-Approve, 5 VP-Sales, 10 CFO-And-Legal—including six nominal-discount margin traps where `discount <= 20%` still breaches the 72.0% floor after services COGS and Net-90 working-capital drag. Every golden `expected_gross_margin_pct` and `expected_approval_tier` is computed from the same Python formulas used at runtime.
+**Structured Warehouse & Golden Eval Suite.** Two hundred fifty seeded historical B2B SaaS deals (`random.seed(42)`) with realistic win-rate decay at extreme discounts and longer cycles when legal redlines are present. Twenty adversarial golden cases: 5 Auto-Approve, 5 VP-Sales, 10 CFO-And-Legal—including six nominal-discount margin traps where `discount <= 20%` still breaches the 72.0% floor after services COGS and Net-90 working-capital drag. Every golden `expected_gross_margin_pct` and `expected_approval_lane` is computed from the same Python formulas used at runtime.
 
-**Evaluation Protocol.** Cross-version runs of `v1` (baseline prompting + BM25 + basic tools) vs. `v2` (poka-yoked ACI tools + Hybrid RAG + prompt caching) vs. `v3` (Evaluator-Optimizer critic loop). Scoring combines deterministic assertions (tier exact match, margin ±0.05, flag precision/recall/F1) with LLM-as-a-Judge grading on an independent Anthropic model (`claude-opus-4-6`) separate from the deal-desk agent (`claude-sonnet-4-6`). Full suite: **60 runs** (20 cases × 3 versions).
+**Evaluation Protocol.** Cross-version runs of `v1` (baseline prompting + BM25 + basic tools) vs. `v2` (poka-yoked ACI tools + Hybrid RAG + prompt caching) vs. `v3` (Evaluator-Optimizer critic loop). Scoring combines deterministic assertions (lane exact match, margin ±0.05, flag precision/recall/F1) with LLM-as-a-Judge grading on an independent Anthropic model (`claude-opus-4-6`) separate from the deal-desk agent (`claude-sonnet-4-6`). Full suite: **60 runs** (20 cases × 3 versions).
 
 ## 4. Test Results
 
@@ -48,7 +48,7 @@ Unit tests: **31/31** passing. Seeded warehouse: **250** historical deals, **16*
 
 ### Overall (`outputs/benchmark_summary.csv`)
 
-| Experiment Version | Cases | Det. Pass % | Tier Acc. % | Margin Acc. % | Flag Recall | Flag Precision | Flag F1 | Mean Judge (1–5) | Rev. Trigger % | Mean Cost (USD) | p10 / p50 / p90 Cost | Avg Cache Hit % | p50 / p90 Latency (s) |
+| Experiment Version | Cases | Det. Pass % | Lane Acc. % | Margin Acc. % | Flag Recall | Flag Precision | Flag F1 | Mean Judge (1–5) | Rev. Trigger % | Mean Cost (USD) | p10 / p50 / p90 Cost | Avg Cache Hit % | p50 / p90 Latency (s) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---|
 | v1 Baseline | 20 | 85.0 | 100.0 | 100.0 | 0.850 | 0.708 | 0.757 | 4.99 | 0.0 | 0.0967 | 0.0578 / 0.1029 / 0.1202 | 0.0 | 73.1 / 86.0 |
 | v2 Tools + Hybrid RAG + Caching | 20 | 100.0 | 100.0 | 100.0 | 1.000 | 1.000 | 1.000 | 4.97 | 0.0 | 0.0606 | 0.0435 / 0.0514 / 0.1009 | 57.0 | 47.0 / 76.8 |
@@ -73,13 +73,13 @@ Judge dimension means (all versions ≈5.0 commercial / policy / clarity; action
 | v3 | edge_legal | 2 | 100.0 | 5.00 | 0.0573 |
 | v3 | compound_trap | 3 | 100.0 | 5.00 | 0.0778 |
 
-**Case-level notes.** v1 failed deterministic pass on GE-009 / GE-018 / GE-019 via non-canonical or prose-annotated flag strings (tier + margin were already exact). v2 and v3 rescued all three with perfect canonical recall. v3’s critic triggered a revision on **1/20** runs (a `compound_trap` case; 33% of that difficulty bucket).
+**Case-level notes.** v1 failed deterministic pass on GE-009 / GE-018 / GE-019 via non-canonical or prose-annotated flag strings (lane + margin were already exact). v2 and v3 rescued all three with perfect canonical recall. v3’s critic triggered a revision on **1/20** runs (a `compound_trap` case; 33% of that difficulty bucket).
 
 ## 5. Conclusion
 
 **Status: Complete (empirical 60-run suite)**
 
-Isolating SaaS margin math and approval-tier routing in deterministic Python/SQLite eliminated arithmetic drift: **tier and margin accuracy were 100% across all three versions**. Quality lift was concentrated in **canonical redline flag discipline**:
+Isolating SaaS margin math and approval-lane routing in deterministic Python/SQLite eliminated arithmetic drift: **lane and margin accuracy were 100% across all three versions**. Quality lift was concentrated in **canonical redline flag discipline**:
 
 - **v1 → v2:** deterministic pass **85% → 100%**; flag recall **0.85 → 1.00**; F1 **0.76 → 1.00**. Mean agent cost fell **~37%** ($0.097 → $0.061) with **~57% average cache hit rate** (v1: 0%) and p50 latency **73s → 47s**. Opus judge scores stayed ~5.0—v1 memos already read well; v2 mainly fixed machine-checkable taxonomy.
 - **v2 → v3:** quality stayed at **100%** deterministic pass / full recall. Critic revisions fired rarely (**5%** overall; only on a compound trap). Marginal economics: mean cost **$0.061 → $0.081** (~**+34%** vs v2) and p50 latency **47s → 51s**, with cache hit rate still healthy (~49%).

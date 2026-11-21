@@ -15,7 +15,7 @@ from src.deal_economics import (
     VALID_SEGMENTS,
     build_triggered_flags,
     compute_gross_margin_components,
-    determine_approval_tier,
+    determine_approval_lane,
     normalize_discount_pct,
 )
 from src.hybrid_rag import bm25_only_search, hybrid_rrf_search
@@ -83,7 +83,7 @@ def evaluate_deal_economics(
     custom_onboarding_hours: float = 0.0,
     proposed_legal_flags: list[str] | None = None,
 ) -> dict:
-    """Compute margin components, approval tier, and triggered risk flags."""
+    """Compute margin components, approval lane, and triggered risk flags."""
     payload = EvaluateDealEconomicsInput(
         annual_contract_value=annual_contract_value,
         term_months=term_months,
@@ -104,15 +104,15 @@ def evaluate_deal_economics(
         payload.payment_terms,
         payload.proposed_legal_flags,
     )
-    # Tier routing uses high-risk legal flags + economics (same as seed ground truth)
-    legal_for_tier = [
+    # Lane routing uses high-risk legal flags + economics (same as seed ground truth)
+    legal_for_lane = [
         f for f in (payload.proposed_legal_flags or []) if f in HIGH_RISK_LEGAL_FLAGS
     ]
-    tier = determine_approval_tier(
+    lane = determine_approval_lane(
         normalized_discount,
         comps["gross_margin_pct"],
         payload.payment_terms,
-        legal_for_tier,
+        legal_for_lane,
     )
     margin_buffer_bps = round((comps["gross_margin_pct"] - MARGIN_FLOOR_PCT) * 100.0, 2)
 
@@ -128,7 +128,7 @@ def evaluate_deal_economics(
         "gross_margin_pct": comps["gross_margin_pct"],
         "margin_floor_pct": MARGIN_FLOOR_PCT,
         "margin_buffer_bps": margin_buffer_bps,
-        "required_approval_tier": tier,
+        "required_approval_lane": lane,
         "triggered_flags": flags,
     }
     if normalized_note:
@@ -243,7 +243,7 @@ def search_deal_desk_policies_and_clauses(
 V1_BASIC_TOOLS: list[dict[str, Any]] = [
     {
         "name": "evaluate_deal_economics",
-        "description": "Evaluate deal economics and approval tier.",
+        "description": "Evaluate deal economics and approval lane.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -301,7 +301,7 @@ V2_POKAYOKE_TOOLS: list[dict[str, Any]] = [
             "base hosting/support COGS (18% of list ARR), services COGS ($150/hr "
             "unbilled onboarding), Net-60/90 working-capital penalties, effective "
             "gross margin %, margin buffer vs the 72.0% hard floor, required approval "
-            "tier (Auto-Approve / VP-Sales / CFO-And-Legal), and triggered risk flags. "
+            "lane (Auto-Approve / VP-Sales / CFO-And-Legal), and triggered risk flags. "
             "Pass discount_pct as a DECIMAL fraction (0.20 for 20%, NOT 20). "
             "Pass any detected high-risk legal flag codes in proposed_legal_flags."
         ),

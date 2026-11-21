@@ -93,10 +93,10 @@ def _run_pytest() -> dict[str, Any]:
 def _classify_run(row: dict[str, Any]) -> str:
     if int(row.get("deterministic_pass") or 0) == 1:
         return "Passed"
-    tier_ok = int(row.get("tier_exact_match") or 0) == 1
+    lane_ok = int(row.get("lane_exact_match") or 0) == 1
     margin_ok = int(row.get("margin_exact_match") or 0) == 1
     recall = float(row.get("flag_recall") or 0.0)
-    if tier_ok and margin_ok and recall < 1.0:
+    if lane_ok and margin_ok and recall < 1.0:
         return "Partially Passed"
     return "Failed"
 
@@ -431,7 +431,7 @@ def _build_analytics(
     add_tax(
         "non_canonical_flag_labels",
         "Non-canonical / prose risk-flag labels",
-        "Agent included the right legal concept but emitted verbose prose instead of the exact canonical code, so deterministic flag matching scored recall = 0 (tier and margin were already exact).",
+        "Agent included the right legal concept but emitted verbose prose instead of the exact canonical code, so deterministic flag matching scored recall = 0 (lane and margin were already exact).",
         [("GE-018", "v1"), ("GE-019", "v1")],
         resolved_in="v2",
         notes="Both cases became deterministic passes with flag F1 = 1.0 under v2 and v3.",
@@ -464,12 +464,12 @@ def _build_analytics(
         ),
     )
     add_tax(
-        "incorrect_approval_tier",
-        "Incorrect approval tier",
-        "Predicted required_approval_tier did not exact-match the golden label.",
+        "incorrect_approval_lane",
+        "Incorrect approval lane",
+        "Predicted required_approval_lane did not exact-match the golden label.",
         [],
         resolved_in=None,
-        notes="0 / 60 runs. Tier accuracy = 100% in every version.",
+        notes="0 / 60 runs. Lane accuracy = 100% in every version.",
     )
     add_tax(
         "margin_calculation_error",
@@ -658,7 +658,7 @@ def _build_analytics(
             "flag_precision": s["mean_flag_precision"],
             "flag_recall": s["mean_flag_recall"],
             "flag_f1": s["mean_flag_f1"],
-            "tier_accuracy_pct": s["tier_accuracy_pct"],
+            "lane_accuracy_pct": s["lane_accuracy_pct"],
             "margin_accuracy_pct": s["margin_accuracy_pct"],
             "mean_cost_usd": s["mean_cost_usd"],
             "p50_cost_usd": s["p50_cost_usd"],
@@ -735,7 +735,7 @@ def _build_analytics(
             "note": (
                 "60/60 means every case×version produced a scored eval_results row (execution complete). "
                 "Only rows with deterministic_pass=1 are full evaluation passes. "
-                "v1 contributes 3 Partially Passed rows (tier+margin exact, flag recall incomplete)."
+                "v1 contributes 3 Partially Passed rows (lane+margin exact, flag recall incomplete)."
             ),
         },
     }
@@ -858,16 +858,16 @@ def _assemble_dataset(pytest_report: dict[str, Any], git_meta: dict[str, str]) -
                 or "",
                 "difficulty": er["difficulty"],
                 "status": status,
-                "tier_exact_match": int(er["tier_exact_match"]),
+                "lane_exact_match": int(er["lane_exact_match"]),
                 "margin_exact_match": int(er["margin_exact_match"]),
                 "flag_precision": float(er["flag_precision"]),
                 "flag_recall": float(er["flag_recall"]),
                 "flag_f1": float(er["flag_f1"]),
                 "deterministic_pass": int(er["deterministic_pass"]),
-                "expected_approval_tier": g.get("expected_approval_tier"),
+                "expected_approval_lane": g.get("expected_approval_lane"),
                 "expected_gross_margin_pct": g.get("expected_gross_margin_pct"),
                 "expected_risk_flags": expected_flags,
-                "actual_approval_tier": memo.get("required_approval_tier"),
+                "actual_approval_lane": memo.get("required_approval_lane"),
                 "actual_gross_margin_pct": memo.get("calculated_gross_margin_pct"),
                 "actual_risk_flags": memo.get("detected_risk_flags") or [],
                 "judge_model": er["judge_model"],

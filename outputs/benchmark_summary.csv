@@ -1,4 +1,4 @@
-experiment_version,cases_evaluated,deterministic_pass_rate_pct,tier_accuracy_pct,margin_accuracy_pct,mean_flag_precision,mean_flag_recall,mean_flag_f1,mean_judge_score,judge_commercial_accuracy,judge_policy_grounding,judge_executive_clarity,judge_actionability,revision_trigger_rate_pct,mean_cost_usd,p10_cost_usd,p50_cost_usd,p90_cost_usd,avg_cache_hit_rate_pct,p50_latency_s,p90_latency_s
+experiment_version,cases_evaluated,deterministic_pass_rate_pct,lane_accuracy_pct,margin_accuracy_pct,mean_flag_precision,mean_flag_recall,mean_flag_f1,mean_judge_score,judge_commercial_accuracy,judge_policy_grounding,judge_executive_clarity,judge_actionability,revision_trigger_rate_pct,mean_cost_usd,p10_cost_usd,p50_cost_usd,p90_cost_usd,avg_cache_hit_rate_pct,p50_latency_s,p90_latency_s
 v1,20,85.0,100.0,100.0,0.7083,0.85,0.7567,4.99,5.0,5.0,5.0,4.95,0.0,0.096726,0.05777,0.10287,0.120238,0.0,73.065,86.017
 v2,20,100.0,100.0,100.0,1.0,1.0,1.0,4.97,5.0,5.0,5.0,4.9,0.0,0.060637,0.043481,0.051395,0.100891,57.012,47.009,76.776
 v3,20,100.0,100.0,100.0,0.975,1.0,0.9833,4.99,5.0,5.0,5.0,4.95,5.0,0.08129,0.051226,0.063999,0.117943,49.4015,51.396,88.303

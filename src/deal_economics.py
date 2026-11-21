@@ -1,4 +1,4 @@
-"""Single source of truth for B2B SaaS deal-desk unit economics and approval tiers."""
+"""Single source of truth for B2B SaaS deal-desk unit economics and approval lanes."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ HIGH_RISK_LEGAL_FLAGS = frozenset(
     }
 )
 VALID_SEGMENTS = frozenset({"Mid-Market", "Enterprise"})
-APPROVAL_TIERS = frozenset({"Auto-Approve", "VP-Sales", "CFO-And-Legal"})
+APPROVAL_LANES = frozenset({"Auto-Approve", "VP-Sales", "CFO-And-Legal"})
 
 
 def compute_list_arr(annual_contract_value: float, discount_pct: float) -> float:
@@ -83,13 +83,13 @@ def compute_gross_margin_pct(
     )["gross_margin_pct"]
 
 
-def determine_approval_tier(
+def determine_approval_lane(
     discount_pct: float,
     gross_margin_pct: float,
     payment_terms: str,
     risk_flags: list[str],
 ) -> str:
-    """Map deal economics + legal flags to an approval tier."""
+    """Map deal economics + legal flags to an approval lane."""
     has_high_risk = bool(set(risk_flags) & HIGH_RISK_LEGAL_FLAGS)
 
     if (

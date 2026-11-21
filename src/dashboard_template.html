@@ -421,14 +421,14 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   <div class="card">
     <h3 style="margin-top:0">What problem does this solve?</h3>
     <p>Enterprise deals often stall in commercial review: discount authority, payment terms, margin floors, and non-standard legal clauses must be checked before a quote can move. Manual deal-desk review is slow, inconsistent and hard to scale. This application automates a first-pass review so RevOps and deal desks can focus on exceptions.</p>
-    <p class="muted" style="margin-bottom:0"><strong>Note:</strong> Approval authority stays with leadership. Rather than automating sign-off, the agent delivers a decision-ready brief covering verified margins, required approval tiers, contract risk flags, and an executive summary.</p>
+    <p class="muted" style="margin-bottom:0"><strong>Note:</strong> Approval authority stays with leadership. Rather than automating sign-off, the agent delivers a decision-ready brief covering verified margins, required approval lanes, contract risk flags, and an executive summary.</p>
   </div>
 
   <h3>What was built</h3>
   <div class="card built-block" id="system-flow">
     <p class="muted" style="margin-bottom:.35rem">One deal-desk agent pipeline, three configurations: <span class="tag v1">version 1</span> baseline, <span class="tag v2">version 2</span> guardrailed, and <span class="tag v3">version 3</span> with a critic.</p>
     <ul class="list-tight muted" style="margin:.15rem 0 .85rem; padding-left:1.15rem">
-      <li>Code owns exact math: margin, penalties and approval tiers.</li>
+      <li>Code owns exact math: margin, penalties and approval lanes.</li>
       <li>The AI Agent handles unstructured judgment: reading redlines and non-standard clauses, choosing risk flags, and drafting the executive memo.</li>
     </ul>
 
@@ -479,7 +479,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
                 <div style="font-weight:700; margin:.15rem 0 .1rem">Calculates:</div>
                 <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
                   <li>Margin</li>
-                  <li>Approval tier</li>
+                  <li>Approval lane</li>
                   <li>Working-capital penalties</li>
                 </ul>
                 <div style="font-weight:700; margin:.15rem 0 .1rem">Engine:</div>
@@ -559,7 +559,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
                   </ul>
                   <div style="font-weight:700; margin:.15rem 0 .1rem">Guardrails:</div>
                   <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
-                    <li>Must use exact risk codes<br /><span class="muted effect-note">(↑ pass rate)</span></li>
+                    <li>Must use exact risk flags<br /><span class="muted effect-note">(↑ pass rate)</span></li>
                     <li>Constrained tool inputs<br /><span class="muted effect-note">(↑ pass rate)</span></li>
                     <li>Stricter memo schema &amp; prompt<br /><span class="muted effect-note">(↓ latency)</span></li>
                   </ul>
@@ -625,7 +625,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
             <div class="ver-details-body">
               <div style="font-weight:700; margin:.15rem 0 .1rem">From code:</div>
               <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
-                <li>Tier</li>
+                <li>Lane</li>
                 <li>Margin</li>
               </ul>
               <div style="font-weight:700; margin:.15rem 0 .1rem">From AI:</div>
@@ -661,7 +661,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   <div class="card" id="experiment-design"></div>
 
   <h3>Version comparison</h3>
-  <p class="muted">Median (p50) = typical deal. 90th percentile (p90) = slower tail. Deterministic pass rate = share of cases where approval tier, margin and risk-flag recall all matched golden labels.</p>
+  <p class="muted">Median (p50) = typical deal. 90th percentile (p90) = slower tail. Deterministic pass rate = share of cases where approval lane, margin and risk-flag recall all matched golden labels.</p>
   <div class="table-wrap card" style="padding:0" id="primary-compare"></div>
 
   <h3>Primary visualisations</h3>
@@ -812,7 +812,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
           <thead>
             <tr>
               <th>Version</th><th>Case</th><th>Account</th><th>Difficulty</th><th>Status</th>
-              <th>Tier</th><th>Margin</th><th>Flag F1</th><th>Judge</th><th>API cost</th><th>Revised</th>
+              <th>Lane</th><th>Margin</th><th>Flag F1</th><th>Judge</th><th>API cost</th><th>Revised</th>
             </tr>
           </thead>
           <tbody id="case-tbody"></tbody>
@@ -1000,7 +1000,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   document.getElementById('takeaway-costlat').textContent =
     'Commercial takeaway: Cutting JSON-repair retries and enabling prompt caching drove the v1→v2 gain (−50% median API cost, −35.7% median latency). v3 adds +24.5% median cost and stretches p90 latency without a quality lift.';
   document.getElementById('takeaway-heat').textContent =
-    'Commercial takeaway: Margin and tier math stayed correct in every band. v1 only missed legal/compound flag labelling (exact k/n shown); v2 and v3 clear every band.';
+    'Commercial takeaway: Margin and lane math stayed correct in every band. v1 only missed legal/compound flag labelling (exact k/n shown); v2 and v3 clear every band.';
 
   document.getElementById('results-interpretation').innerHTML =
     '<p><span class="tag obs">Observed</span> Moving from Version 1 to Version 2 closed all three partial failures (GE-009, GE-018, GE-019), lifted risk-flag F1 to 1.00, cut median API cost by ' +
@@ -1170,11 +1170,11 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     '<h3 style="margin-top:0">Benchmark design</h3>' +
     '<ul class="list-tight">' +
     '<li><strong>20 test scenarios</strong> covering standard deals, margin-edge cases, legal redlines, and compound traps.</li>' +
-    '<li><strong>Deterministic grading:</strong> approval-tier exact match; gross-margin within tolerance; risk-flag precision, recall and F1 against golden flag codes.</li>' +
+    '<li><strong>Deterministic grading:</strong> approval-lane exact match; gross-margin within tolerance; risk-flag precision, recall and F1 against golden flag codes.</li>' +
     '<li><strong>AI qualitative grading:</strong> an independent Opus model scores commercial accuracy, policy grounding, executive clarity and actionability (1–5).</li>' +
     '<li><strong>Paired design:</strong> every scenario runs under Version 1, Version 2 and Version 3 so comparisons are scenario-matched.</li>' +
     '</ul>' +
-    '<p class="muted" style="margin-bottom:0">A correct approval tier does not by itself mean the memo is complete or safe to act on — qualitative review still matters.</p>';
+    '<p class="muted" style="margin-bottom:0">A correct approval lane does not by itself mean the memo is complete or safe to act on — qualitative review still matters.</p>';
 
   const ex = A.execution_vs_success;
   document.getElementById('exec-vs-success').innerHTML =
@@ -1182,9 +1182,9 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     '<p>' + ex.note + '</p>' +
     '<div class="table-wrap"><table><thead><tr><th>Measure</th><th>Count</th><th>Meaning</th></tr></thead><tbody>' +
     '<tr><td>Benchmark runs completed</td><td><strong>' + ex.benchmark_runs_completed + '/60</strong></td><td>Every case×version produced a scored row</td></tr>' +
-    '<tr><td>Full deterministic passes</td><td><strong>' + ex.deterministic_full_pass + '</strong></td><td>Tier + margin + full flag recall</td></tr>' +
-    '<tr><td>Partial passes</td><td><strong>' + ex.partial_pass + '</strong> (' + DATA.status_breakdown.partial_pass_cases.join(', ') + ')</td><td>Tier+margin OK; flag recall incomplete</td></tr>' +
-    '<tr><td>Hard failures</td><td><strong>' + ex.failed + '</strong></td><td>Tier or margin miss</td></tr>' +
+    '<tr><td>Full deterministic passes</td><td><strong>' + ex.deterministic_full_pass + '</strong></td><td>Lane + margin + full flag recall</td></tr>' +
+    '<tr><td>Partial passes</td><td><strong>' + ex.partial_pass + '</strong> (' + DATA.status_breakdown.partial_pass_cases.join(', ') + ')</td><td>Lane+margin OK; flag recall incomplete</td></tr>' +
+    '<tr><td>Hard failures</td><td><strong>' + ex.failed + '</strong></td><td>Lane or margin miss</td></tr>' +
     '<tr><td>Unit tests (separate)</td><td><strong>' + DATA.kpis.unit_tests_passed + '</strong></td><td>pytest on report regenerate — not agent evals</td></tr>' +
     '</tbody></table></div>';
 
@@ -1212,7 +1212,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   document.getElementById('tech-architecture').innerHTML =
     '<ul class="list-tight">' +
     '<li><strong>Agent:</strong> framework-free Anthropic Messages API tool-use loop (<code>claude-sonnet-4-6</code>).</li>' +
-    '<li><strong>Deterministic core:</strong> Python/SQLite unit economics — 18% list-ARR COGS, services COGS, Net-60/90 penalties, 72% margin floor, approval-tier matrix.</li>' +
+    '<li><strong>Deterministic core:</strong> Python/SQLite unit economics — 18% list-ARR COGS, services COGS, Net-60/90 penalties, 72% margin floor, approval-lane matrix.</li>' +
     '<li><strong>Tools:</strong> poka-yoked schemas (Version 2+) forcing decimal discounts, payment-term enums, canonical legal flags.</li>' +
     '<li><strong>Retrieval:</strong> Deal-Desk policies + CUAD-style clauses in SQLite; BM25 only (v1) or hybrid dense+BM25 RRF (v2/v3).</li>' +
     '<li><strong>Output:</strong> structured <code>DealDeskExecutiveMemo</code> JSON with JSON-repair path when needed.</li>' +
@@ -1382,7 +1382,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 
   const experiments = [
     { pri: 'P0', hyp: 'A larger compound/legal set will show whether the critic net-improves precision without the GE-016 regression.', why: 'v3 high-stakes benefit unsupported (n=1 revision).', benefit: 'Evidence-based keep/cut decision for critic.', success: 'Pre-registered precision/DPR deltas on ≥30 hard cases.', metrics: 'DPR, flag P/R/F1, revision rate, critic $/deal' },
-    { pri: 'P0', hyp: 'Repeated runs (k≥3) quantify consistency of flags and memo fields.', why: 'Single-run design cannot support consistency claims.', benefit: 'Stability confidence intervals.', success: 'Within-case flag agreement rates reported.', metrics: 'Flag Jaccard; tier agreement; cost CV' },
+    { pri: 'P0', hyp: 'Repeated runs (k≥3) quantify consistency of flags and memo fields.', why: 'Single-run design cannot support consistency claims.', benefit: 'Stability confidence intervals.', success: 'Within-case flag agreement rates reported.', metrics: 'Flag Jaccard; lane agreement; cost CV' },
     { pri: 'P1', hyp: 'Human memo evaluation reveals gaps invisible to near-ceiling Opus scores.', why: 'Judge ceiling effect.', benefit: 'Calibrate automation vs human risk.', success: 'Inter-rater reliability on a defined rubric.', metrics: 'Human scores; disagreement with Opus' },
     { pri: 'P1', hyp: 'Tighter critic triggers cut overhead while preserving true catches.', why: '19/20 critic passes skipped revision but still incur critic cost.', benefit: 'Lower unit cost if critic retained.', success: '≥30% critic cost cut, no DPR drop on expanded set.', metrics: 'Critic $/deal; revision precision' },
     { pri: 'P2', hyp: 'Fewer JSON repairs improve p90 latency.', why: 'Repair remains a latency/cost tail.', benefit: 'Snappier p90.', success: '≤2 repair calls / 20; p90 ≤ Version 2 baseline.', metrics: 'Repair calls; p90 latency' },
@@ -1443,7 +1443,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
         el('td', { text: c.account_name || '—' }),
         el('td', { text: c.difficulty }),
         el('td', {}, [el('span', { className: 'badge ' + (c.status === 'Partially Passed' ? 'partial' : c.status), text: c.status })]),
-        el('td', { text: c.actual_approval_tier || '—' }),
+        el('td', { text: c.actual_approval_lane || '—' }),
         el('td', { text: String(c.actual_gross_margin_pct) }),
         el('td', { text: Number(c.flag_f1).toFixed(2) }),
         el('td', { text: String(c.judge_overall_score) }),
@@ -1487,7 +1487,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     bodies.grade.appendChild(el('p', { className: 'muted', text: 'Deterministic graders and Opus scores — not the agent’s commercial recommendation itself.' }));
     bodies.grade.appendChild(el('div', { className: 'table-wrap' }, [el('table', {}, [el('tbody', {}, [
       el('tr', {}, [el('th', { text: 'Field' }), el('th', { text: 'Expected (golden)' }), el('th', { text: 'Actual (agent)' })]),
-      el('tr', {}, [el('td', { text: 'Approval tier' }), el('td', { text: String(c.expected_approval_tier) }), el('td', { text: String(c.actual_approval_tier) })]),
+      el('tr', {}, [el('td', { text: 'Approval lane' }), el('td', { text: String(c.expected_approval_lane) }), el('td', { text: String(c.actual_approval_lane) })]),
       el('tr', {}, [el('td', { text: 'Gross margin %' }), el('td', { text: String(c.expected_gross_margin_pct) }), el('td', { text: String(c.actual_gross_margin_pct) })]),
       el('tr', {}, [el('td', { text: 'Risk flags' }), el('td', { className: 'mono', text: JSON.stringify(c.expected_risk_flags) }), el('td', { className: 'mono', text: JSON.stringify(c.actual_risk_flags) })]),
       el('tr', {}, [el('td', { text: 'Flag P / R / F1' }), el('td', { text: '—' }), el('td', { text: fmtNum(c.flag_precision, 2) + ' / ' + fmtNum(c.flag_recall, 2) + ' / ' + fmtNum(c.flag_f1, 2) })]),

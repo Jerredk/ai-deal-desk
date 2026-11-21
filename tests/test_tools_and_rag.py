@@ -163,7 +163,7 @@ def test_evaluate_deal_economics_matches_all_20_golden_cases(seeded_db_path):
         assert result["gross_margin_pct"] == pytest.approx(
             row["expected_gross_margin_pct"]
         )
-        assert result["required_approval_tier"] == row["expected_approval_tier"]
+        assert result["required_approval_lane"] == row["expected_approval_lane"]
         assert result["margin_floor_pct"] == 72.0
         matches += 1
     assert matches == 20
@@ -187,7 +187,7 @@ def test_evaluate_deal_economics_normalizes_percentage_discount():
     assert as_percent["discount_pct"] == pytest.approx(0.20)
     assert "normalized_discount_note" in as_percent
     assert as_percent["gross_margin_pct"] == as_decimal["gross_margin_pct"]
-    assert as_percent["required_approval_tier"] == as_decimal["required_approval_tier"]
+    assert as_percent["required_approval_lane"] == as_decimal["required_approval_lane"]
 
 
 # ---------------------------------------------------------------------------
@@ -323,7 +323,7 @@ def test_execute_tool_returns_structured_errors(seeded_db_path):
         )
     )
     assert "error" not in ok
-    assert ok["required_approval_tier"] == "Auto-Approve"
+    assert ok["required_approval_lane"] == "Auto-Approve"
 
 
 def test_dual_aci_schema_registries():

@@ -12,7 +12,7 @@ import pytest
 from db.schema import init_db
 from db.seed_db import (
     compute_gross_margin_pct,
-    determine_approval_tier,
+    determine_approval_lane,
     seed_db,
 )
 
@@ -74,7 +74,7 @@ def test_golden_eval_expected_values_match_deterministic_rules(seeded_db):
             payload["payment_terms"],
             payload["services_hours"],
         )
-        expected_tier = determine_approval_tier(
+        expected_tier = determine_approval_lane(
             payload["discount_pct"],
             expected_margin,
             payload["payment_terms"],
@@ -82,7 +82,7 @@ def test_golden_eval_expected_values_match_deterministic_rules(seeded_db):
         )
 
         assert row["expected_gross_margin_pct"] == pytest.approx(expected_margin)
-        assert row["expected_approval_tier"] == expected_tier
+        assert row["expected_approval_lane"] == expected_tier
 
 
 def test_at_least_four_nominal_discount_margin_traps(seeded_db):
@@ -102,11 +102,11 @@ def test_at_least_four_nominal_discount_margin_traps(seeded_db):
     assert len(traps) >= 4, f"Expected >=4 margin traps, found {traps}"
     # All margin traps must escalate to CFO
     for case_id in traps:
-        tier = conn.execute(
-            "SELECT expected_approval_tier FROM golden_eval_cases WHERE case_id = ?",
+        lane = conn.execute(
+            "SELECT expected_approval_lane FROM golden_eval_cases WHERE case_id = ?",
             (case_id,),
         ).fetchone()[0]
-        assert tier == "CFO-And-Legal"
+        assert lane == "CFO-And-Legal"
 
 
 def test_cost_ledger_accepts_inserts_and_queries(seeded_db):
