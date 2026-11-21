@@ -45,6 +45,19 @@ class DealDeskExecutiveMemo(BaseModel):
     required_redline_fallbacks: list[str] = Field(default_factory=list)
 
 
+_RECOMMENDATION_LITERALS = (
+    "APPROVE",
+    "ESCALATE_WITH_CONDITIONS",
+    "REJECT_OR_RESTRUCTURE",
+)
+_TIER_LITERALS = ("Auto-Approve", "VP-Sales", "CFO-And-Legal")
+_STRING_FIELDS = (
+    "executive_summary",
+    "commercial_and_margin_analysis",
+    "legal_and_policy_findings",
+)
+
+
 def _parse_json_response(raw_text: str) -> dict:
     """Strip optional markdown fences and parse JSON; raise ValueError with context."""
     text = (raw_text or "").strip()
@@ -54,6 +67,13 @@ def _parse_json_response(raw_text: str) -> dict:
     fence = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text, re.IGNORECASE)
     if fence:
         text = fence.group(1).strip()
+
+    # Recover trailing prose after a JSON object when present
+    if not text.startswith("{"):
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            text = text[start : end + 1]
 
     try:
         data = json.loads(text)
@@ -66,6 +86,65 @@ def _parse_json_response(raw_text: str) -> dict:
     if not isinstance(data, dict):
         raise ValueError(f"Expected JSON object, got {type(data).__name__}")
     return data
+
+
+def _coerce_memo_dict(data: dict) -> dict:
+    """Normalize common LLM shape drift before Pydantic validation."""
+    out = dict(data)
+
+    rec = out.get("executive_recommendation")
+    if isinstance(rec, str):
+        rec_clean = rec.strip()
+        for lit in _RECOMMENDATION_LITERALS:
+            if rec_clean == lit or rec_clean.startswith(lit):
+                out["executive_recommendation"] = lit
+                break
+
+    tier = out.get("required_approval_tier")
+    if isinstance(tier, str):
+        for lit in _TIER_LITERALS:
+            if lit.lower() in tier.lower().replace("_", "-"):
+                out["required_approval_tier"] = lit
+                break
+
+    for field in _STRING_FIELDS:
+        val = out.get(field)
+        if isinstance(val, (dict, list)):
+            out[field] = json.dumps(val)
+        elif val is None:
+            out[field] = ""
+        elif not isinstance(val, str):
+            out[field] = str(val)
+
+    flags = out.get("detected_risk_flags")
+    if flags is None:
+        out["detected_risk_flags"] = []
+    elif isinstance(flags, str):
+        try:
+            parsed = json.loads(flags)
+            out["detected_risk_flags"] = parsed if isinstance(parsed, list) else [flags]
+        except json.JSONDecodeError:
+            out["detected_risk_flags"] = [flags]
+
+    fallbacks = out.get("required_redline_fallbacks")
+    if fallbacks is None:
+        out["required_redline_fallbacks"] = []
+    elif isinstance(fallbacks, str):
+        out["required_redline_fallbacks"] = [fallbacks]
+    elif isinstance(fallbacks, dict):
+        out["required_redline_fallbacks"] = [json.dumps(fallbacks)]
+
+    if "margin_floor_pct" not in out or out.get("margin_floor_pct") is None:
+        out["margin_floor_pct"] = 72.0
+
+    for num_field in ("calculated_gross_margin_pct", "margin_floor_pct"):
+        if num_field in out and isinstance(out[num_field], str):
+            try:
+                out[num_field] = float(out[num_field].replace("%", "").strip())
+            except ValueError:
+                pass
+
+    return out
 
 
 def _content_blocks_to_dicts(content: Any) -> list[dict]:
@@ -266,7 +345,7 @@ class DealDeskAgent:
         allow_retry: bool,
     ) -> DealDeskExecutiveMemo:
         try:
-            data = _parse_json_response(raw_text)
+            data = _coerce_memo_dict(_parse_json_response(raw_text))
             return DealDeskExecutiveMemo.model_validate(data)
         except (ValueError, ValidationError) as exc:
             if not allow_retry:
@@ -277,7 +356,13 @@ class DealDeskAgent:
                     "content": (
                         "Your previous response was not valid DealDeskExecutiveMemo JSON. "
                         f"Validation error: {exc}\n"
-                        "Return ONLY a corrected JSON object matching the required schema."
+                        "Return ONLY a corrected JSON object. Rules: "
+                        "executive_recommendation must be exactly one of "
+                        "APPROVE | ESCALATE_WITH_CONDITIONS | REJECT_OR_RESTRUCTURE; "
+                        "required_approval_tier must be exactly Auto-Approve | VP-Sales | "
+                        "CFO-And-Legal; commercial_and_margin_analysis and "
+                        "legal_and_policy_findings must be plain strings (not objects); "
+                        "detected_risk_flags and required_redline_fallbacks must be string arrays."
                     ),
                 }
             )
@@ -294,7 +379,7 @@ class DealDeskAgent:
                 {"role": "assistant", "content": _content_blocks_to_dicts(response.content)}
             )
             repaired = _extract_text(response.content)
-            data = _parse_json_response(repaired)
+            data = _coerce_memo_dict(_parse_json_response(repaired))
             return DealDeskExecutiveMemo.model_validate(data)
 
     def _run_producer_loop(

@@ -253,14 +253,22 @@ def _persist_eval_result(db_path: str, row: dict) -> None:
 
 
 def _is_retryable(exc: BaseException) -> bool:
+    from pydantic import ValidationError
+
+    msg = str(exc).lower()
+    if "credit balance is too low" in msg or "insufficient credits" in msg:
+        return False
     if isinstance(exc, (anthropic.RateLimitError, anthropic.APITimeoutError)):
         return True
     if isinstance(exc, anthropic.APIStatusError):
         return exc.status_code in {408, 409, 429, 500, 502, 503, 529}
+    # Transient LLM JSON/shape failures — retry the full case
+    if isinstance(exc, (ValidationError, ValueError, RuntimeError)):
+        return True
     return False
 
 
-def _with_retries(fn, *, max_attempts: int = 5, base_delay: float = 1.0):
+def _with_retries(fn, *, max_attempts: int = 5, base_delay: float = 1.5):
     last_exc: BaseException | None = None
     for attempt in range(max_attempts):
         try:
@@ -271,7 +279,8 @@ def _with_retries(fn, *, max_attempts: int = 5, base_delay: float = 1.0):
                 raise
             delay = base_delay * (2**attempt)
             logger.warning(
-                "Retryable API error (%s); sleeping %.1fs (attempt %d/%d)",
+                "Retryable error (%s: %s); sleeping %.1fs (attempt %d/%d)",
+                type(exc).__name__,
                 exc,
                 delay,
                 attempt + 1,
@@ -407,6 +416,7 @@ def run_benchmark(
                 ): case["case_id"]
                 for case in todo
             }
+            failures: list[str] = []
             for fut in as_completed(futures):
                 case_id = futures[fut]
                 try:
@@ -420,9 +430,17 @@ def run_benchmark(
                         row["judge_overall_score"],
                         row["total_cost_usd"],
                     )
-                except Exception:  # noqa: BLE001
-                    logger.exception("Failed %s/%s", version, case_id)
-                    raise
+                except Exception as exc:  # noqa: BLE001
+                    logger.exception("Failed %s/%s after retries: %s", version, case_id, exc)
+                    failures.append(f"{version}/{case_id}: {exc}")
+
+            if failures:
+                logger.error(
+                    "Version %s finished with %d failures: %s",
+                    version,
+                    len(failures),
+                    "; ".join(failures),
+                )
 
     return {
         "completed": len(completed),
