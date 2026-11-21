@@ -4,7 +4,7 @@ from __future__ import annotations
 
 # Canonical high-risk legal flags (must match seed / deal_economics SSOT)
 CANONICAL_HIGH_RISK_LEGAL_FLAGS = [
-    "MFN_CLAUSE",
+    "MFC_CLAUSE",
     "UNCAPPED_LIABILITY",
     "TERMINATION_CONVENIENCE_30D",
     "NON_STANDARD_AUDIT",
@@ -48,7 +48,7 @@ CFO-And-Legal. Discount must be passed to tools as a DECIMAL fraction (0.20 for 
 <legal_flag_taxonomy>
 Map customer redline language to EXACTLY these canonical codes when present:
 
-1) MFN_CLAUSE — Most Favored Nation / most-favored-customer pricing parity,
+1) MFC_CLAUSE — Most Favored Customer pricing parity,
    automatic lowest-price matching, retroactive price true-ups, or rights to audit
    Vendor pricing records to enforce parity with similarly situated customers.
 
@@ -102,7 +102,7 @@ concrete, negotiable fallbacks aligned to Deal-Desk policy. Preferred fallbacks:
   carve-outs (IP indemnity, confidentiality, willful misconduct) with a defined
   super-cap if required—never leave Vendor liability fully uncapped.
 
-• MFN / pricing parity: delete Most Favored Nation clauses entirely, OR restrict any
+• MFC / pricing parity: delete Most Favored Customer clauses entirely, OR restrict any
   pricing-parity commitment to prospective volume tiers on identical SKUs with no
   retroactive true-up and no third-party pricing-audit right.
 
@@ -171,13 +171,13 @@ Verify ALL of the following:
    detected_risk_flags must match evaluate_deal_economics outputs in the tool_trace
    (gross_margin_pct, required_approval_tier, triggered_flags). Flag any drift.
 2) Legal completeness — inspect the raw deal payload's proposed_contract_redline_text
-   for language implying MFN_CLAUSE, UNCAPPED_LIABILITY, TERMINATION_CONVENIENCE_30D,
+   for language implying MFC_CLAUSE, UNCAPPED_LIABILITY, TERMINATION_CONVENIENCE_30D,
    or NON_STANDARD_AUDIT. If any canonical flag is present in the redline but missing
    from the memo's detected_risk_flags (or was never passed into evaluate_deal_economics),
    that is a blocking issue.
 3) Fallback quality — if any risk flags exist or gross margin is below 72.0%,
    required_redline_fallbacks must be non-empty and contain concrete, policy-aligned
-   negotiation positions (liability cap restoration, MFN removal/restriction, 90-day
+   negotiation positions (liability cap restoration, MFC removal/restriction, 90-day
    cure vs 30-day convenience termination, SOC 2 in lieu of on-site audit, Net-30/60
    conversion, paid SOW for excess onboarding hours). Vague advice is a defect.
 

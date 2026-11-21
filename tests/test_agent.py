@@ -118,7 +118,7 @@ def test_parse_json_response_strips_fences_and_errors():
 
 def test_canonical_flags_and_v2_prompt_cache_threshold():
     assert CANONICAL_HIGH_RISK_LEGAL_FLAGS == [
-        "MFN_CLAUSE",
+        "MFC_CLAUSE",
         "UNCAPPED_LIABILITY",
         "TERMINATION_CONVENIENCE_30D",
         "NON_STANDARD_AUDIT",
@@ -128,7 +128,7 @@ def test_canonical_flags_and_v2_prompt_cache_threshold():
     tools_chars = sum(len(json.dumps(t)) for t in V2_POKAYOKE_TOOLS)
     combined = approximate_token_count(V2_SYSTEM_PROMPT) + tools_chars // 4
     assert combined > 1300
-    assert "MFN_CLAUSE" in V2_SYSTEM_PROMPT
+    assert "MFC_CLAUSE" in V2_SYSTEM_PROMPT
     assert "<tool_execution_protocol>" in V2_SYSTEM_PROMPT
     assert "XML" not in V1_SYSTEM_PROMPT or "<role>" not in V1_SYSTEM_PROMPT
 

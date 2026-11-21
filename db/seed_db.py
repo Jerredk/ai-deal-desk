@@ -235,7 +235,7 @@ def build_rag_chunks() -> list[dict]:
                 "(exclusive of lower bound, inclusive of upper), gross margin >= 72%, "
                 "payment terms Net-30 or Net-60, and zero high-risk legal flags. "
                 "CFO-And-Legal: any discount > 25%, any gross margin < 72%, any Net-90 "
-                "terms, or any high-risk legal flag (MFN_CLAUSE, UNCAPPED_LIABILITY, "
+                "terms, or any high-risk legal flag (MFC_CLAUSE, UNCAPPED_LIABILITY, "
                 "TERMINATION_CONVENIENCE_30D, NON_STANDARD_AUDIT). Mixed conditions that "
                 "do not cleanly fit Auto or VP default to CFO-And-Legal."
             ),
@@ -261,15 +261,15 @@ def build_rag_chunks() -> list[dict]:
         {
             "chunk_id": "CUAD-001",
             "source_type": "CUAD_CLAUSE",
-            "category": "MFN_CLAUSE",
-            "title": "Most Favored Nation Pricing Parity",
+            "category": "MFC_CLAUSE",
+            "title": "Most Favored Customer Pricing Parity",
             "content": (
                 "Most Favored Customer. If during the Term Vendor offers to any "
                 "similarly situated customer pricing, discounts, or commercial terms "
                 "more favorable than those provided to Customer under this Agreement, "
                 "Vendor shall promptly offer Customer the same pricing and terms, and "
                 "Customer's fees shall be retroactively adjusted. Customer may audit "
-                "Vendor's pricing records annually to verify compliance. FLAG: MFN_CLAUSE "
+                "Vendor's pricing records annually to verify compliance. FLAG: MFC_CLAUSE "
                 "(high-risk)."
             ),
         },
@@ -478,7 +478,7 @@ def build_golden_eval_cases() -> list[dict]:
             "services_hours": 16.0,
             "redline_text": (
                 "Standard Order Form. Mutual confidentiality. Data Processing Addendum "
-                "Exhibit B applies. No MFN, uncapped liability, or convenience termination."
+                "Exhibit B applies. No MFC, uncapped liability, or convenience termination."
             ),
             "risk_flags": [],
         },
@@ -580,7 +580,7 @@ def build_golden_eval_cases() -> list[dict]:
             "services_hours": 24.0,
             "redline_text": (
                 "Multi-year Enterprise with 20% discount. Paper is Vendor MSA with "
-                "standard DPA. No MFN or uncapped indemnity."
+                "standard DPA. No MFC or uncapped indemnity."
             ),
             "risk_flags": [],
         },
@@ -707,7 +707,7 @@ def build_golden_eval_cases() -> list[dict]:
         # ----- 5 compound legal / CUAD redline traps -----
         {
             "case_id": "GE-016",
-            "scenario_name": "Compound: MFN clause on otherwise clean deal",
+            "scenario_name": "Compound: MFC clause on otherwise clean deal",
             "difficulty": "compound_trap",
             "account": "GlobalTech Procurement LLC",
             "segment": "Enterprise",
@@ -717,12 +717,12 @@ def build_golden_eval_cases() -> list[dict]:
             "payment_terms": "Net-30",
             "services_hours": 20.0,
             "redline_text": (
-                "Customer inserts Most Favored Nation pricing parity: if Vendor offers "
+                "Customer inserts Most Favored Customer pricing parity: if Vendor offers "
                 "any similarly situated customer more favorable pricing, Customer "
                 "receives the same terms retroactively and may audit Vendor pricing "
-                "records annually. FLAG MFN_CLAUSE."
+                "records annually. FLAG MFC_CLAUSE."
             ),
-            "risk_flags": ["MFN_CLAUSE"],
+            "risk_flags": ["MFC_CLAUSE"],
         },
         {
             "case_id": "GE-017",
@@ -781,7 +781,7 @@ def build_golden_eval_cases() -> list[dict]:
         },
         {
             "case_id": "GE-020",
-            "scenario_name": "Compound: MFN + uncapped liability + Net-90 margin stress",
+            "scenario_name": "Compound: MFC + uncapped liability + Net-90 margin stress",
             "difficulty": "compound_trap",
             "account": "Meridian Sovereign Wealth Ops",
             "segment": "Enterprise",
@@ -791,13 +791,13 @@ def build_golden_eval_cases() -> list[dict]:
             "payment_terms": "Net-90",
             "services_hours": 100.0,
             "redline_text": (
-                "Stack of redlines: Most Favored Nation pricing parity; uncapped "
+                "Stack of redlines: Most Favored Customer pricing parity; uncapped "
                 "indemnification/liability; Net-90 payment; plus 100 hours unbilled "
-                "onboarding. FLAGS: MFN_CLAUSE, UNCAPPED_LIABILITY, "
+                "onboarding. FLAGS: MFC_CLAUSE, UNCAPPED_LIABILITY, "
                 "NET_90_WORKING_CAPITAL, MARGIN_BELOW_FLOOR risk."
             ),
             "risk_flags": [
-                "MFN_CLAUSE",
+                "MFC_CLAUSE",
                 "UNCAPPED_LIABILITY",
                 "NET_90_WORKING_CAPITAL",
                 "MARGIN_BELOW_FLOOR",

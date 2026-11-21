@@ -343,7 +343,7 @@ V2_POKAYOKE_TOOLS: list[dict[str, Any]] = [
                     },
                     "description": (
                         "Canonical legal/commercial risk flag codes detected in the "
-                        "redline text, e.g. MFN_CLAUSE, UNCAPPED_LIABILITY, "
+                        "redline text, e.g. MFC_CLAUSE, UNCAPPED_LIABILITY, "
                         "TERMINATION_CONVENIENCE_30D, NON_STANDARD_AUDIT."
                     ),
                 },
@@ -387,7 +387,7 @@ V2_POKAYOKE_TOOLS: list[dict[str, Any]] = [
         "description": (
             "Call when you need Deal-Desk policy language (discount bands, 72% margin "
             "floor, working-capital rules, escalation matrix) or to classify commercial "
-            "contract redlines against CUAD-style clauses (MFN, uncapped liability, "
+            "contract redlines against CUAD-style clauses (MFC, uncapped liability, "
             "30-day termination for convenience, on-site audit). Use source_type to "
             "narrow the corpus; default mode is hybrid RRF retrieval."
         ),

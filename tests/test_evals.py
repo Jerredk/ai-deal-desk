@@ -102,7 +102,7 @@ def test_grade_deterministic_margin_tolerance_and_misses():
 def test_grade_deterministic_flag_precision_recall_partial():
     case = _case(
         expected_risk_flags_json=json.dumps(
-            ["MARGIN_BELOW_FLOOR", "NET_90_WORKING_CAPITAL", "MFN_CLAUSE"]
+            ["MARGIN_BELOW_FLOOR", "NET_90_WORKING_CAPITAL", "MFC_CLAUSE"]
         )
     )
     # Predicted 2 correct + 1 false positive → precision 2/3, recall 2/3
@@ -133,7 +133,7 @@ def test_grade_deterministic_flag_precision_recall_partial():
             detected_risk_flags=[
                 "MARGIN_BELOW_FLOOR",
                 "NET_90_WORKING_CAPITAL",
-                "MFN_CLAUSE",
+                "MFC_CLAUSE",
                 "EXTRA_NOISE",
             ],
         ),

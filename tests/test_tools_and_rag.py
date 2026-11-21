@@ -222,8 +222,8 @@ def test_local_embed_query_matches_stored_vectors(seeded_db_path):
     assert stored == recomputed
 
 
-def test_bm25_and_hybrid_retrieve_mfn_exact_and_paraphrase(seeded_db_path):
-    exact = "Most Favored Nation"
+def test_bm25_and_hybrid_retrieve_mfc_exact_and_paraphrase(seeded_db_path):
+    exact = "Most Favored Customer"
     paraphrase = "customer demanding automatic lowest price parity"
 
     bm25_exact = bm25_only_search(exact, top_k=4, db_path=seeded_db_path)
@@ -240,22 +240,22 @@ def test_bm25_and_hybrid_retrieve_mfn_exact_and_paraphrase(seeded_db_path):
     hybrid_para = hybrid_rrf_search(paraphrase, top_k=4, db_path=seeded_db_path)
     assert bm25_para and hybrid_para
 
-    def _mfn_relevant(results: list[dict]) -> bool:
+    def _mfc_relevant(results: list[dict]) -> bool:
         for r in results:
             blob = f"{r['title']} {r['content']} {r['category']}".lower()
             if (
                 r["chunk_id"] == "CUAD-001"
                 or "favored" in blob
-                or "mfn" in blob
+                or "mfc" in blob
                 or "pricing parity" in blob
                 or "more favorable" in blob
             ):
                 return True
         return False
 
-    assert _mfn_relevant(hybrid_para), f"hybrid paraphrase miss: {hybrid_para}"
+    assert _mfc_relevant(hybrid_para), f"hybrid paraphrase miss: {hybrid_para}"
     # BM25 or hybrid should surface policy/clause content for pricing parity semantics
-    assert _mfn_relevant(bm25_para) or _mfn_relevant(hybrid_para)
+    assert _mfc_relevant(bm25_para) or _mfc_relevant(hybrid_para)
 
 
 def test_search_filters_by_source_type(seeded_db_path):
