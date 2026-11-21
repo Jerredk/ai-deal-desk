@@ -5,7 +5,7 @@
     "failed": 0,
     "skipped": 0,
     "errors": 0,
-    "duration_s": 1.89
+    "duration_s": 1.01
   },
   "tests": [
     {
@@ -133,5 +133,5 @@
       "outcome": "Passed"
     }
   ],
-  "raw_tail": "tests/test_tools_and_rag.py::test_query_historical_benchmarks_both_segments PASSED [ 83%]\ntests/test_tools_and_rag.py::test_local_embed_query_matches_stored_vectors PASSED [ 87%]\ntests/test_tools_and_rag.py::test_bm25_and_hybrid_retrieve_mfn_exact_and_paraphrase PASSED [ 90%]\ntests/test_tools_and_rag.py::test_search_filters_by_source_type PASSED   [ 93%]\ntests/test_tools_and_rag.py::test_execute_tool_returns_structured_errors PASSED [ 96%]\ntests/test_tools_and_rag.py::test_dual_aci_schema_registries PASSED      [100%]\n\n============================== 31 passed in 1.89s =============================="
+  "raw_tail": "tests/test_tools_and_rag.py::test_query_historical_benchmarks_both_segments PASSED [ 83%]\ntests/test_tools_and_rag.py::test_local_embed_query_matches_stored_vectors PASSED [ 87%]\ntests/test_tools_and_rag.py::test_bm25_and_hybrid_retrieve_mfn_exact_and_paraphrase PASSED [ 90%]\ntests/test_tools_and_rag.py::test_search_filters_by_source_type PASSED   [ 93%]\ntests/test_tools_and_rag.py::test_execute_tool_returns_structured_errors PASSED [ 96%]\ntests/test_tools_and_rag.py::test_dual_aci_schema_registries PASSED      [100%]\n\n============================== 31 passed in 1.01s =============================="
 }
