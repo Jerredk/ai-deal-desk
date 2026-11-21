@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-11-21T00:48:13.052080+00:00",
+  "git": {
+    "commit_sha": "642634d",
+    "commit_full": "642634d327f929c33ff785bbd14cd657af488e60",
+    "branch": "main",
+    "commit_timestamp": "2026-11-21T11:27:14+11:00"
+  },
+  "models": {
+    "agent": "claude-sonnet-4-6",
+    "judge": "claude-opus-4-6"
+  },
+  "artifact_files": [
+    "benchmark_summary.json",
+    "benchmark_summary.csv",
+    "difficulty_breakdown.csv",
+    "case_level_evals.csv",
+    "unit_test_results.json",
+    "traceability_manifest.json",
+    "dashboard_dataset.json"
+  ],
+  "source_mapping": {
+    "benchmark_summary_json": "outputs/benchmark_summary.json",
+    "benchmark_summary_csv": "outputs/benchmark_summary.csv",
+    "difficulty_breakdown_csv": "outputs/difficulty_breakdown.csv",
+    "case_level_evals_csv": "outputs/case_level_evals.csv",
+    "database": "db/deal_desk.db"
+  },
+  "reproduction": "python -m src.build_report",
+  "case_count": 60,
+  "unit_tests": {
+    "passed": 31,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "duration_s": 1.4
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "exit_code": 0,
+  "summary": {
+    "passed": 31,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "duration_s": 1.4
+  },
+  "tests": [
+    {
+      "name": "tests/test_agent.py::test_parse_json_response_strips_fences_and_errors",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_agent.py::test_canonical_flags_and_v2_prompt_cache_threshold",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_agent.py::test_version_config_switches",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_agent.py::test_multiturn_tool_use_logs_cost_ledger",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_agent.py::test_v1_has_no_cache_control_and_uses_basic_tools",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_agent.py::test_v3_critic_no_revision_skips_producer_revision",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_agent.py::test_v3_critic_needs_revision_triggers_producer_revision",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_agent.py::test_malformed_json_triggers_single_repair",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_agent.py::test_max_turns_guardrail",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_evals.py::test_grade_deterministic_exact_match_empty_flags",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_evals.py::test_grade_deterministic_margin_tolerance_and_misses",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_evals.py::test_grade_deterministic_flag_precision_recall_partial",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_evals.py::test_grade_with_llm_judge_parses_scores_and_excludes_from_run_summary",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_evals.py::test_run_benchmark_resume_and_export",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_evals.py::test_eval_results_table_exists_after_init",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_seed_db.py::test_all_tables_exist_with_exact_row_counts",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_seed_db.py::test_golden_eval_expected_values_match_deterministic_rules",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_seed_db.py::test_at_least_four_nominal_discount_margin_traps",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_seed_db.py::test_cost_ledger_accepts_inserts_and_queries",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_seed_db.py::test_init_db_is_idempotent",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_seed_db.py::test_rag_chunk_source_mix",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_calculate_call_cost_exact_usd_and_cache_multipliers",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_cost_ledger_persists_and_summarizes_percentiles",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_evaluate_deal_economics_matches_all_20_golden_cases",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_evaluate_deal_economics_normalizes_percentage_discount",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_query_historical_benchmarks_both_segments",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_local_embed_query_matches_stored_vectors",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_bm25_and_hybrid_retrieve_mfn_exact_and_paraphrase",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_search_filters_by_source_type",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_execute_tool_returns_structured_errors",
+      "outcome": "Passed"
+    },
+    {
+      "name": "tests/test_tools_and_rag.py::test_dual_aci_schema_registries",
+      "outcome": "Passed"
+    }
+  ],
+  "raw_tail": "tests/test_tools_and_rag.py::test_query_historical_benchmarks_both_segments PASSED [ 83%]\ntests/test_tools_and_rag.py::test_local_embed_query_matches_stored_vectors PASSED [ 87%]\ntests/test_tools_and_rag.py::test_bm25_and_hybrid_retrieve_mfn_exact_and_paraphrase PASSED [ 90%]\ntests/test_tools_and_rag.py::test_search_filters_by_source_type PASSED   [ 93%]\ntests/test_tools_and_rag.py::test_execute_tool_returns_structured_errors PASSED [ 96%]\ntests/test_tools_and_rag.py::test_dual_aci_schema_registries PASSED      [100%]\n\n============================== 31 passed in 1.40s =============================="
+}
