@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Inside the AI Deal Desk — Evaluation Case Study</title>
+<title>Inside the AI Deal Desk | Companion Benchmark &amp; Evidence Locker</title>
 <style>
 :root {
   --bg: #f8fafc;
@@ -54,10 +54,11 @@ header.hero { padding: 2.25rem 0 1.25rem; border-bottom: 1px solid var(--line); 
 header.hero .eyebrow { color: var(--accent); font-size:.8rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; margin:0 0 .5rem; }
 header.hero h1 { font-family: var(--display); font-size: clamp(1.75rem, 3vw, 2.25rem); margin:0 0 .4rem; letter-spacing:-.02em; font-weight:700; }
 header.hero .sub { color: var(--muted); max-width: 62ch; margin:0; font-size:1.02rem; }
-.meta-row { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:1rem; }
+.meta-row { display:flex; flex-wrap:wrap; gap:.45rem; margin-top:1.15rem; margin-bottom:.15rem; }
 .pill {
   display:inline-flex; align-items:center; border:1px solid var(--line); background:var(--card);
-  padding:.2rem .55rem; border-radius:999px; font-size:.74rem; color:var(--muted); font-family:var(--mono);
+  padding:.28rem .6rem; border-radius:999px; font-size:.74rem; color:var(--muted); font-family:var(--mono);
+  line-height:1.25;
 }
 section { margin: 2.75rem 0; scroll-margin-top: 4.25rem; }
 section > h2 {
@@ -76,28 +77,38 @@ h3 { margin:1.35rem 0 .55rem; font-size:1.02rem; font-weight:650; }
 @media (max-width: 560px) { .grid.kpis { grid-template-columns: 1fr; } }
 .card {
   background:var(--card); border:1px solid var(--line); border-radius: var(--radius);
-  padding:1rem 1.1rem; box-shadow: var(--shadow);
+  padding:1.1rem 1.15rem; box-shadow: var(--shadow);
 }
 .card .label { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
-.card .value { font-size:1.35rem; font-weight:700; margin-top:.2rem; font-family:var(--mono); letter-spacing:-.02em; }
-.card .hint { color:var(--muted); font-size:.8rem; margin-top:.25rem; }
+.card .value { font-size:1.35rem; font-weight:700; margin-top:.35rem; font-family:var(--mono); letter-spacing:-.02em; }
+.card .hint { color:var(--muted); font-size:.8rem; margin-top:.4rem; line-height:1.4; }
 .kpi-card .value { font-size:1.45rem; }
 .rec-banner {
   background: var(--card); border:1px solid var(--line); border-left:4px solid var(--v2);
-  border-radius: var(--radius); padding:1rem 1.15rem; box-shadow: var(--shadow); margin: 1rem 0;
+  border-radius: var(--radius); padding:1.1rem 1.2rem; box-shadow: var(--shadow); margin: 1rem 0;
 }
 .rec-banner .badge-rec {
   display:inline-block; background: var(--pass-fill); color: var(--pass-text);
-  font-weight:700; font-size:.72rem; letter-spacing:.04em; padding:.2rem .55rem; border-radius:999px; margin-bottom:.45rem;
+  font-weight:700; font-size:.72rem; letter-spacing:.04em; padding:.28rem .6rem; border-radius:999px;
+  margin:0 0 .65rem; line-height:1.25;
 }
-.rec-banner h3 { margin:0 0 .45rem; font-size:1.05rem; }
+.rec-banner h3 { margin:0 0 .55rem; font-size:1.05rem; line-height:1.35; }
+.rec-banner p { margin:.55rem 0 0; line-height:1.55; }
+.rec-banner .tag { margin:0 .15rem .15rem 0; vertical-align:middle; }
 .limits {
   background: #fffbeb; border:1px solid #fde68a; border-radius: var(--radius);
-  padding: .85rem 1rem; margin: 1rem 0; font-size:.9rem;
+  padding: .95rem 1.05rem; margin: 1rem 0; font-size:.9rem; line-height:1.55;
 }
-.limits strong { display:block; margin-bottom:.25rem; }
+.limits strong { display:block; margin-bottom:.4rem; }
 .tag {
-  display:inline-block; padding:.12rem .45rem; border-radius:999px; font-size:.72rem; font-weight:650;
+  display:inline-block; padding:.18rem .5rem; border-radius:999px; font-size:.72rem; font-weight:650;
+  line-height:1.25; vertical-align:middle;
+}
+.card .tag, .map-card .tag, .ver-card .tag, .pipe-step .tag {
+  margin:0 .2rem .15rem 0;
+}
+p .tag, li .tag, h3 .tag {
+  margin-right:.35rem; margin-bottom:.1rem;
 }
 .tag.obs { background: var(--pass-fill); color: var(--pass-text); }
 .tag.interp { background: var(--caution-fill); color: var(--caution-text); }
@@ -126,18 +137,97 @@ th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spaci
 .chart-card svg { width:100%; height:auto; display:block; }
 .muted { color: var(--muted); }
 .mono { font-family: var(--mono); font-size:.8rem; }
-.flow {
-  display:flex; flex-wrap:wrap; gap:.5rem; align-items:stretch; justify-content:flex-start; margin: .75rem 0 0;
+.built-block { padding:1.05rem 1.1rem 1.15rem; }
+.built-block > .muted { margin-top:0; }
+.pipe {
+  display:grid; grid-template-columns: 1fr 1fr 1.75fr 1fr 1fr; gap:.55rem; margin: .85rem 0 1.15rem;
+  align-items: stretch;
 }
-.flow-step {
-  flex: 1 1 120px; min-width: 110px; max-width: 180px;
-  background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:.65rem .7rem; font-size:.8rem;
+@media (max-width: 900px) { .pipe { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .pipe { grid-template-columns: 1fr; } }
+.pipe-step.split {
+  display:flex; flex-direction:column; gap:.45rem; padding:.55rem;
+  background:#f8fafc; border:1px solid var(--line); border-radius:12px;
 }
-.flow-step .step-k { font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); margin-bottom:.2rem; }
-.flow-step.det { border-color:#99f6e4; background:#f0fdfa; }
-.flow-step.ai { border-color:#bfdbfe; background:#eff6ff; }
-.flow-step.opt { border-style:dashed; border-color:#93c5fd; }
-.flow-arrow { display:flex; align-items:center; color:var(--muted); font-size:1.1rem; padding:0 .1rem; }
+.pipe-step.split > .step-k { margin:0 .15rem; }
+.pipe-split {
+  display:grid; grid-template-columns:1fr 1fr; gap:.4rem; flex:1;
+}
+@media (max-width: 560px) { .pipe-split { grid-template-columns:1fr; } }
+.pipe-mini {
+  border-radius:10px; padding:.55rem .55rem .5rem; font-size:.78rem; border:1px solid var(--line); height:100%;
+}
+.pipe-mini.v1 { background:#fafaf9; border-color:#d6d3d1; }
+.pipe-mini.v2 { background:#f0fdfa; border-color:#99f6e4; }
+.pipe-mini .mini-head {
+  display:flex; align-items:center; gap:.35rem; margin-bottom:.35rem; flex-wrap:wrap;
+}
+.pipe-mini .mini-label {
+  font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--muted);
+}
+.pipe-mini .step-body { margin:0; line-height:1.35; }
+.pipe-step {
+  position:relative; background:#f8fafc; border:1px solid var(--line); border-radius:12px;
+  padding:.75rem .7rem .7rem; font-size:.8rem; min-height:100%;
+}
+.pipe-step .pipe-icon {
+  width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  margin-bottom:.45rem;
+}
+.pipe-step .pipe-icon svg { width:18px; height:18px; display:block; }
+.pipe-step .step-k { font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); margin:0 0 .35rem; }
+.pipe-step .step-body { margin:0; color:var(--ink); line-height:1.4; }
+.pipe-step.det { border-color:#99f6e4; background:#f0fdfa; }
+.pipe-step.det .pipe-icon { background:#ccfbf1; color:#0f766e; }
+.pipe-step.ai { border-color:#bfdbfe; background:#eff6ff; }
+.pipe-step.ai .pipe-icon { background:#dbeafe; color:#1d4ed8; }
+.pipe-step.out { border-color:#e2e8f0; background:#fff; }
+.pipe-step.out .pipe-icon { background:#f1f5f9; color:#475569; }
+.pipe-step.opt {
+  border-style:dashed; border-color:#93c5fd; background:linear-gradient(180deg,#eff6ff 0%,#f8fafc 100%);
+}
+.pipe-step.opt .pipe-icon { background:#dbeafe; color:var(--v3); }
+.pipe-step .pipe-badge {
+  display:inline-block; margin-top:.65rem; font-size:.68rem; font-weight:700; font-family:var(--mono);
+  padding:.2rem .45rem; border-radius:999px; line-height:1.25;
+}
+.ver-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:.85rem; margin-top:.35rem; }
+@media (max-width: 800px) { .ver-cards { grid-template-columns:1fr; } }
+.ver-card {
+  border:1px solid var(--line); border-radius:12px; padding:1rem .95rem .95rem; background:#fff;
+  border-top-width:4px;
+}
+.ver-card.v1 { border-top-color: var(--v1); }
+.ver-card.v2 { border-top-color: var(--v2); background:linear-gradient(180deg,#f0fdfa 0%,#fff 42%); }
+.ver-card.v3 { border-top-color: var(--v3); }
+.ver-card .ver-head { display:flex; align-items:flex-start; gap:.65rem; margin-bottom:.7rem; }
+.ver-card .ver-ico {
+  width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  margin-top:.1rem;
+}
+.ver-card.v1 .ver-ico { background:#f5f5f4; color:var(--v1); }
+.ver-card.v2 .ver-ico { background:var(--accent-soft); color:var(--v2); }
+.ver-card.v3 .ver-ico { background:#dbeafe; color:var(--v3); }
+.ver-card .ver-ico svg { width:20px; height:20px; display:block; }
+.ver-card .ver-title {
+  font-weight:700; font-size:.95rem; margin:0 0 .35rem; line-height:1.35;
+  display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .45rem;
+}
+.ver-card .ver-title .tag { margin:0; }
+.ver-card .ver-sub { margin:0; font-size:.75rem; color:var(--muted); line-height:1.35; }
+.ver-card ul { margin:.65rem 0 0; padding-left:1.05rem; font-size:.82rem; }
+.ver-card li { margin:.3rem 0; line-height:1.4; }
+.ver-card .ver-tagline {
+  margin:.75rem 0 0; font-size:.78rem; font-weight:650; padding:.45rem .55rem; border-radius:8px; line-height:1.4;
+}
+.ver-card.v1 .ver-tagline { background:#f5f5f4; color:#57534e; }
+.ver-card.v2 .ver-tagline { background:var(--accent-soft); color:var(--v2); }
+.ver-card.v3 .ver-tagline { background:#dbeafe; color:#1e40af; }
+.built-legend { display:flex; flex-wrap:wrap; gap:.45rem .75rem; margin:.85rem 0 0; font-size:.8rem; color:var(--muted); }
+.built-legend span { display:inline-flex; align-items:center; gap:.35rem; }
+.built-legend i {
+  width:10px; height:10px; border-radius:3px; display:inline-block;
+}
 details.panel {
   background: var(--card); border:1px solid var(--line); border-radius: var(--radius);
   margin: .65rem 0; box-shadow: var(--shadow);
@@ -150,6 +240,29 @@ details.panel > summary::-webkit-details-marker { display:none; }
 details.panel > summary::after { content:"+"; color:var(--muted); font-weight:700; font-family:var(--mono); }
 details.panel[open] > summary::after { content:"–"; }
 details.panel .panel-body { padding: 0 1rem 1rem; border-top:1px solid var(--line); }
+details.section-toggle {
+  background: transparent; border: none; border-radius: 0; margin: 0; box-shadow: none;
+}
+details.section-toggle > summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; justify-content: flex-start; gap: .55rem;
+  padding: 0; margin: 0 0 .35rem;
+  font-family: var(--display); font-size: 1.35rem; font-weight: 700; letter-spacing: -.015em;
+  color: var(--ink);
+}
+details.section-toggle > summary::-webkit-details-marker { display: none; }
+details.section-toggle > summary::before {
+  content: "▸";
+  color: var(--muted); font-size: 1rem; font-weight: 700; line-height: 1;
+  transition: transform .15s ease;
+}
+details.section-toggle[open] > summary::before {
+  content: "▾";
+}
+details.section-toggle > summary::after { content: none; }
+details.section-toggle .section-toggle-body {
+  padding: .35rem 0 0; border: none;
+}
 .controls { display:flex; flex-wrap:wrap; gap:.55rem; margin: .75rem 0 1rem; }
 .controls input, .controls select, .controls button {
   border:1px solid var(--line); background:#fff; border-radius:8px; padding:.42rem .55rem; font:inherit; font-size:.9rem;
@@ -173,7 +286,9 @@ pre.json {
 .proj-row { display:flex; flex-wrap:wrap; gap:1rem; align-items:end; margin:.6rem 0; }
 .proj-row label { display:flex; flex-direction:column; gap:.2rem; font-size:.82rem; color:var(--muted); }
 .list-tight li { margin:.28rem 0; }
-.legend-bar { display:flex; flex-wrap:wrap; gap:.6rem; font-size:.78rem; color:var(--muted); margin:.5rem 0 .85rem; }
+.legend-bar { display:flex; flex-wrap:wrap; gap:.65rem 1rem; font-size:.78rem; color:var(--muted); margin:.85rem 0 .35rem; align-items:center; }
+.legend-bar > span { display:inline-flex; align-items:center; gap:.4rem; line-height:1.35; }
+.legend-bar .tag { margin:0; }
 footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:.82rem; }
 .clickable { cursor:pointer; }
 .clickable:hover { background:#f8fafc; }
@@ -185,6 +300,31 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 }
 #chart-tooltip .tt-title { font-weight:700; margin-bottom:.15rem; font-family:var(--sans); color:#fff; }
 .ver-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:.3rem; }
+.article-map { margin: 1.25rem 0 0.25rem; }
+.article-map h2 { font-size:1.05rem; margin:0 0 .65rem; letter-spacing:-.01em; }
+.article-map a.map-card {
+  display:block; color: inherit; text-decoration:none;
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:1rem 1.05rem; box-shadow:var(--shadow); height:100%;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.article-map a.map-card:hover {
+  border-color: var(--accent); box-shadow: 0 2px 10px rgba(15,118,110,.12); text-decoration:none;
+}
+.article-map .map-kicker {
+  font-size:.7rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--accent); margin:0 0 .45rem;
+}
+.article-map .map-claim { font-weight:700; font-size:.95rem; margin:0 0 .45rem; line-height:1.4; }
+.article-map .map-metric { font-family:var(--mono); font-size:.78rem; color:var(--muted); margin:0 0 .65rem; line-height:1.4; }
+.article-map .map-go { font-size:.78rem; font-weight:650; color:var(--accent); }
+.preset-row { display:flex; flex-wrap:wrap; gap:.45rem; margin:0 0 .85rem; }
+.preset-row button {
+  border:1px solid var(--line); background:#fff; border-radius:999px; padding:.35rem .7rem;
+  font-size:.78rem; cursor:pointer; color:var(--muted); font-weight:600;
+}
+.preset-row button:hover { border-color:var(--line-strong); color:var(--ink); }
+.preset-row button.active { background:var(--ink); color:#fff; border-color:var(--ink); }
 </style>
 </head>
 <body>
@@ -203,9 +343,9 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 
 <div class="wrap">
 <header class="hero">
-  <p class="eyebrow">Technical case study</p>
+  <p class="eyebrow">Companion Benchmark &amp; Evidence Locker</p>
   <h1>Inside the AI Deal Desk</h1>
-  <p class="sub">System design, evaluation results and engineering trade-offs.</p>
+  <p class="sub">Empirical evidence behind "Inside the AI Deal Desk": 60 benchmark runs testing deterministic guardrails, hybrid retrieval, and critic loops.</p>
   <div class="meta-row" id="meta-pills"></div>
   <div class="legend-bar">
     <span><span class="tag obs">Observed</span> measured result</span>
@@ -214,34 +354,164 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   </div>
 </header>
 
+<div class="article-map" id="article-map">
+  <h2>Article-to-evidence map</h2>
+  <div class="grid three">
+    <a class="map-card" href="#results">
+      <p class="map-kicker">Article claim 1</p>
+      <p class="map-claim">Math &amp; routing belong in code</p>
+      <p class="map-metric">100% tier &amp; margin accuracy (60/60 runs)</p>
+      <p class="map-go">Open experiment results →</p>
+    </a>
+    <a class="map-card" href="#tech-cost">
+      <p class="map-kicker">Article claim 2</p>
+      <p class="map-claim">Guardrailed single-agent (v2) wins</p>
+      <p class="map-metric">100% pass rate at $0.051 median API cost</p>
+      <p class="map-go">Open cost &amp; latency evidence →</p>
+    </a>
+    <a class="map-card" href="#explorer">
+      <p class="map-kicker">Article claim 3</p>
+      <p class="map-claim">Critic loop (v3) fails the ROI test</p>
+      <p class="map-metric">+24.5% median cost, 1/20 revisions, GE-016 precision drop</p>
+      <p class="map-go">Open case explorer →</p>
+    </a>
+  </div>
+</div>
+
 <!-- ========== 1 SOLUTION ========== -->
 <section id="solution">
   <h2>1. Solution Overview</h2>
-  <p class="section-lead">A deal-desk agent that reviews enterprise SaaS commercial terms, calculates margin and approval requirements, grounds risk findings in policy, and produces a structured executive memo for sales leadership.</p>
+  <p class="section-lead">Verifies the article's division of labor: deterministic Python/SQLite owns margin and approval routing; a constrained agent handles redline judgment and the structured DealDeskExecutiveMemo.</p>
 
   <div class="card">
     <h3 style="margin-top:0">What problem does this solve?</h3>
     <p>Enterprise deals often stall in commercial review: discount authority, payment terms, margin floors, and non-standard legal clauses must be checked before a quote can move. Manual deal-desk review is slow and inconsistent. This application automates a first-pass review so RevOps and deal desks can focus on exceptions.</p>
-    <p class="muted" style="margin-bottom:0">The agent does not replace human approval. It prepares a structured recommendation — calculated margin, required approval tier, detected risk flags, and an executive memo — for a human decision-maker.</p>
+    <p class="muted" style="margin-bottom:0">The agent does not replace human approval. It prepares a structured recommendation (calculated margin, required approval tier, detected risk flags, and an executive memo) for a human decision-maker.</p>
   </div>
 
   <h3>What was built</h3>
-  <div class="card">
-    <p class="muted" style="margin-top:0">End-to-end workflow from the implemented agent. Dashed steps exist only in Version 3.</p>
-    <div class="flow" id="system-flow">
-      <div class="flow-step"><div class="step-k">1. Input</div>Deal JSON: account, discount, payment terms, redlines, services hours</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step det"><div class="step-k">2. Deterministic tools</div>Margin math, approval tier, working-capital penalties (Python/SQLite)</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step ai"><div class="step-k">3. Retrieval</div>Policy + contract clauses via BM25 (v1) or hybrid BM25 + dense RRF (v2/v3)</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step ai"><div class="step-k">4. Agent loop</div>Anthropic Messages tool-use → structured <code>DealDeskExecutiveMemo</code></div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step opt"><div class="step-k">5. Critic (v3)</div>Optional Evaluator-Optimizer review + conditional revision</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step"><div class="step-k">6. Output</div>Tier, margin, risk flags, memo — then offline evaluation graders</div>
+  <div class="card built-block" id="system-flow">
+    <p class="muted">One deal-desk agent pipeline, three configurations: <span class="tag v1">v1</span> baseline, <span class="tag v2">v2</span> guardrailed (split below), and <span class="tag v3">v3</span> with a critic. Code owns exact math; the model handles unstructured judgment.</p>
+
+    <div class="pipe" aria-label="Deal desk pipeline">
+      <div class="pipe-step out">
+        <div class="pipe-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+        </div>
+        <div class="step-k">1. Deal input</div>
+        <p class="step-body">Account, discount, payment terms, redlines, services hours</p>
+        <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
+      </div>
+      <div class="pipe-step det">
+        <div class="pipe-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+        </div>
+        <div class="step-k">2. Deterministic math</div>
+        <p class="step-body">Margin, approval tier, working-capital penalties in Python/SQLite</p>
+        <span class="pipe-badge" style="background:#ccfbf1;color:#0f766e">Same in v1–v3</span>
+      </div>
+      <div class="pipe-step split" aria-label="Retrieval and agent differ by version">
+        <div class="step-k">3. Retrieval + agent (where versions diverge)</div>
+        <div class="pipe-split">
+          <div class="pipe-mini v1">
+            <div class="mini-head">
+              <span class="tag v1">v1</span>
+              <span class="mini-label">Baseline</span>
+            </div>
+            <p class="step-body">BM25-only retrieval, basic tools, no prompt caching. Drafts the memo with fewer guardrails.</p>
+          </div>
+          <div class="pipe-mini v2">
+            <div class="mini-head">
+              <span class="tag v2">v2</span>
+              <span class="mini-label">Guardrailed</span>
+            </div>
+            <p class="step-body">Hybrid BM25 + dense RRF, canonical risk-flag constraints, prompt caching. Also the agent core inside v3.</p>
+          </div>
+        </div>
+      </div>
+      <div class="pipe-step opt">
+        <div class="pipe-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </div>
+        <div class="step-k">4. Critic (optional)</div>
+        <p class="step-body">Evaluator-Optimizer review with conditional revision</p>
+        <span class="pipe-badge" style="background:#dbeafe;color:var(--v3)">v3 only</span>
+      </div>
+      <div class="pipe-step out">
+        <div class="pipe-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="step-k">5. Human-ready output</div>
+        <p class="step-body">Tier, margin, risk flags, memo, then offline graders</p>
+        <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
+      </div>
     </div>
-    <p class="muted" style="margin:.75rem 0 0;font-size:.82rem"><span style="background:#f0fdfa;border:1px solid #99f6e4;padding:0 .3rem;border-radius:4px">Green</span> = deterministic calculation · <span style="background:#eff6ff;border:1px solid #bfdbfe;padding:0 .3rem;border-radius:4px">Blue</span> = model-assisted · Dashed = Version 3 only</p>
+
+    <p class="muted" style="margin:0 0 .55rem;font-size:.84rem">What changed across the three configurations:</p>
+    <div class="ver-cards">
+      <article class="ver-card v1">
+        <div class="ver-head">
+          <div class="ver-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15V9"/><path d="M12 15V7"/><path d="M16 15v-3"/></svg>
+          </div>
+          <div>
+            <p class="ver-title"><span class="tag v1">v1</span> Baseline</p>
+            <p class="ver-sub">Config 1 · starting agent</p>
+          </div>
+        </div>
+        <ul>
+          <li>BM25-only retrieval</li>
+          <li>Basic tool schemas</li>
+          <li>No prompt caching</li>
+          <li>No critic loop</li>
+        </ul>
+        <p class="ver-tagline">85% pass rate · highest median cost</p>
+      </article>
+      <article class="ver-card v2">
+        <div class="ver-head">
+          <div class="ver-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <div>
+            <p class="ver-title"><span class="tag v2">v2</span> Guardrailed</p>
+            <p class="ver-sub">Config 2 · recommended in this eval</p>
+          </div>
+        </div>
+        <ul>
+          <li>Hybrid BM25 + dense RRF retrieval</li>
+          <li>Canonical risk-flag constraints</li>
+          <li>Prompt caching enabled</li>
+          <li>Fewer JSON-repair retries</li>
+        </ul>
+        <p class="ver-tagline">100% pass · lowest median cost and latency</p>
+      </article>
+      <article class="ver-card v3">
+        <div class="ver-head">
+          <div class="ver-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/><path d="M9 12h3l2-2 2 4 1-2h2"/></svg>
+          </div>
+          <div>
+            <p class="ver-title"><span class="tag v3">v3</span> + Critic loop</p>
+            <p class="ver-sub">Config 3 · v2 plus Evaluator-Optimizer</p>
+          </div>
+        </div>
+        <ul>
+          <li>Everything in v2</li>
+          <li>Critic reviews every memo</li>
+          <li>Conditional producer revision</li>
+          <li>Revised only 1/20 deals (GE-016)</li>
+        </ul>
+        <p class="ver-tagline">Same pass rate · higher cost, weaker ROI</p>
+      </article>
+    </div>
+
+    <div class="built-legend" aria-label="Legend">
+      <span><i style="background:#99f6e4"></i> Deterministic code</span>
+      <span><i style="background:#93c5fd"></i> Model-assisted</span>
+      <span><i style="background:var(--v1)"></i> v1 baseline</span>
+      <span><i style="background:var(--v2)"></i> v2 guardrailed</span>
+      <span><i style="background:var(--v3)"></i> v3 critic</span>
+    </div>
   </div>
 
   <h3>Key findings <span class="tag v2">Version 2</span></h3>
@@ -255,7 +525,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 <!-- ========== 2 RESULTS ========== -->
 <section id="results">
   <h2>2. Experiment Results</h2>
-  <p class="section-lead">Three agent configurations were evaluated on the same 20 commercial scenarios (60 benchmark runs). Figures below are measured API-level benchmark results, not total business operating cost.</p>
+  <p class="section-lead">Verifies what changed across Config 1 (v1), Config 2 (v2), and Config 3 (v3) on the same 20 scenarios. Figures are measured API-level agent costs and latency, not full deal-desk turnaround with human queues.</p>
 
   <div class="card" id="experiment-design"></div>
 
@@ -300,7 +570,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 <!-- ========== 3 METHODOLOGY ========== -->
 <section id="methodology">
   <h2>3. Evaluation Methodology</h2>
-  <p class="section-lead">How the application was scored — in plain language first, with statistical detail available on demand.</p>
+  <p class="section-lead">Verifies how pass rates, risk-flag scores, and confidence bounds were calculated, including why 60/60 completed runs is not a 100% evaluation pass rate.</p>
   <div class="card" id="method-overview"></div>
   <div class="card" style="margin-top:1rem" id="exec-vs-success"></div>
 
@@ -321,7 +591,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 <!-- ========== 4 TECHNICAL ========== -->
 <section id="technical">
   <h2>4. Technical Deep Dive</h2>
-  <p class="section-lead">Architecture, agent design, retrieval, unit economics, failure analysis and proposed next experiments. Expand a subsection to inspect evidence.</p>
+  <p class="section-lead">Inspect the implementation evidence behind the article: architecture, retrieval, prompt caching, critic overhead, failure taxonomy, and proposed next experiments.</p>
 
   <details class="panel">
     <summary>A. System architecture</summary>
@@ -335,7 +605,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     <summary>C. Retrieval &amp; policy grounding</summary>
     <div class="panel-body" id="tech-retrieval"></div>
   </details>
-  <details class="panel">
+  <details class="panel" id="tech-cost">
     <summary>D. Cost, tokens &amp; latency detail</summary>
     <div class="panel-body">
       <div id="cost-semantics" class="muted" style="margin-bottom:.75rem"></div>
@@ -355,7 +625,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
       <div id="latency-investigation" style="margin-top:1rem"></div>
       <div class="table-wrap" style="margin-top:1rem" id="step-latency-table"></div>
       <h3>Monthly API-cost projection</h3>
-      <p class="muted">Estimate only — observed evaluation agent costs × volume. Not guaranteed production spend.</p>
+      <p class="muted">Estimate only: observed evaluation agent costs × volume. Not guaranteed production spend.</p>
       <div class="proj-row">
         <label>Monthly deal volume
           <input type="range" id="deal-volume" min="50" max="5000" step="50" value="500" />
@@ -390,29 +660,39 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 
 <!-- ========== 5 EXPLORER ========== -->
 <section id="explorer">
-  <h2>5. Case Explorer &amp; Traceability</h2>
-  <p class="section-lead">Inspect any of the 60 evaluation runs: filters, expected-versus-actual graders, the AI memo, and on-demand traces. This is the evidence locker for the claims above.</p>
-  <div class="controls">
-    <select id="f-version"><option value="All">All versions</option><option>v1</option><option>v2</option><option>v3</option></select>
-    <select id="f-diff"><option value="All">All difficulties</option><option>standard</option><option>edge_margin</option><option>edge_legal</option><option>compound_trap</option></select>
-    <select id="f-status"><option value="All">All statuses</option><option>Passed</option><option>Partially Passed</option><option>Failed</option></select>
-    <input id="f-search" type="search" placeholder="Search case id or account…" style="min-width:200px;" />
-  </div>
-  <div class="table-wrap card" style="padding:0">
-    <table>
-      <thead>
-        <tr>
-          <th>Version</th><th>Case</th><th>Account</th><th>Difficulty</th><th>Status</th>
-          <th>Tier</th><th>Margin</th><th>Flag F1</th><th>Judge</th><th>API cost</th><th>Revised</th>
-        </tr>
-      </thead>
-      <tbody id="case-tbody"></tbody>
-    </table>
-  </div>
-  <div id="case-drawer" class="drawer"></div>
+  <details class="section-toggle" id="explorer-panel">
+    <summary>5. Case Explorer &amp; Traceability</summary>
+    <div class="section-toggle-body">
+      <p class="section-lead">Open the exact runs cited in the article (v1 taxonomy misses, margin traps, and the v3 GE-016 critic revision) without leaving the evidence locker.</p>
+      <div class="preset-row" id="explorer-presets" role="group" aria-label="Article case presets">
+        <button type="button" data-preset="all" class="active">All Runs (60)</button>
+        <button type="button" data-preset="v1fixes">v1 → v2 Fixes (GE-009, GE-018, GE-019)</button>
+        <button type="button" data-preset="margin">Margin Traps (edge_margin)</button>
+        <button type="button" data-preset="ge016">v3 Critic Revision (GE-016)</button>
+      </div>
+      <div class="controls">
+        <select id="f-version"><option value="All">All versions</option><option>v1</option><option>v2</option><option>v3</option></select>
+        <select id="f-diff"><option value="All">All difficulties</option><option>standard</option><option>edge_margin</option><option>edge_legal</option><option>compound_trap</option></select>
+        <select id="f-status"><option value="All">All statuses</option><option>Passed</option><option>Partially Passed</option><option>Failed</option></select>
+        <input id="f-search" type="search" placeholder="Search case id or account…" style="min-width:200px;" />
+      </div>
+      <div class="table-wrap card" style="padding:0">
+        <table>
+          <thead>
+            <tr>
+              <th>Version</th><th>Case</th><th>Account</th><th>Difficulty</th><th>Status</th>
+              <th>Tier</th><th>Margin</th><th>Flag F1</th><th>Judge</th><th>API cost</th><th>Revised</th>
+            </tr>
+          </thead>
+          <tbody id="case-tbody"></tbody>
+        </table>
+      </div>
+      <div id="case-drawer" class="drawer"></div>
 
-  <h3>Traceability</h3>
-  <div class="card" id="trace-box"></div>
+      <h3>Traceability</h3>
+      <div class="card" id="trace-box"></div>
+    </div>
+  </details>
 </section>
 
 <footer>
@@ -535,9 +815,9 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 
   document.getElementById('landing-limits').innerHTML =
     '<strong>Important limitations</strong>' +
-    'Single run per scenario×version (no consistency estimate). McNemar test on Version 1→2 pass improvement is underpowered (3 discordant pairs, exact p=0.25). ' +
-    'Legal/compound subgroups are tiny (n=2 / n=3). Opus qualitative scores sit near the ceiling, so they barely discriminate versions. ' +
-    'Benefit of the Version 3 critic on “high-stakes” deals remains a <span class="tag hyp">hypothesis</span> — not demonstrated here.';
+    'Single run per scenario×version (no consistency estimate). McNemar test on Version 1→2 pass improvement is underpowered (exact p=0.25 on n=20; 3 discordant pairs). ' +
+    'edge_legal (n=2) and compound_trap (n=3) subgroups are tiny. Opus LLM-as-a-Judge overall means sit at a ceiling of about 4.97–4.99 / 5.0, so qualitative scores barely discriminate versions. ' +
+    'Benefit of the Version 3 critic on “high-stakes” deals remains a <span class="tag hyp">hypothesis</span>, not demonstrated here.';
 
   // ===== 2 Experiment design + table =====
   document.getElementById('experiment-design').innerHTML =
@@ -584,13 +864,13 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   })();
 
   document.getElementById('takeaway-pareto').textContent =
-    'Takeaway: Version 2 sits in the high-quality / lower-cost region. Version 3 matches quality at higher median cost.';
+    'Commercial takeaway: Guardrailed v2 owns the quality/cost frontier (100% pass at $0.051 median API cost). Adding the v3 critic matches quality at higher spend.';
   document.getElementById('takeaway-flags').textContent =
-    'Takeaway: Version 2 reaches perfect precision and recall. Version 3 keeps full recall but precision dips to ' + fmtNum(v3.mean_flag_precision, 3) + '.';
+    'Commercial takeaway: Canonical risk-flag constraints in v2 lifted Flag F1 from 0.7567 to 1.0000. The v3 critic kept full recall but mean precision dipped to ' + fmtNum(v3.mean_flag_precision, 3) + ' after the GE-016 false positive.';
   document.getElementById('takeaway-costlat').textContent =
-    'Takeaway: Version 2 cuts both median cost and median latency versus Version 1. Version 3 adds overhead versus Version 2.';
+    'Commercial takeaway: Cutting JSON-repair retries and enabling prompt caching drove the v1→v2 gain (−50% median API cost, −35.7% median latency). v3 adds +24.5% median cost and stretches p90 latency without a quality lift.';
   document.getElementById('takeaway-heat').textContent =
-    'Takeaway: Version 1 misses only on legal/compound flag labelling (exact k/n shown). Versions 2 and 3 clear every band.';
+    'Commercial takeaway: Margin and tier math stayed correct in every band. v1 only missed legal/compound flag labelling (exact k/n shown); v2 and v3 clear every band.';
 
   document.getElementById('results-interpretation').innerHTML =
     '<p><span class="tag obs">Observed</span> Moving from Version 1 to Version 2 closed all three partial failures (GE-009, GE-018, GE-019), lifted risk-flag F1 to 1.00, cut median API cost by ' +
@@ -987,6 +1267,32 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   // ===== 5 Explorer =====
   const tbody = document.getElementById('case-tbody');
   const drawer = document.getElementById('case-drawer');
+  let caseIdSet = null;
+  const PRESETS = {
+    all: { version: 'All', diff: 'All', status: 'All', search: '', ids: null },
+    v1fixes: { version: 'All', diff: 'All', status: 'All', search: '', ids: ['GE-009', 'GE-018', 'GE-019'] },
+    margin: { version: 'All', diff: 'edge_margin', status: 'All', search: '', ids: null },
+    ge016: { version: 'v3', diff: 'All', status: 'All', search: '', ids: ['GE-016'] }
+  };
+  function setPresetActive(name) {
+    document.querySelectorAll('#explorer-presets button').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-preset') === name);
+    });
+  }
+  function applyPreset(name) {
+    const p = PRESETS[name] || PRESETS.all;
+    document.getElementById('f-version').value = p.version;
+    document.getElementById('f-diff').value = p.diff;
+    document.getElementById('f-status').value = p.status;
+    document.getElementById('f-search').value = p.search;
+    caseIdSet = p.ids ? new Set(p.ids) : null;
+    setPresetActive(name);
+    renderCases();
+  }
+  function clearPresetHighlight() {
+    setPresetActive(null);
+    caseIdSet = null;
+  }
   function renderCases() {
     const ver = document.getElementById('f-version').value;
     const diff = document.getElementById('f-diff').value;
@@ -994,6 +1300,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     const q = (document.getElementById('f-search').value || '').toLowerCase();
     tbody.innerHTML = '';
     DATA.cases.filter(c => {
+      if (caseIdSet && !caseIdSet.has(c.case_id)) return false;
       if (ver !== 'All' && c.experiment_version !== ver) return false;
       if (diff !== 'All' && c.difficulty !== diff) return false;
       if (status !== 'All' && c.status !== status) return false;
@@ -1070,8 +1377,32 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     drawer.appendChild(tabs); drawer.appendChild(panes);
     drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
-  ['f-version', 'f-diff', 'f-status', 'f-search'].forEach(id => document.getElementById(id).addEventListener('input', renderCases));
-  renderCases();
+  document.querySelectorAll('#explorer-presets button').forEach(btn => {
+    btn.addEventListener('click', () => applyPreset(btn.getAttribute('data-preset')));
+  });
+  ['f-version', 'f-diff', 'f-status', 'f-search'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      clearPresetHighlight();
+      renderCases();
+    });
+  });
+  applyPreset('all');
+
+  function openHashTarget() {
+    const id = (location.hash || '').replace(/^#/, '');
+    if (!id) return;
+    const elTarget = document.getElementById(id);
+    if (!elTarget) return;
+    if (elTarget.tagName === 'DETAILS') elTarget.open = true;
+    const parentDetails = elTarget.closest && elTarget.closest('details.panel');
+    if (parentDetails) parentDetails.open = true;
+    if (id === 'explorer') {
+      const panel = document.getElementById('explorer-panel');
+      if (panel) panel.open = true;
+    }
+  }
+  window.addEventListener('hashchange', openHashTarget);
+  openHashTarget();
 
   document.getElementById('trace-box').innerHTML =
     '<p><strong>Git:</strong> <code>' + meta.git.commit_sha + '</code> on <code>' + meta.git.branch + '</code></p>' +
