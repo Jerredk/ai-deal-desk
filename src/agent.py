@@ -668,8 +668,19 @@ def load_golden_case(case_id: str, db_path: str = DEFAULT_DB_PATH) -> dict:
 
 def main() -> None:
     load_dotenv()
-    parser = argparse.ArgumentParser(description="Run DealDeskAgent on a golden case")
-    parser.add_argument("--case-id", default="GE-015")
+    parser = argparse.ArgumentParser(
+        description="Run DealDeskAgent on a golden case or custom deal JSON"
+    )
+    parser.add_argument(
+        "--case-id",
+        default="GE-015",
+        help="Golden eval case_id from db (ignored when --deal-json is set)",
+    )
+    parser.add_argument(
+        "--deal-json",
+        default=None,
+        help="Path to a custom deal payload JSON file (overrides --case-id)",
+    )
     parser.add_argument(
         "--version",
         default="v3",
@@ -679,7 +690,18 @@ def main() -> None:
     parser.add_argument("--model", default=DEFAULT_MODEL)
     args = parser.parse_args()
 
-    case_row = load_golden_case(args.case_id, args.db_path)
+    if args.deal_json:
+        deal_path = Path(args.deal_json)
+        raw = deal_path.read_text(encoding="utf-8")
+        # Validate JSON shape early; keep raw string for deal_payload_json
+        json.loads(raw)
+        case_row = {
+            "case_id": "CUSTOM",
+            "deal_payload_json": raw,
+        }
+    else:
+        case_row = load_golden_case(args.case_id, args.db_path)
+
     agent = DealDeskAgent(model=args.model, db_path=args.db_path)
     result = agent.run_case(case_row, experiment_version=args.version)
     memo = result["memo"]

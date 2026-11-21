@@ -24,8 +24,11 @@ cp .env.example .env   # set ANTHROPIC_API_KEY=
 python db/seed_db.py
 pytest -v
 python -m src.agent --case-id GE-015 --version v3
+python -m src.agent --deal-json path/to/deal.json --version v2
 python -m src.evals --versions v1 v2 v3 --workers 3
 ```
+
+Custom deals: pass `--deal-json <path>` with an AE deal payload JSON (account, ACV, term, discount, payment terms, services hours, redline text). This overrides `--case-id` and runs as `case_id=CUSTOM`.
 
 ## 3. Test Setup
 
