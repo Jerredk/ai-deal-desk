@@ -1,4 +1,16 @@
-# GitHub Linguist: treat this repo as Python source.
-# Report HTML/JSON and other non-source artifacts are excluded from language stats.
-* linguist-vendored
-*.py -linguist-vendored
+# Explicit Linguist overrides (wildcards have been unreliable for this repo's language bar).
+results/index.html linguist-generated=true
+results/index.html linguist-vendored=true
+results/index.html linguist-detectable=false
+results/index.html linguist-language=Python
+src/dashboard_template.html linguist-generated=true
+src/dashboard_template.html linguist-vendored=true
+src/dashboard_template.html linguist-detectable=false
+src/dashboard_template.html linguist-language=Python
+
+results/data/dashboard_dataset.json linguist-generated=true
+results/data/dashboard_dataset.json linguist-vendored=true
+results/data/unit_test_results.json linguist-generated=true
+results/data/traceability_manifest.json linguist-generated=true
+results/data/benchmark_summary.json linguist-generated=true
+outputs/benchmark_summary.json linguist-generated=true
