@@ -1,0 +1,4 @@
+# Keep GitHub language stats focused on source, not generated report artifacts.
+results/** linguist-generated=true
+outputs/** linguist-generated=true
+src/dashboard_template.html linguist-detectable=false
