@@ -53,7 +53,12 @@ nav.top .links a:hover { color: var(--ink); text-decoration: none; }
 header.hero { padding: 2.25rem 0 1.25rem; border-bottom: 1px solid var(--line); margin-bottom: .5rem; }
 header.hero .eyebrow { color: var(--accent); font-size:.8rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; margin:0 0 .5rem; }
 header.hero h1 { font-family: var(--display); font-size: clamp(1.75rem, 3vw, 2.25rem); margin:0 0 .4rem; letter-spacing:-.02em; font-weight:700; }
-header.hero .sub { color: var(--muted); max-width: 62ch; margin:0; font-size:1.02rem; }
+header.hero .sub {
+  color: var(--muted); margin:0; font-size:1.02rem; white-space: nowrap;
+}
+@media (max-width: 900px) {
+  header.hero .sub { white-space: normal; }
+}
 .meta-row { display:flex; flex-wrap:wrap; gap:.45rem; margin-top:1.15rem; margin-bottom:.15rem; }
 .pill {
   display:inline-flex; align-items:center; border:1px solid var(--line); background:var(--card);
@@ -101,10 +106,15 @@ h3 { margin:1.35rem 0 .55rem; font-size:1.02rem; font-weight:650; }
 }
 .limits strong { display:block; margin-bottom:.4rem; }
 .tag {
-  display:inline-block; padding:.18rem .5rem; border-radius:999px; font-size:.72rem; font-weight:650;
-  line-height:1.25; vertical-align:middle;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:.18rem .5rem; border-radius:999px; font-size:.72rem; font-weight:650;
+  line-height:1; vertical-align:middle; min-height:1.45em;
 }
-.card .tag, .map-card .tag, .ver-card .tag, .pipe-step .tag {
+.tag.v1, .tag.v2, .tag.v3 {
+  display:inline-flex; align-items:center; justify-content:center;
+  line-height:1; min-height:1.5em; padding:.2rem .55rem;
+}
+.card .tag, .ver-card .tag, .pipe-step .tag {
   margin:0 .2rem .15rem 0;
 }
 p .tag, li .tag, h3 .tag {
@@ -137,38 +147,78 @@ th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spaci
 .chart-card svg { width:100%; height:auto; display:block; }
 .muted { color: var(--muted); }
 .mono { font-family: var(--mono); font-size:.8rem; }
-.built-block { padding:1.05rem 1.1rem 1.15rem; }
+.built-block { padding:1.05rem 1.1rem 1.15rem; overflow:visible; }
 .built-block > .muted { margin-top:0; }
+#system-flow { overflow:visible; }
 .pipe {
-  display:grid; grid-template-columns: 1fr 1fr 1.75fr 1fr 1fr; gap:.55rem; margin: .85rem 0 1.15rem;
-  align-items: stretch;
+  display:grid; grid-template-columns: minmax(170px, .95fr) minmax(0, 2.4fr) minmax(150px, .85fr);
+  gap:.55rem; margin: .85rem 0 0; align-items: start;
 }
-@media (max-width: 900px) { .pipe { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 480px) { .pipe { grid-template-columns: 1fr; } }
+@media (max-width: 900px) {
+  .pipe { grid-template-columns: 1fr; }
+  .pipe-math-row { flex-direction: column; }
+  .pipe-h-arrow { transform: rotate(90deg); padding:.15rem 0; }
+}
+.pipe-math-row {
+  display:flex; flex-direction:row; align-items:center; gap:.45rem; min-width:0;
+}
+.pipe-math-row > .pipe-step { flex:1 1 auto; min-width:0; }
+.pipe-h-arrow {
+  display:flex; align-items:center; justify-content:center;
+  flex:0 0 auto; align-self:center; color:var(--muted); font-size:1.25rem; font-weight:700;
+  line-height:1; padding:0 .05rem; user-select:none;
+}
+.pipe-stack {
+  display:flex; flex-direction:column; gap:0; height:auto; min-width:0;
+}
+.pipe-stack > .pipe-step { flex:0 0 auto; height:auto; min-height:0; }
+.pipe-stack-arrow {
+  display:flex; align-items:center; justify-content:center;
+  color:var(--muted); font-size:1.15rem; font-weight:700; padding:.35rem 0; line-height:1;
+}
 .pipe-step.split {
-  display:flex; flex-direction:column; gap:.45rem; padding:.55rem;
+  display:flex; flex-direction:column; gap:.55rem; padding:.75rem .7rem .8rem;
   background:#f8fafc; border:1px solid var(--line); border-radius:12px;
+  height:auto; min-height:0; overflow:visible;
 }
-.pipe-step.split > .step-k { margin:0 .15rem; }
-.pipe-split {
-  display:grid; grid-template-columns:1fr 1fr; gap:.4rem; flex:1;
+.pipe-step.split > .step-k { margin:0; }
+.pipe-step.split .ver-cards {
+  margin-top:0; gap:.55rem; grid-template-columns:1fr 1fr;
+  align-items:start; flex:0 0 auto;
 }
-@media (max-width: 560px) { .pipe-split { grid-template-columns:1fr; } }
-.pipe-mini {
-  border-radius:10px; padding:.55rem .55rem .5rem; font-size:.78rem; border:1px solid var(--line); height:100%;
+@media (max-width: 700px) {
+  .pipe-step.split .ver-cards { grid-template-columns:1fr; }
 }
-.pipe-mini.v1 { background:#fafaf9; border-color:#d6d3d1; }
-.pipe-mini.v2 { background:#f0fdfa; border-color:#99f6e4; }
-.pipe-mini .mini-head {
-  display:flex; align-items:center; gap:.35rem; margin-bottom:.35rem; flex-wrap:wrap;
+.pipe-step.split .ver-card {
+  font-size:.9rem; height:auto; min-height:0;
 }
-.pipe-mini .mini-label {
-  font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--muted);
+.pipe-step.split .ver-card .ver-step {
+  font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+  color:var(--muted); margin:0 0 .2rem;
 }
-.pipe-mini .step-body { margin:0; line-height:1.35; }
+.pipe-step.split .ver-card .ver-tagline {
+  margin-top:.75rem;
+}
+.pipe-col {
+  display:flex; flex-direction:column; gap:0; height:auto; min-width:0; min-height:0;
+  position:relative; z-index:1;
+}
+.pipe-col > .ver-card { flex:0 0 auto; height:auto; position:relative; z-index:1; }
+.pipe-loop {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:.2rem; padding:.45rem 0 .55rem; color:var(--v3); font-size:.78rem; font-weight:700; line-height:1;
+  flex:0 0 auto; position:relative; z-index:0;
+}
+.pipe-loop .loop-arrows {
+  display:flex; flex-direction:row; align-items:center; justify-content:center; gap:.15rem; font-size:1rem; line-height:1;
+}
+.pipe > .pipe-step.out {
+  height:auto; min-height:0; align-self:start;
+}
 .pipe-step {
   position:relative; background:#f8fafc; border:1px solid var(--line); border-radius:12px;
-  padding:.75rem .7rem .7rem; font-size:.8rem; min-height:100%;
+  padding:.75rem .7rem .7rem; font-size:.8rem; min-height:0; height:auto;
+  display:flex; flex-direction:column;
 }
 .pipe-step .pipe-icon {
   width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center;
@@ -188,14 +238,15 @@ th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spaci
 }
 .pipe-step.opt .pipe-icon { background:#dbeafe; color:var(--v3); }
 .pipe-step .pipe-badge {
-  display:inline-block; margin-top:.65rem; font-size:.68rem; font-weight:700; font-family:var(--mono);
-  padding:.2rem .45rem; border-radius:999px; line-height:1.25;
+  display:inline-flex; align-items:center; justify-content:center;
+  margin-top:auto; font-size:.68rem; font-weight:700; font-family:var(--mono);
+  padding:0 .55rem; min-height:1.55em; border-radius:999px; line-height:1; align-self:flex-start;
 }
-.ver-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:.85rem; margin-top:.35rem; }
+.ver-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:.85rem; margin-top:.35rem; align-items:stretch; }
 @media (max-width: 800px) { .ver-cards { grid-template-columns:1fr; } }
 .ver-card {
   border:1px solid var(--line); border-radius:12px; padding:1rem .95rem .95rem; background:#fff;
-  border-top-width:4px;
+  border-top-width:4px; height:100%; display:flex; flex-direction:column;
 }
 .ver-card.v1 { border-top-color: var(--v1); }
 .ver-card.v2 { border-top-color: var(--v2); background:linear-gradient(180deg,#f0fdfa 0%,#fff 42%); }
@@ -218,16 +269,15 @@ th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spaci
 .ver-card ul { margin:.65rem 0 0; padding-left:1.05rem; font-size:.82rem; }
 .ver-card li { margin:.3rem 0; line-height:1.4; }
 .ver-card .ver-tagline {
-  margin:.75rem 0 0; font-size:.78rem; font-weight:650; padding:.45rem .55rem; border-radius:8px; line-height:1.4;
+  display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+  gap:.2rem; margin-top:auto; margin-bottom:0;
+  padding:.55rem .6rem; min-height:0;
+  font-size:.78rem; font-weight:650; border-radius:8px; line-height:1.35;
 }
-.ver-card.v1 .ver-tagline { background:#f5f5f4; color:#57534e; }
-.ver-card.v2 .ver-tagline { background:var(--accent-soft); color:var(--v2); }
-.ver-card.v3 .ver-tagline { background:#dbeafe; color:#1e40af; }
-.built-legend { display:flex; flex-wrap:wrap; gap:.45rem .75rem; margin:.85rem 0 0; font-size:.8rem; color:var(--muted); }
-.built-legend span { display:inline-flex; align-items:center; gap:.35rem; }
-.built-legend i {
-  width:10px; height:10px; border-radius:3px; display:inline-block;
-}
+.ver-card .ver-tagline span { display:block; }
+.ver-card.v1 .ver-tagline { background:var(--fail-fill); color:var(--fail-text); }
+.ver-card.v2 .ver-tagline { background:var(--pass-fill); color:var(--pass-text); }
+.ver-card.v3 .ver-tagline { background:var(--caution-fill); color:var(--caution-text); }
 details.panel {
   background: var(--card); border:1px solid var(--line); border-radius: var(--radius);
   margin: .65rem 0; box-shadow: var(--shadow);
@@ -300,24 +350,6 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 }
 #chart-tooltip .tt-title { font-weight:700; margin-bottom:.15rem; font-family:var(--sans); color:#fff; }
 .ver-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:.3rem; }
-.article-map { margin: 1.25rem 0 0.25rem; }
-.article-map h2 { font-size:1.05rem; margin:0 0 .65rem; letter-spacing:-.01em; }
-.article-map a.map-card {
-  display:block; color: inherit; text-decoration:none;
-  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-  padding:1rem 1.05rem; box-shadow:var(--shadow); height:100%;
-  transition: border-color .15s ease, box-shadow .15s ease;
-}
-.article-map a.map-card:hover {
-  border-color: var(--accent); box-shadow: 0 2px 10px rgba(15,118,110,.12); text-decoration:none;
-}
-.article-map .map-kicker {
-  font-size:.7rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
-  color:var(--accent); margin:0 0 .45rem;
-}
-.article-map .map-claim { font-weight:700; font-size:.95rem; margin:0 0 .45rem; line-height:1.4; }
-.article-map .map-metric { font-family:var(--mono); font-size:.78rem; color:var(--muted); margin:0 0 .65rem; line-height:1.4; }
-.article-map .map-go { font-size:.78rem; font-weight:650; color:var(--accent); }
 .preset-row { display:flex; flex-wrap:wrap; gap:.45rem; margin:0 0 .85rem; }
 .preset-row button {
   border:1px solid var(--line); background:#fff; border-radius:999px; padding:.35rem .7rem;
@@ -348,169 +380,162 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   <p class="sub">Empirical evidence behind "Inside the AI Deal Desk": 60 benchmark runs testing deterministic guardrails, hybrid retrieval, and critic loops.</p>
   <div class="meta-row" id="meta-pills"></div>
   <div class="legend-bar">
-    <span><span class="tag obs">Observed</span> measured result</span>
-    <span><span class="tag interp">Interpretation</span> analytical reading</span>
-    <span><span class="tag hyp">Hypothesis</span> untested</span>
+    <span><span class="tag obs">Observed</span> Measured Result</span>
+    <span><span class="tag interp">Interpretation</span> Analytical Reading</span>
+    <span><span class="tag hyp">Hypothesis</span> Untested</span>
   </div>
 </header>
-
-<div class="article-map" id="article-map">
-  <h2>Article-to-evidence map</h2>
-  <div class="grid three">
-    <a class="map-card" href="#results">
-      <p class="map-kicker">Article claim 1</p>
-      <p class="map-claim">Math &amp; routing belong in code</p>
-      <p class="map-metric">100% tier &amp; margin accuracy (60/60 runs)</p>
-      <p class="map-go">Open experiment results →</p>
-    </a>
-    <a class="map-card" href="#tech-cost">
-      <p class="map-kicker">Article claim 2</p>
-      <p class="map-claim">Guardrailed single-agent (v2) wins</p>
-      <p class="map-metric">100% pass rate at $0.051 median API cost</p>
-      <p class="map-go">Open cost &amp; latency evidence →</p>
-    </a>
-    <a class="map-card" href="#explorer">
-      <p class="map-kicker">Article claim 3</p>
-      <p class="map-claim">Critic loop (v3) fails the ROI test</p>
-      <p class="map-metric">+24.5% median cost, 1/20 revisions, GE-016 precision drop</p>
-      <p class="map-go">Open case explorer →</p>
-    </a>
-  </div>
-</div>
 
 <!-- ========== 1 SOLUTION ========== -->
 <section id="solution">
   <h2>1. Solution Overview</h2>
-  <p class="section-lead">Verifies the article's division of labor: deterministic Python/SQLite owns margin and approval routing; a constrained agent handles redline judgment and the structured DealDeskExecutiveMemo.</p>
 
   <div class="card">
     <h3 style="margin-top:0">What problem does this solve?</h3>
-    <p>Enterprise deals often stall in commercial review: discount authority, payment terms, margin floors, and non-standard legal clauses must be checked before a quote can move. Manual deal-desk review is slow and inconsistent. This application automates a first-pass review so RevOps and deal desks can focus on exceptions.</p>
-    <p class="muted" style="margin-bottom:0">The agent does not replace human approval. It prepares a structured recommendation (calculated margin, required approval tier, detected risk flags, and an executive memo) for a human decision-maker.</p>
+    <p>Enterprise deals often stall in commercial review: discount authority, payment terms, margin floors, and non-standard legal clauses must be checked before a quote can move. Manual deal-desk review is slow, inconsistent and hard to scale. This application automates a first-pass review so RevOps and deal desks can focus on exceptions.</p>
+    <p class="muted" style="margin-bottom:0"><strong>Note:</strong> Approval authority stays with leadership. Rather than automating sign-off, the agent delivers a decision-ready brief covering verified margins, required approval tiers, contract risk flags, and an executive summary.</p>
   </div>
 
   <h3>What was built</h3>
   <div class="card built-block" id="system-flow">
-    <p class="muted">One deal-desk agent pipeline, three configurations: <span class="tag v1">v1</span> baseline, <span class="tag v2">v2</span> guardrailed (split below), and <span class="tag v3">v3</span> with a critic. Code owns exact math; the model handles unstructured judgment.</p>
+    <p class="muted" style="margin-bottom:.35rem">One deal-desk agent pipeline, three configurations: <span class="tag v1">version 1</span> baseline, <span class="tag v2">version 2</span> guardrailed, and <span class="tag v3">version 3</span> with a critic.</p>
+    <ul class="list-tight muted" style="margin:.15rem 0 .85rem; padding-left:1.15rem">
+      <li>Code owns exact math: margin, penalties and approval tiers.</li>
+      <li>The AI Agent handles unstructured judgment: reading redlines and non-standard clauses, choosing risk flags, and drafting the executive memo.</li>
+    </ul>
 
     <div class="pipe" aria-label="Deal desk pipeline">
-      <div class="pipe-step out">
-        <div class="pipe-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      <div class="pipe-stack">
+        <div class="pipe-step out">
+          <div class="pipe-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+          </div>
+          <div class="step-k">1. Deal input</div>
+          <ul class="list-tight" style="margin:.15rem 0 .55rem; padding-left:1.05rem">
+            <li>Account</li>
+            <li>Discount</li>
+            <li>Payment terms</li>
+            <li>Redlines</li>
+            <li>Services hours</li>
+          </ul>
+          <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
         </div>
-        <div class="step-k">1. Deal input</div>
-        <p class="step-body">Account, discount, payment terms, redlines, services hours</p>
-        <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
-      </div>
-      <div class="pipe-step det">
-        <div class="pipe-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+        <div class="pipe-stack-arrow" aria-hidden="true">↓</div>
+        <div class="pipe-math-row">
+          <div class="pipe-step out">
+            <div class="pipe-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+            </div>
+            <div class="step-k">2. Deterministic math</div>
+            <ul class="list-tight" style="margin:.15rem 0 .55rem; padding-left:1.05rem">
+              <li>Margin</li>
+              <li>Approval tier</li>
+              <li>Working-capital penalties</li>
+              <li>Python/SQLite</li>
+            </ul>
+            <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
+          </div>
+          <div class="pipe-h-arrow" aria-hidden="true">→</div>
         </div>
-        <div class="step-k">2. Deterministic math</div>
-        <p class="step-body">Margin, approval tier, working-capital penalties in Python/SQLite</p>
-        <span class="pipe-badge" style="background:#ccfbf1;color:#0f766e">Same in v1–v3</span>
       </div>
+
       <div class="pipe-step split" aria-label="Retrieval and agent differ by version">
+        <div class="pipe-icon" aria-hidden="true" style="background:#dbeafe;color:#1d4ed8">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="10" rx="2"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M8 19v2M16 19v2M3 13h2M19 13h2"/></svg>
+        </div>
         <div class="step-k">3. Retrieval + agent (where versions diverge)</div>
-        <div class="pipe-split">
-          <div class="pipe-mini v1">
-            <div class="mini-head">
-              <span class="tag v1">v1</span>
-              <span class="mini-label">Baseline</span>
+        <div class="ver-cards">
+          <article class="ver-card v1">
+            <p class="ver-step">3.1 Baseline</p>
+            <div class="ver-head">
+              <div class="ver-ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15V9"/><path d="M12 15V7"/><path d="M16 15v-3"/></svg>
+              </div>
+              <div>
+                <p class="ver-title"><span class="tag v1">V1</span> Baseline</p>
+                <p class="ver-sub">Config 1 - Starting Agent</p>
+              </div>
             </div>
-            <p class="step-body">BM25-only retrieval, basic tools, no prompt caching. Drafts the memo with fewer guardrails.</p>
-          </div>
-          <div class="pipe-mini v2">
-            <div class="mini-head">
-              <span class="tag v2">v2</span>
-              <span class="mini-label">Guardrailed</span>
+            <ul>
+              <li>BM25-only retrieval</li>
+              <li>Basic tool schemas</li>
+              <li>No prompt caching</li>
+              <li>No critic loop</li>
+            </ul>
+            <p class="ver-tagline">
+              <span>Pass rate: 85.0%</span>
+              <span>Cost: Highest</span>
+              <span>Latency: Highest</span>
+            </p>
+          </article>
+          <div class="pipe-col" aria-label="Version 2 agent with optional version 3 Evaluator-Optimizer">
+            <article class="ver-card v2">
+              <p class="ver-step">3.2 Guardrailed</p>
+              <div class="ver-head">
+                <div class="ver-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                </div>
+                <div>
+                  <p class="ver-title"><span class="tag v2">V2</span> Guardrailed</p>
+                  <p class="ver-sub">Config 2 - Evals + Caching</p>
+                </div>
+              </div>
+              <ul>
+                <li>Hybrid BM25 + dense RRF retrieval</li>
+                <li>Canonical risk-flag constraints</li>
+                <li>Prompt caching enabled</li>
+                <li>Fewer JSON-repair retries</li>
+              </ul>
+              <p class="ver-tagline">
+                <span>Pass rate: 100.0%</span>
+                <span>Cost: Lowest</span>
+                <span>Latency: Lowest</span>
+              </p>
+            </article>
+            <div class="pipe-loop" aria-hidden="true">
+              <div class="loop-arrows"><span>↓</span><span>↑</span></div>
             </div>
-            <p class="step-body">Hybrid BM25 + dense RRF, canonical risk-flag constraints, prompt caching. Also the agent core inside v3.</p>
+            <article class="ver-card v3">
+              <p class="ver-step">3.3 Evaluator-Optimizer</p>
+              <div class="ver-head">
+                <div class="ver-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                </div>
+                <div>
+                  <p class="ver-title"><span class="tag v3">V3</span> Evaluator-Optimizer</p>
+                  <p class="ver-sub">Config 3 - Model critic review</p>
+                </div>
+              </div>
+              <ul>
+                <li>Everything in v2</li>
+                <li>Critic reviews every memo</li>
+                <li>Conditional producer revision</li>
+                <li>Revised only 1/20 deals (GE-016)</li>
+              </ul>
+              <p class="ver-tagline">
+                <span>Pass rate: 100.0%</span>
+                <span>Cost: Higher</span>
+                <span>Latency: Higher</span>
+              </p>
+            </article>
           </div>
         </div>
       </div>
-      <div class="pipe-step opt">
-        <div class="pipe-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-        </div>
-        <div class="step-k">4. Critic (optional)</div>
-        <p class="step-body">Evaluator-Optimizer review with conditional revision</p>
-        <span class="pipe-badge" style="background:#dbeafe;color:var(--v3)">v3 only</span>
-      </div>
+
       <div class="pipe-step out">
         <div class="pipe-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         </div>
-        <div class="step-k">5. Human-ready output</div>
-        <p class="step-body">Tier, margin, risk flags, memo, then offline graders</p>
+        <div class="step-k">4. Human-ready output</div>
+        <ul class="list-tight" style="margin:.15rem 0 .55rem; padding-left:1.05rem">
+          <li>Tier</li>
+          <li>Margin</li>
+          <li>Risk flags</li>
+          <li>Memo</li>
+          <li>Offline graders</li>
+        </ul>
         <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
       </div>
-    </div>
-
-    <p class="muted" style="margin:0 0 .55rem;font-size:.84rem">What changed across the three configurations:</p>
-    <div class="ver-cards">
-      <article class="ver-card v1">
-        <div class="ver-head">
-          <div class="ver-ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15V9"/><path d="M12 15V7"/><path d="M16 15v-3"/></svg>
-          </div>
-          <div>
-            <p class="ver-title"><span class="tag v1">v1</span> Baseline</p>
-            <p class="ver-sub">Config 1 · starting agent</p>
-          </div>
-        </div>
-        <ul>
-          <li>BM25-only retrieval</li>
-          <li>Basic tool schemas</li>
-          <li>No prompt caching</li>
-          <li>No critic loop</li>
-        </ul>
-        <p class="ver-tagline">85% pass rate · highest median cost</p>
-      </article>
-      <article class="ver-card v2">
-        <div class="ver-head">
-          <div class="ver-ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-          </div>
-          <div>
-            <p class="ver-title"><span class="tag v2">v2</span> Guardrailed</p>
-            <p class="ver-sub">Config 2 · recommended in this eval</p>
-          </div>
-        </div>
-        <ul>
-          <li>Hybrid BM25 + dense RRF retrieval</li>
-          <li>Canonical risk-flag constraints</li>
-          <li>Prompt caching enabled</li>
-          <li>Fewer JSON-repair retries</li>
-        </ul>
-        <p class="ver-tagline">100% pass · lowest median cost and latency</p>
-      </article>
-      <article class="ver-card v3">
-        <div class="ver-head">
-          <div class="ver-ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/><path d="M9 12h3l2-2 2 4 1-2h2"/></svg>
-          </div>
-          <div>
-            <p class="ver-title"><span class="tag v3">v3</span> + Critic loop</p>
-            <p class="ver-sub">Config 3 · v2 plus Evaluator-Optimizer</p>
-          </div>
-        </div>
-        <ul>
-          <li>Everything in v2</li>
-          <li>Critic reviews every memo</li>
-          <li>Conditional producer revision</li>
-          <li>Revised only 1/20 deals (GE-016)</li>
-        </ul>
-        <p class="ver-tagline">Same pass rate · higher cost, weaker ROI</p>
-      </article>
-    </div>
-
-    <div class="built-legend" aria-label="Legend">
-      <span><i style="background:#99f6e4"></i> Deterministic code</span>
-      <span><i style="background:#93c5fd"></i> Model-assisted</span>
-      <span><i style="background:var(--v1)"></i> v1 baseline</span>
-      <span><i style="background:var(--v2)"></i> v2 guardrailed</span>
-      <span><i style="background:var(--v3)"></i> v3 critic</span>
     </div>
   </div>
 
@@ -785,9 +810,8 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   }
 
   // Meta
-  ['git ' + (meta.git.commit_sha || 'n/a'), meta.git.branch || '?', 'agent ' + meta.models.agent, 'judge ' + meta.models.judge,
-    'generated ' + (meta.generated_at || '').slice(0, 19) + 'Z', '60 eval runs'
-  ].forEach(t => document.getElementById('meta-pills').appendChild(el('span', { className: 'pill', text: t })));
+  ['Agent: Claude-Sonnet-4-6', 'Judge: Claude-Opus-4.6']
+    .forEach(t => document.getElementById('meta-pills').appendChild(el('span', { className: 'pill', text: t })));
 
   // ===== 1 Hero KPIs (from data) =====
   const hero = document.getElementById('hero-kpis');
