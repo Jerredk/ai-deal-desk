@@ -183,11 +183,18 @@ th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spaci
 }
 .pipe-step.split > .step-k { margin:0; }
 .pipe-step.split .ver-cards {
-  margin-top:0; gap:.55rem; grid-template-columns:1fr 1fr;
+  margin-top:0; gap:.55rem; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
   align-items:start; flex:0 0 auto;
 }
+.pipe-step.split .ver-pair {
+  display:flex; flex-direction:row; align-items:center; gap:.4rem; min-width:0;
+}
+.pipe-step.split .ver-pair > .ver-card { flex:1 1 auto; min-width:0; }
+.pipe-step.split .ver-pair > .pipe-h-arrow { flex:0 0 auto; }
 @media (max-width: 700px) {
   .pipe-step.split .ver-cards { grid-template-columns:1fr; }
+  .pipe-step.split .ver-pair { flex-direction:column; }
+  .pipe-step.split .ver-pair > .pipe-h-arrow { transform: rotate(90deg); }
 }
 .pipe-step.split .ver-card {
   font-size:.9rem; height:auto; min-height:0;
@@ -268,6 +275,9 @@ th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spaci
 .ver-card .ver-sub { margin:0; font-size:.75rem; color:var(--muted); line-height:1.35; }
 .ver-card ul { margin:.65rem 0 0; padding-left:1.05rem; font-size:.82rem; }
 .ver-card li { margin:.3rem 0; line-height:1.4; }
+.ver-card .effect-note {
+  display:inline-block; margin-top:.12rem; font-size:.68rem; font-weight:500; line-height:1.25;
+}
 .ver-card .ver-tagline {
   display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
   gap:.2rem; margin-top:auto; margin-bottom:0;
@@ -278,6 +288,21 @@ th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spaci
 .ver-card.v1 .ver-tagline { background:var(--fail-fill); color:var(--fail-text); }
 .ver-card.v2 .ver-tagline { background:var(--pass-fill); color:var(--pass-text); }
 .ver-card.v3 .ver-tagline { background:var(--caution-fill); color:var(--caution-text); }
+.ver-details {
+  margin:.15rem 0 .55rem; border:1px solid var(--line); border-radius:8px; background:#fff;
+}
+.ver-details > summary {
+  cursor:pointer; list-style:none; padding:.45rem .6rem; font-size:.78rem; font-weight:650;
+  display:flex; justify-content:space-between; align-items:center; gap:.5rem; color:var(--ink);
+}
+.ver-details > summary::-webkit-details-marker { display:none; }
+.ver-details > summary::after { content:"+"; color:var(--muted); font-weight:700; font-family:var(--mono); font-size:.85rem; }
+.ver-details[open] > summary::after { content:"–"; }
+.ver-details .ver-details-body {
+  padding:.15rem .65rem .65rem; border-top:1px solid var(--line);
+  font-size:.82rem; line-height:1.35;
+}
+.pipe-step.out .ver-details .ver-details-body { font-size:.8rem; }
 details.panel {
   background: var(--card); border:1px solid var(--line); border-radius: var(--radius);
   margin: .65rem 0; box-shadow: var(--shadow);
@@ -411,13 +436,25 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
           </div>
           <div class="step-k">1. Deal input</div>
-          <ul class="list-tight" style="margin:.15rem 0 .55rem; padding-left:1.05rem">
-            <li>Account</li>
-            <li>Discount</li>
-            <li>Payment terms</li>
-            <li>Redlines</li>
-            <li>Services hours</li>
-          </ul>
+          <details class="ver-details">
+            <summary>Details</summary>
+            <div class="ver-details-body">
+              <div style="font-weight:700; margin:.15rem 0 .1rem">Numerical:</div>
+              <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+                <li>Discount</li>
+                <li>Payment</li>
+                <li>Service hours</li>
+              </ul>
+              <div style="font-weight:700; margin:.15rem 0 .1rem">AI-required:</div>
+              <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+                <li>Contract redlines</li>
+              </ul>
+              <div style="font-weight:700; margin:.15rem 0 .1rem">Context:</div>
+              <ul class="list-tight" style="margin:0; padding-left:1.05rem">
+                <li>Account identity</li>
+              </ul>
+            </div>
+          </details>
           <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
         </div>
         <div class="pipe-stack-arrow" aria-hidden="true">↓</div>
@@ -427,99 +464,147 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
             </div>
             <div class="step-k">2. Deterministic math</div>
-            <ul class="list-tight" style="margin:.15rem 0 .55rem; padding-left:1.05rem">
-              <li>Margin</li>
-              <li>Approval tier</li>
-              <li>Working-capital penalties</li>
-              <li>Python/SQLite</li>
-            </ul>
+            <details class="ver-details">
+              <summary>Details</summary>
+              <div class="ver-details-body">
+                <div style="font-weight:700; margin:.15rem 0 .1rem">Calculates:</div>
+                <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+                  <li>Margin</li>
+                  <li>Approval tier</li>
+                  <li>Working-capital penalties</li>
+                </ul>
+                <div style="font-weight:700; margin:.15rem 0 .1rem">Engine:</div>
+                <ul class="list-tight" style="margin:0; padding-left:1.05rem">
+                  <li>Python/SQLite rules</li>
+                </ul>
+              </div>
+            </details>
             <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
           </div>
           <div class="pipe-h-arrow" aria-hidden="true">→</div>
         </div>
       </div>
 
-      <div class="pipe-step split" aria-label="Retrieval and agent differ by version">
-        <div class="pipe-icon" aria-hidden="true" style="background:#dbeafe;color:#1d4ed8">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="10" rx="2"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M8 19v2M16 19v2M3 13h2M19 13h2"/></svg>
-        </div>
-        <div class="step-k">3. Retrieval + agent (where versions diverge)</div>
-        <div class="ver-cards">
-          <article class="ver-card v1">
-            <p class="ver-step">3.1 Baseline</p>
-            <div class="ver-head">
-              <div class="ver-ico" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15V9"/><path d="M12 15V7"/><path d="M16 15v-3"/></svg>
-              </div>
-              <div>
-                <p class="ver-title"><span class="tag v1">V1</span> Baseline</p>
-                <p class="ver-sub">Config 1 - Starting Agent</p>
-              </div>
+      <div class="pipe-math-row">
+        <div class="pipe-step split" aria-label="Retrieval and agent differ by version">
+          <div class="pipe-icon" aria-hidden="true" style="background:#dbeafe;color:#1d4ed8">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="10" rx="2"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M8 19v2M16 19v2M3 13h2M19 13h2"/></svg>
+          </div>
+          <div class="step-k">3. Retrieval + agent (where versions diverge)</div>
+          <div class="ver-cards">
+            <div class="ver-pair">
+              <article class="ver-card v1">
+                <p class="ver-step">3.1 Baseline</p>
+                <div class="ver-head">
+                  <div class="ver-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15V9"/><path d="M12 15V7"/><path d="M16 15v-3"/></svg>
+                  </div>
+                  <div>
+                    <p class="ver-title"><span class="tag v1">V1</span> Baseline</p>
+                    <p class="ver-sub">Config 1 - Starting Agent</p>
+                  </div>
+                </div>
+                <details class="ver-details">
+                  <summary>Details</summary>
+                  <div class="ver-details-body">
+                    <div style="font-weight:700; margin:.15rem 0 .1rem">Retrieval:</div>
+                    <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+                      <li>BM25 keyword search</li>
+                    </ul>
+                    <div style="font-weight:700; margin:.15rem 0 .1rem">Tools:</div>
+                    <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+                      <li>Unconstrained tool schemas</li>
+                    </ul>
+                    <div style="font-weight:700; margin:.15rem 0 .1rem">Not enabled:</div>
+                    <ul class="list-tight" style="margin:0; padding-left:1.05rem">
+                      <li>Prompt caching</li>
+                      <li>Evaluator-Optimizer</li>
+                    </ul>
+                  </div>
+                </details>
+                <p class="ver-tagline">
+                  <span>Pass rate: 85.0%</span>
+                  <span>Cost: Highest</span>
+                  <span>Latency: Highest</span>
+                </p>
+              </article>
+              <div class="pipe-h-arrow" aria-hidden="true">→</div>
             </div>
-            <ul>
-              <li>BM25-only retrieval</li>
-              <li>Basic tool schemas</li>
-              <li>No prompt caching</li>
-              <li>No critic loop</li>
-            </ul>
-            <p class="ver-tagline">
-              <span>Pass rate: 85.0%</span>
-              <span>Cost: Highest</span>
-              <span>Latency: Highest</span>
-            </p>
-          </article>
-          <div class="pipe-col" aria-label="Version 2 agent with optional version 3 Evaluator-Optimizer">
-            <article class="ver-card v2">
-              <p class="ver-step">3.2 Guardrailed</p>
-              <div class="ver-head">
-                <div class="ver-ico" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            <div class="pipe-col" aria-label="Version 2 agent with optional version 3 Evaluator-Optimizer">
+              <article class="ver-card v2">
+                <p class="ver-step">3.2 Guardrailed</p>
+                <div class="ver-head">
+                  <div class="ver-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                  </div>
+                  <div>
+                    <p class="ver-title"><span class="tag v2">V2</span> Guardrailed</p>
+                    <p class="ver-sub">Config 2 - Guardrails + Caching</p>
+                  </div>
                 </div>
-                <div>
-                  <p class="ver-title"><span class="tag v2">V2</span> Guardrailed</p>
-                  <p class="ver-sub">Config 2 - Evals + Caching</p>
-                </div>
+                <details class="ver-details">
+                  <summary>Details</summary>
+                  <div class="ver-details-body">
+                    <div style="font-weight:700; margin:.15rem 0 .1rem">Retrieval:</div>
+                    <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+                      <li>BM25 keyword + dense RRF<br /><span class="muted effect-note">(↑ pass rate)</span></li>
+                    </ul>
+                    <div style="font-weight:700; margin:.15rem 0 .1rem">Guardrails:</div>
+                    <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+                      <li>Must use exact risk codes<br /><span class="muted effect-note">(↑ pass rate)</span></li>
+                      <li>Constrained tool inputs<br /><span class="muted effect-note">(↑ pass rate)</span></li>
+                      <li>Stricter memo schema &amp; prompt<br /><span class="muted effect-note">(↓ latency)</span></li>
+                    </ul>
+                    <div style="font-weight:700; margin:.15rem 0 .1rem">Enabled:</div>
+                    <ul class="list-tight" style="margin:0; padding-left:1.05rem">
+                      <li>Prompt caching<br /><span class="muted effect-note">(↓ cost, ↓ latency)</span></li>
+                    </ul>
+                  </div>
+                </details>
+                <p class="ver-tagline">
+                  <span>Pass rate: 100.0%</span>
+                  <span>Cost: Lowest</span>
+                  <span>Latency: Lowest</span>
+                </p>
+              </article>
+              <div class="pipe-loop" aria-hidden="true">
+                <div class="loop-arrows"><span>↓</span><span>↑</span></div>
               </div>
-              <ul>
-                <li>Hybrid BM25 + dense RRF retrieval</li>
-                <li>Canonical risk-flag constraints</li>
-                <li>Prompt caching enabled</li>
-                <li>Fewer JSON-repair retries</li>
-              </ul>
-              <p class="ver-tagline">
-                <span>Pass rate: 100.0%</span>
-                <span>Cost: Lowest</span>
-                <span>Latency: Lowest</span>
-              </p>
-            </article>
-            <div class="pipe-loop" aria-hidden="true">
-              <div class="loop-arrows"><span>↓</span><span>↑</span></div>
+              <article class="ver-card v3">
+                <p class="ver-step">3.3 Evaluator-Optimizer</p>
+                <div class="ver-head">
+                  <div class="ver-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                  </div>
+                  <div>
+                    <p class="ver-title"><span class="tag v3">V3</span> Evaluator-Optimizer</p>
+                    <p class="ver-sub">Config 3 - Model critic review</p>
+                  </div>
+                </div>
+                <details class="ver-details">
+                  <summary>Details</summary>
+                  <div class="ver-details-body">
+                    <div style="font-weight:700; margin:.15rem 0 .1rem">Review loop:</div>
+                    <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+                      <li>Critic reviews every memo<br /><span class="muted effect-note">(↑ cost, ↑ latency)</span></li>
+                      <li>Conditional producer revision<br /><span class="muted effect-note">(extra turn only when needed)</span></li>
+                    </ul>
+                    <div style="font-weight:700; margin:.15rem 0 .1rem">Observed:</div>
+                    <ul class="list-tight" style="margin:0; padding-left:1.05rem">
+                      <li>Revised 1/20 deals<br /><span class="muted effect-note">(no pass-rate lift, weaker ROI)</span></li>
+                    </ul>
+                  </div>
+                </details>
+                <p class="ver-tagline">
+                  <span>Pass rate: 100.0%</span>
+                  <span>Cost: Higher</span>
+                  <span>Latency: Higher</span>
+                </p>
+              </article>
             </div>
-            <article class="ver-card v3">
-              <p class="ver-step">3.3 Evaluator-Optimizer</p>
-              <div class="ver-head">
-                <div class="ver-ico" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-                </div>
-                <div>
-                  <p class="ver-title"><span class="tag v3">V3</span> Evaluator-Optimizer</p>
-                  <p class="ver-sub">Config 3 - Model critic review</p>
-                </div>
-              </div>
-              <ul>
-                <li>Everything in v2</li>
-                <li>Critic reviews every memo</li>
-                <li>Conditional producer revision</li>
-                <li>Revised only 1/20 deals (GE-016)</li>
-              </ul>
-              <p class="ver-tagline">
-                <span>Pass rate: 100.0%</span>
-                <span>Cost: Higher</span>
-                <span>Latency: Higher</span>
-              </p>
-            </article>
           </div>
         </div>
+        <div class="pipe-h-arrow" aria-hidden="true">→</div>
       </div>
 
       <div class="pipe-step out">
@@ -527,13 +612,25 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         </div>
         <div class="step-k">4. Human-ready output</div>
-        <ul class="list-tight" style="margin:.15rem 0 .55rem; padding-left:1.05rem">
-          <li>Tier</li>
-          <li>Margin</li>
-          <li>Risk flags</li>
-          <li>Memo</li>
-          <li>Offline graders</li>
-        </ul>
+        <details class="ver-details">
+          <summary>Details</summary>
+          <div class="ver-details-body">
+            <div style="font-weight:700; margin:.15rem 0 .1rem">From code:</div>
+            <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+              <li>Tier</li>
+              <li>Margin</li>
+            </ul>
+            <div style="font-weight:700; margin:.15rem 0 .1rem">From AI:</div>
+            <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+              <li>Risk flags</li>
+              <li>Memo</li>
+            </ul>
+            <div style="font-weight:700; margin:.15rem 0 .1rem">Benchmark only:</div>
+            <ul class="list-tight" style="margin:0; padding-left:1.05rem">
+              <li>Offline graders</li>
+            </ul>
+          </div>
+        </details>
         <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
       </div>
     </div>
