@@ -1,5 +1,7 @@
 # ai-deal-desk
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Raw-API Tool-Using Deal-Desk & Margin-Guardrail Agent with Per-Run Cost Instrumentation and Automated Evals
 
 ## 1. Abstract
@@ -83,3 +85,7 @@ Isolating SaaS margin math and approval-tier routing in deterministic Python/SQL
 - **v2 → v3:** quality stayed at **100%** deterministic pass / full recall. Critic revisions fired rarely (**5%** overall; only on a compound trap). Marginal economics: mean cost **$0.061 → $0.081** (~**+34%** vs v2) and p50 latency **47s → 51s**, with cache hit rate still healthy (~49%).
 
 **Practical takeaway.** For standard, margin-trap, and most legal deals, **v2 (poka-yoked ACI tools + Hybrid RAG + prompt caching) is the default production posture**—it closes the flag-recall gap and pays for itself on cost/latency. Reserve **v3’s Evaluator-Optimizer** for high-stakes compound redline stacks where an independent critic pass is worth the ~$0.02–0.03 median premium; it is not required to hit the golden-suite deterministic bar once v2 tooling is in place.
+
+## License
+
+MIT © 2026 Jeroen De Koninck. See [LICENSE](LICENSE).
