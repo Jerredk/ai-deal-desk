@@ -1,0 +1,13 @@
+experiment_version,difficulty,cases,deterministic_pass_rate_pct,mean_judge_score,p50_cost_usd
+v1,standard,10,90.0,4.97,0.079408
+v1,edge_margin,5,100.0,5.0,0.10899
+v1,edge_legal,2,50.0,5.0,0.094176
+v1,compound_trap,3,66.67,5.0,0.115554
+v2,standard,10,100.0,4.95,0.049937
+v2,edge_margin,5,100.0,5.0,0.09978
+v2,edge_legal,2,100.0,5.0,0.049056
+v2,compound_trap,3,100.0,5.0,0.054594
+v3,standard,10,100.0,4.97,0.059328
+v3,edge_margin,5,100.0,5.0,0.115722
+v3,edge_legal,2,100.0,5.0,0.05729
+v3,compound_trap,3,100.0,5.0,0.077844

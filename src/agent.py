@@ -307,7 +307,7 @@ class DealDeskAgent:
         # as a top-level kwarg; keep deterministic behavior via prompt + tool protocol.
         kwargs: dict[str, Any] = {
             "model": self.model,
-            "max_tokens": 2048,
+            "max_tokens": 4096,
             "system": system,
             "messages": messages,
         }
