@@ -1,4 +1,4 @@
-# enterprise-deal-desk
+# ai-deal-desk
 
 Raw-API Tool-Using Deal-Desk & Margin-Guardrail Agent with Per-Run Cost Instrumentation and Automated Evals
 

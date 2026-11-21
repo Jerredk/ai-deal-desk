@@ -926,7 +926,7 @@ def _assemble_dataset(pytest_report: dict[str, Any], git_meta: dict[str, str]) -
 
     return {
         "meta": {
-            "repo": "enterprise-deal-desk",
+            "repo": "ai-deal-desk",
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "git": git_meta,
             "models": {"agent": AGENT_MODEL, "judge": JUDGE_MODEL},
