@@ -1,12 +1,4 @@
-# Exclude report HTML/JSON from GitHub language stats (Python is the source language).
-*.html linguist-detectable=false
-results/** linguist-generated=true
-results/** linguist-vendored=true
-results/* linguist-generated=true
-results/* linguist-vendored=true
-results/data/** linguist-generated=true
-results/data/** linguist-vendored=true
-outputs/** linguist-generated=true
-outputs/** linguist-vendored=true
-outputs/* linguist-generated=true
-outputs/* linguist-vendored=true
+# GitHub Linguist: treat this repo as Python source.
+# Report HTML/JSON and other non-source artifacts are excluded from language stats.
+* linguist-vendored
+*.py -linguist-vendored
