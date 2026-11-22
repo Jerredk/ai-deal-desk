@@ -1,8 +1,8 @@
 # Inside the AI Deal Desk
 
-**Deterministic margin guardrails + constrained AI for enterprise deal review** — with per-run cost instrumentation and a 60-run evaluation suite.
+Use the deal-desk agent to review enterprise quotes with deterministic margin math, constrained risk flags, and human-ready memos. Or open the companion evaluation dashboard to inspect the 60-run benchmark across baseline, guardrailed, and critic configurations.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+**Deterministic margin guardrails + constrained AI for enterprise deal review** — with per-run cost instrumentation and a 60-run evaluation suite.
 
 [Companion dashboard](#-companion-dashboard) · [Quickstart](#-quickstart) · [Benchmark results](#-benchmark-results) · [Architecture](#-architecture)
 
