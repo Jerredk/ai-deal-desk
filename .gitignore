@@ -46,3 +46,9 @@ temp/
 results/index.html
 exports/
 figures/
+
+# Local article draft (not published from this repo)
+article/
+
+# Local README HTML preview
+docs/readme-preview.html

@@ -1,91 +1,179 @@
-# ai-deal-desk
+# Inside the AI Deal Desk
+
+**Deterministic margin guardrails + constrained AI for enterprise deal review** — with per-run cost instrumentation and a 60-run evaluation suite.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Raw-API Tool-Using Deal-Desk & Margin-Guardrail Agent with Per-Run Cost Instrumentation and Automated Evals
+[Companion dashboard](#-companion-dashboard) · [Quickstart](#-quickstart) · [Benchmark results](#-benchmark-results) · [Architecture](#-architecture)
 
-## 1. Abstract
+Enterprise B2B SaaS companies often lose margin—and deal velocity—when discounts, Net-60/90 terms, unbilled onboarding, and legal redlines stack without a single system that recomputes economics and routes approvals. This repo implements a framework-free Python + SQLite deal-desk agent on the Anthropic Messages API:
 
-Enterprise B2B SaaS companies in the $25M–$150M ARR band routinely lose margin—and deal velocity—when Account Executives negotiate non-standard discounts, Net-60/90 payment terms, unbilled onboarding hours, and legal redlines without a single system of record that recomputes economics and routes approvals. Those factors compound silently: a “safe-looking” ≤20% discount can still breach a 72% gross-margin floor once services COGS and working-capital penalties are applied, while high-risk contract language (MFC, uncapped liability, convenience termination, aggressive audit rights) escapes deal-desk review until late in the cycle.
+- **Code owns the math** — list ARR, COGS, working-capital penalties, gross margin, and approval lanes
+- **AI owns unstructured judgment** — redlines, risk flags, policy grounding, executive memos
+- **Humans keep the final call** — VP-Sales, CFO, and Legal retain sign-off
 
-This repository implements a framework-free Python + SQLite tool-using agent on the Anthropic Messages API. Deterministic unit-economics tools compute list ARR, hosting/support COGS, services COGS, and working-capital adjustments; Hybrid RAG (BM25 + dense retrieval) grounds policy and commercial-clause decisions; an Evaluator-Optimizer critique loop sharpens approval routing; and every run writes token/USD/latency rows to a cost ledger for apples-to-apples experiment comparison.
+Three configurations were evaluated on the same **20 adversarial scenarios** (**60 runs** total). **Version 2 (guardrailed)** is the recommended default: **100%** deterministic pass, **1.00** risk-flag F1, **−50%** median API cost and **−35.7%** median latency vs baseline.
 
-## 2. Implementation & How to Run
+---
 
-**Architecture:**
-- `db/` — SQLite warehouse (`schema.py`) and deterministic seed script (`seed_db.py`) for historical deals, golden eval cases, RAG chunks, cost ledger, and resumable `eval_results`.
-- `src/` — deterministic tools, Hybrid RAG, Anthropic cost ledger, versioned prompts, raw Messages API agent (`v1`/`v2`/`v3`), and the eval harness + report exporter.
-- `tests/` — pytest suite for seed integrity, tools/RAG, agent loop (mocked), and offline eval grading.
-- `outputs/` — benchmark CSV/JSON artifacts from the 60-run evaluation.
+## What you get
 
-**Quickstart:**
+| Capability | What it does |
+|---|---|
+| **Deterministic unit economics** | Margin waterfall, Net-60/90 penalties, 72% floor, approval-lane matrix in Python/SQLite |
+| **Constrained tool-using agent** | Raw Anthropic Messages API loop (`v1` / `v2` / `v3`) with poka-yoked schemas in v2+ |
+| **Hybrid policy retrieval** | BM25 (v1) or BM25 + dense RRF (v2/v3) over Deal-Desk policies + CUAD-style clauses |
+| **Evaluator-Optimizer critic (v3)** | Optional second-pass review with conditional producer revision |
+| **Cost & latency ledger** | Token/USD/cache/latency rows for apples-to-apples experiment comparison |
+| **Automated evals** | Deterministic graders + independent LLM-as-a-Judge (`claude-opus-4-6`) |
+| **Companion dashboard** | Self-contained HTML evidence locker for charts, failures, and case traces |
+
+---
+
+## How the pipeline works
+
+Deal intake → deterministic margin & lane calculations → AI review (retrieval + risk flags + memo) → human-ready brief.
+
+![Deal-desk workflow](docs/assets/deal-desk-workflow-figure.png)
+
+*Figure 1. End-to-end flow: deterministic calculations first, then retrieval and agents, then human-ready output.*
+
+---
+
+## Benchmark results
+
+**Status: complete** — 60/60 runs · unit tests **31/31** · rates pinned as of 2026-11-21.
+
+| Metric | v1 Baseline | **v2 Guardrailed (recommended)** | v3 + Critic |
+|---|---:|---:|---:|
+| Deterministic pass rate | 85% (17/20) | **100% (20/20)** | **100% (20/20)** |
+| Risk-flag F1 | 0.757 | **1.000** | 0.983 |
+| Median API cost / deal | $0.103 | **$0.051 (−50%)** | $0.064 (+24.5% vs v2) |
+| Median latency (p50) | 73s | **47s (−35.7%)** | 51s |
+| p90 latency | 86s | **77s** | 88s |
+
+### Quality vs cost, and risk-flag precision/recall
+
+![Quality versus cost and risk-flag metrics](docs/assets/deal-desk-charts-figure.png)
+
+*Figure 2. Guardrailed v2 owns the quality/cost frontier. Canonical risk-flag constraints lift F1 from 0.76 → 1.00.*
+
+### Cost and processing time
+
+![Cost and processing time by version](docs/assets/deal-desk-cost-latency-figure.png)
+
+*Figure 3. Prompt caching and fewer JSON repairs drive the v1→v2 gain. v3 adds cost and a slower p90 without a quality lift.*
+
+### Scenario-level pass rates
+
+![Scenario-level pass rates by difficulty](docs/assets/deal-desk-scenario-pass-rates-figure.png)
+
+*Figure 4. v1 drops on `edge_legal` and `compound_trap`; v2 and v3 clear every band.*
+
+**Practical takeaway.** For standard, margin-trap, and most legal deals, **v2 is the production default**. Reserve **v3** when an independent critic pass is worth the unit-cost premium; it is not required to hit the golden-suite deterministic bar once v2 tooling is in place.
+
+Lane and margin accuracy were **100% across all three versions** — failures concentrated in unstructured risk-flag labelling, not spreadsheet math.
+
+---
+
+## Companion dashboard
+
+Open the self-contained evidence locker (no CDNs, no network fetches):
+
+```bash
+python -m src.build_report
+# then open results/index.html
+# or: python3 -m http.server 8765
+# → http://127.0.0.1:8765/results/index.html
+```
+
+The dashboard includes version comparison, primary charts, methodology, failure taxonomy, cost/latency detail, monthly API-cost projection, and a case explorer with traces.
+
+---
+
+## Quickstart
+
+**Requirements:** Python 3.10+ · Anthropic API key
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env   # set ANTHROPIC_API_KEY=
+
 python db/seed_db.py
 pytest -v
-python -m src.agent --case-id GE-015 --version v3
+
+# Single golden case
+python -m src.agent --case-id GE-015 --version v2
+
+# Custom AE deal payload
 python -m src.agent --deal-json path/to/deal.json --version v2
+
+# Full cross-version eval (20 cases × 3 versions)
 python -m src.evals --versions v1 v2 v3 --workers 3
+
+# Rebuild the companion dashboard
+python -m src.build_report
 ```
 
-Custom deals: pass `--deal-json <path>` with an AE deal payload JSON (account, ACV, term, discount, payment terms, services hours, redline text). This overrides `--case-id` and runs as `case_id=CUSTOM`.
+Custom deals: pass `--deal-json <path>` with account, ACV, term, discount, payment terms, services hours, and redline text. Overrides `--case-id` and runs as `case_id=CUSTOM`.
 
-## 3. Test Setup
+---
 
-**Unstructured Retrieval Corpus.** Six B2B SaaS Deal-Desk policy documents covering discount authority bands, the 72.0% hard margin floor (with 82% baseline margin at 0% discount / 18% list-ARR COGS), working-capital penalties for Net-60/90, onboarding services COGS, and the escalation matrix—plus ten commercial contract clauses modeled on CUAD categories (Most Favored Customer pricing parity, uncapped liability, 30-day termination for convenience, on-site audit rights, auto-renewal/price-cap, and five standard/acceptable baseline clauses so retrieval must discriminate). Dense embeddings for Hybrid RAG are computed locally and stored in SQLite (`rag_chunks.embedding_json`); no third-party embedding API is required.
+## Architecture
 
-**Structured Warehouse & Golden Eval Suite.** Two hundred fifty seeded historical B2B SaaS deals (`random.seed(42)`) with realistic win-rate decay at extreme discounts and longer cycles when legal redlines are present. Twenty adversarial golden cases: 5 Auto-Approve, 5 VP-Sales, 10 CFO-And-Legal—including six nominal-discount margin traps where `discount <= 20%` still breaches the 72.0% floor after services COGS and Net-90 working-capital drag. Every golden `expected_gross_margin_pct` and `expected_approval_lane` is computed from the same Python formulas used at runtime.
+```text
+db/          SQLite warehouse, seed script, RAG chunks, cost ledger, eval_results
+src/         Deterministic tools, Hybrid RAG, agent (v1/v2/v3), evals, report builder
+tests/       Seed integrity, tools/RAG, mocked agent loop, offline graders
+outputs/     Benchmark CSV/JSON from the 60-run suite
+results/     Companion dashboard dataset (+ generated index.html)
+docs/assets/ Figures used in this README
+```
 
-**Evaluation Protocol.** Cross-version runs of `v1` (baseline prompting + BM25 + basic tools) vs. `v2` (poka-yoked ACI tools + Hybrid RAG + prompt caching) vs. `v3` (Evaluator-Optimizer critic loop). Scoring combines deterministic assertions (lane exact match, margin ±0.05, flag precision/recall/F1) with LLM-as-a-Judge grading on an independent Anthropic model (`claude-opus-4-6`) separate from the deal-desk agent (`claude-sonnet-4-6`). Full suite: **60 runs** (20 cases × 3 versions).
+### Versions
 
-## 4. Test Results
+| Version | Configuration |
+|---|---|
+| **v1** | Baseline AI agent — BM25 retrieval, basic tools. No prompt caching or critic. |
+| **v2** | Guardrailed AI agent — poka-yoked tool schemas, hybrid BM25 + dense RRF, Anthropic prompt caching. |
+| **v3** | Evaluator-Optimizer — same basis as v2, plus critic and conditional producer revision. |
 
-**Status: Complete (60/60 runs; Anthropic list rates pinned as of 2026-11-21)**
+### Evaluation design
 
-Unit tests: **31/31** passing. Seeded warehouse: **250** historical deals, **16** RAG chunks, **20** formula-verified golden cases. Empirical agent benchmark below.
+- **20 golden scenarios** — standard, `edge_margin`, `edge_legal`, `compound_trap`
+- **Deterministic grading** — approval-lane exact match; margin within tolerance; risk-flag precision / recall / F1
+- **LLM-as-a-Judge** — independent `claude-opus-4-6` scores each memo against a rubric (commercial accuracy, policy grounding, executive clarity, actionability) on a 1–5 scale
+- **Paired design** — every scenario runs under v1, v2, and v3
 
-### Overall (`outputs/benchmark_summary.csv`)
+Seeded warehouse: **250** historical deals, **16** RAG chunks, **20** formula-verified golden cases. Dense embeddings for Hybrid RAG are computed locally and stored in SQLite — no third-party embedding API.
 
-| Experiment Version | Cases | Det. Pass % | Lane Acc. % | Margin Acc. % | Flag Recall | Flag Precision | Flag F1 | Mean Judge (1–5) | Rev. Trigger % | Mean Cost (USD) | p10 / p50 / p90 Cost | Avg Cache Hit % | p50 / p90 Latency (s) |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---|
-| v1 Baseline | 20 | 85.0 | 100.0 | 100.0 | 0.850 | 0.708 | 0.757 | 4.99 | 0.0 | 0.0967 | 0.0578 / 0.1029 / 0.1202 | 0.0 | 73.1 / 86.0 |
-| v2 Tools + Hybrid RAG + Caching | 20 | 100.0 | 100.0 | 100.0 | 1.000 | 1.000 | 1.000 | 4.97 | 0.0 | 0.0606 | 0.0435 / 0.0514 / 0.1009 | 57.0 | 47.0 / 76.8 |
-| v3 Full Evaluator-Optimizer | 20 | 100.0 | 100.0 | 100.0 | 1.000 | 0.975 | 0.983 | 4.99 | 5.0 | 0.0813 | 0.0512 / 0.0640 / 0.1179 | 49.4 | 51.4 / 88.3 |
+---
 
-Judge dimension means (all versions ≈5.0 commercial / policy / clarity; actionability 4.90–4.95).
+## Overall benchmark table
 
-### Difficulty breakdown (`outputs/difficulty_breakdown.csv`)
+From `outputs/benchmark_summary.csv`:
 
-| Version | Difficulty | Cases | Det. Pass % | Mean Judge | p50 Cost (USD) |
-|---|---|---:|---:|---:|---:|
-| v1 | standard | 10 | 90.0 | 4.97 | 0.0794 |
-| v1 | edge_margin | 5 | 100.0 | 5.00 | 0.1090 |
-| v1 | edge_legal | 2 | 50.0 | 5.00 | 0.0942 |
-| v1 | compound_trap | 3 | 66.7 | 5.00 | 0.1156 |
-| v2 | standard | 10 | 100.0 | 4.95 | 0.0499 |
-| v2 | edge_margin | 5 | 100.0 | 5.00 | 0.0998 |
-| v2 | edge_legal | 2 | 100.0 | 5.00 | 0.0491 |
-| v2 | compound_trap | 3 | 100.0 | 5.00 | 0.0546 |
-| v3 | standard | 10 | 100.0 | 4.97 | 0.0593 |
-| v3 | edge_margin | 5 | 100.0 | 5.00 | 0.1157 |
-| v3 | edge_legal | 2 | 100.0 | 5.00 | 0.0573 |
-| v3 | compound_trap | 3 | 100.0 | 5.00 | 0.0778 |
+| Version | Det. Pass % | Flag F1 | Mean Cost (USD) | p50 Cost | p50 / p90 Latency (s) | Avg Cache Hit % |
+|---|---:|---:|---:|---:|---|---:|
+| v1 | 85.0 | 0.757 | 0.0967 | 0.1029 | 73.1 / 86.0 | 0.0 |
+| v2 | 100.0 | 1.000 | 0.0606 | 0.0514 | 47.0 / 76.8 | 57.0 |
+| v3 | 100.0 | 0.983 | 0.0813 | 0.0640 | 51.4 / 88.3 | 49.4 |
 
-**Case-level notes.** v1 failed deterministic pass on GE-009 / GE-018 / GE-019 via non-canonical or prose-annotated flag strings (lane + margin were already exact). v2 and v3 rescued all three with perfect canonical recall. v3’s critic triggered a revision on **1/20** runs (a `compound_trap` case; 33% of that difficulty bucket).
+v1 failed deterministic pass on GE-009 / GE-018 / GE-019 via non-canonical or prose-annotated flag strings (lane + margin were already exact). v2 and v3 rescued all three. v3’s critic revised **1/20** runs (GE-016).
 
-## 5. Conclusion
+---
 
-**Status: Complete (empirical 60-run suite)**
+## Limitations
 
-Isolating SaaS margin math and approval-lane routing in deterministic Python/SQLite eliminated arithmetic drift: **lane and margin accuracy were 100% across all three versions**. Quality lift was concentrated in **canonical redline flag discipline**:
+- Single run per scenario × version (no run-to-run consistency estimate)
+- n=20 overall; `edge_legal` (n=2) and `compound_trap` (n=3) are small
+- McNemar on v1→v2 pass improvement is underpowered (exact p=0.25)
+- Opus judge scores sit near the 5.0 ceiling, so writing quality barely discriminates versions
+- Any benefit of the v3 critic on high-stakes deals remains a hypothesis, not a proven result
 
-- **v1 → v2:** deterministic pass **85% → 100%**; flag recall **0.85 → 1.00**; F1 **0.76 → 1.00**. Mean agent cost fell **~37%** ($0.097 → $0.061) with **~57% average cache hit rate** (v1: 0%) and p50 latency **73s → 47s**. Opus judge scores stayed ~5.0—v1 memos already read well; v2 mainly fixed machine-checkable taxonomy.
-- **v2 → v3:** quality stayed at **100%** deterministic pass / full recall. Critic revisions fired rarely (**5%** overall; only on a compound trap). Marginal economics: mean cost **$0.061 → $0.081** (~**+34%** vs v2) and p50 latency **47s → 51s**, with cache hit rate still healthy (~49%).
-
-**Practical takeaway.** For standard, margin-trap, and most legal deals, **v2 (poka-yoked ACI tools + Hybrid RAG + prompt caching) is the default production posture**—it closes the flag-recall gap and pays for itself on cost/latency. Reserve **v3’s Evaluator-Optimizer** for high-stakes compound redline stacks where an independent critic pass is worth the ~$0.02–0.03 median premium; it is not required to hit the golden-suite deterministic bar once v2 tooling is in place.
+---
 
 ## License
 
-MIT © 2026 Jeroen De Koninck. See [LICENSE](LICENSE).
+MIT © 2026. See [LICENSE](LICENSE).
