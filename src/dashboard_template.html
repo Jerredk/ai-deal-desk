@@ -197,11 +197,6 @@ p.chart-takeaway { color: var(--ink); font-size:.9rem; margin:0 0 1rem; margin-b
   display:grid; grid-template-columns: minmax(170px, .95fr) minmax(0, 2.4fr) minmax(150px, .85fr);
   gap:.55rem; margin: .85rem 0 0; align-items: start;
 }
-@media (max-width: 900px) {
-  .pipe { grid-template-columns: 1fr; }
-  .pipe-math-row { flex-direction: column; }
-  .pipe-h-arrow { transform: rotate(90deg); padding:.15rem 0; }
-}
 .pipe-math-row {
   display:flex; flex-direction:row; align-items:center; gap:.45rem; min-width:0;
 }
@@ -236,11 +231,6 @@ p.chart-takeaway { color: var(--ink); font-size:.9rem; margin:0 0 1rem; margin-b
 }
 .pipe-step.split .ver-pair > .ver-card { flex:1 1 auto; min-width:0; }
 .pipe-step.split .ver-pair > .pipe-h-arrow { flex:0 0 auto; }
-@media (max-width: 700px) {
-  .pipe-step.split .ver-cards { grid-template-columns:1fr; }
-  .pipe-step.split .ver-pair { flex-direction:column; }
-  .pipe-step.split .ver-pair > .pipe-h-arrow { transform: rotate(90deg); }
-}
 .pipe-step.split .ver-card {
   font-size:.9rem; height:auto; min-height:0;
 }
@@ -266,6 +256,67 @@ p.chart-takeaway { color: var(--ink); font-size:.9rem; margin:0 0 1rem; margin-b
 }
 .pipe > .pipe-step.out {
   height:auto; min-height:0; align-self:start;
+}
+/* Stacked pipe must come AFTER base rules or flex/grid desktop defaults win */
+@media (max-width: 900px) {
+  .pipe {
+    grid-template-columns: 1fr;
+    width: 100%;
+    gap: 0;
+  }
+  .pipe > .pipe-stack,
+  .pipe > .pipe-step,
+  .pipe > .pipe-math-row {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .pipe-stack { width: 100%; }
+  .pipe-math-row {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0;
+  }
+  .pipe-math-row > .pipe-step,
+  .pipe-math-row > .pipe-stack-arrow {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+  .pipe-h-arrow {
+    transform: rotate(90deg);
+    padding: .35rem 0;
+    width: 100%;
+    justify-content: center;
+  }
+  .pipe-h-arrow.spacer { display: none; }
+  .pipe-step.split .ver-cards {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    width: 100%;
+    gap: 0;
+  }
+  .pipe-step.split .ver-pair,
+  .pipe-step.split .pipe-col {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+  }
+  .pipe-step.split .ver-pair > .ver-card,
+  .pipe-step.split .pipe-col > .ver-card {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+  .pipe-step.split .ver-pair > .pipe-h-arrow {
+    transform: rotate(90deg);
+    width: 100%;
+    padding: .35rem 0;
+  }
+  .pipe-loop { width: 100%; }
 }
 .pipe-step {
   position:relative; background:#f8fafc; border:1px solid var(--line); border-radius:12px;
@@ -427,6 +478,150 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 }
 .preset-row button:hover { border-color:var(--line-strong); color:var(--ink); }
 .preset-row button.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+
+/* —— Shared mobile patterns (desktop unchanged above 768) —— */
+.table-wrap--sticky-first { position:relative; -webkit-overflow-scrolling:touch; }
+.table-wrap--sticky-first table { border-collapse:separate; border-spacing:0; min-width:520px; }
+.table-wrap--sticky-first th:first-child,
+.table-wrap--sticky-first td:first-child {
+  position:sticky; left:0; z-index:2;
+  box-shadow: 1px 0 0 var(--line);
+}
+.table-wrap--sticky-first thead th:first-child { background:#f1f5f9; z-index:3; }
+.table-wrap--sticky-first tbody td:first-child { background:var(--card); }
+.table-wrap--scroll-hint { position:relative; }
+.table-wrap--scroll-hint::after {
+  content:""; pointer-events:none; position:absolute; top:0; right:0; bottom:0; width:28px;
+  background:linear-gradient(90deg, transparent, rgba(248,250,252,.95));
+  opacity:0; transition:opacity .15s ease;
+}
+@media (max-width: 767px) {
+  .table-wrap--scroll-hint::after { opacity:1; }
+}
+.data-cards { display:none; flex-direction:column; gap:.65rem; }
+.data-card {
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:.85rem .9rem; box-shadow:var(--shadow);
+}
+.data-card .dc-head {
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:.45rem; margin:0 0 .55rem;
+}
+.data-card .dc-title { font-weight:700; font-size:.95rem; margin:0; }
+.data-card .dc-meta { color:var(--muted); font-size:.78rem; }
+.data-card .dc-rows { display:flex; flex-direction:column; gap:.4rem; margin:0; padding:0; list-style:none; }
+.data-card .dc-rows li {
+  display:grid; grid-template-columns:7.5rem 1fr; gap:.35rem .55rem;
+  font-size:.84rem; line-height:1.4;
+}
+.data-card .dc-rows .dc-k { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; font-weight:650; padding-top:.1rem; }
+.data-card .dc-rows .dc-v { min-width:0; word-break:break-word; }
+.data-card.clickable:active { background:#f8fafc; }
+.row-collapse { display:none; flex-direction:column; gap:.55rem; }
+.row-collapse details {
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.row-collapse details > summary {
+  cursor:pointer; list-style:none; padding:.85rem .9rem; min-height:44px;
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.45rem;
+  font-weight:650;
+}
+.row-collapse details > summary::-webkit-details-marker { display:none; }
+.row-collapse details > summary::after {
+  content:"+"; color:var(--muted); font-family:var(--mono); font-weight:700; margin-left:auto;
+}
+.row-collapse details[open] > summary::after { content:"–"; }
+.row-collapse .rc-body { padding:0 .9rem .9rem; border-top:1px solid var(--line); }
+.row-collapse .rc-badges { display:flex; flex-wrap:wrap; gap:.3rem; }
+.row-collapse .rc-grid {
+  display:grid; grid-template-columns:1fr; gap:.55rem; margin-top:.65rem; font-size:.84rem;
+}
+.row-collapse .rc-grid .rc-block {
+  background:#f8fafc; border:1px solid var(--line); border-radius:8px; padding:.55rem .65rem;
+}
+.row-collapse .rc-grid .rc-block .rc-label {
+  color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.03em; font-weight:650; margin:0 0 .25rem;
+}
+.sheet-backdrop {
+  display:none; position:fixed; inset:0; z-index:55;
+  background:rgba(15,23,42,.42);
+}
+.sheet-backdrop.open { display:block; }
+.drawer .sheet-bar {
+  display:none; align-items:center; justify-content:space-between; gap:.75rem;
+  position:sticky; top:0; z-index:2; background:#fff;
+  padding:0 0 .65rem; margin:0 0 .65rem; border-bottom:1px solid var(--line);
+}
+.drawer .sheet-close {
+  border:1px solid var(--line); background:#f8fafc; border-radius:8px;
+  min-width:44px; min-height:44px; padding:.35rem .7rem; font:inherit; font-weight:650; cursor:pointer;
+}
+#case-cards { display:none; }
+#explorer-filters-toggle { display:none; }
+@media (max-width: 767px) {
+  nav.top .inner { padding:.6rem 1rem; gap:.5rem; }
+  nav.top .links {
+    flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    gap:.55rem; width:100%; padding-bottom:.15rem; scrollbar-width:none;
+  }
+  nav.top .links::-webkit-scrollbar { display:none; }
+  nav.top .links a {
+    flex:0 0 auto; white-space:nowrap; min-height:36px;
+    display:inline-flex; align-items:center;
+  }
+  .wrap { padding:0 1rem 3.5rem; }
+  .controls {
+    flex-direction:column; align-items:stretch; gap:.5rem;
+  }
+  .controls input, .controls select, .controls button {
+    width:100%; min-height:44px; padding:.55rem .7rem; font-size:1rem;
+  }
+  .preset-row {
+    display:grid; grid-template-columns:1fr 1fr; gap:.45rem;
+  }
+  .preset-row button {
+    min-height:44px; border-radius:10px; padding:.45rem .55rem;
+    font-size:.76rem; line-height:1.25; text-align:center;
+  }
+  #explorer-filters-toggle {
+    display:flex; align-items:center; justify-content:space-between;
+    width:100%; min-height:44px; margin:0 0 .55rem;
+    border:1px solid var(--line); background:#fff; border-radius:10px;
+    padding:.55rem .75rem; font:inherit; font-weight:650; color:var(--ink); cursor:pointer;
+  }
+  #explorer-filters-toggle::after { content:"+"; font-family:var(--mono); color:var(--muted); }
+  #explorer-filters-toggle[aria-expanded="true"]::after { content:"–"; }
+  #explorer-filters.controls.is-collapsed-mobile { display:none; }
+  #explorer-filters.controls:not(.is-collapsed-mobile) { display:flex; }
+  .desktop-only-table { display:none !important; }
+  .data-cards { display:flex; }
+  .row-collapse { display:flex; }
+  #case-cards { display:flex; flex-direction:column; gap:.65rem; margin-top:.15rem; }
+  #case-table-wrap { display:none; }
+  .drawer {
+    display:none; position:fixed; left:0; right:0; bottom:0; z-index:60;
+    max-height:min(88vh, 920px); margin:0; border-radius:16px 16px 0 0;
+    border:1px solid var(--line); border-bottom:none;
+    padding: .85rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+    overflow:auto; -webkit-overflow-scrolling:touch;
+    box-shadow: 0 -12px 40px rgba(15,23,42,.18);
+  }
+  .drawer.open { display:block; }
+  .drawer .sheet-bar { display:flex; }
+  .tabs { gap:.45rem; }
+  .tabs button {
+    min-height:44px; border-radius:10px; padding:.45rem .85rem; font-size:.84rem;
+  }
+  .ver-details > summary { min-height:44px; padding:.55rem .7rem; }
+  details.panel > summary, details.limits > summary { min-height:48px; }
+  .proj-row label { width:100%; }
+  #deal-volume { width:100%; min-height:44px; }
+  th, td { padding:.55rem .5rem; }
+}
+@media (min-width: 768px) {
+  .mobile-only { display:none !important; }
+}
 </style>
 </head>
 <body>
@@ -708,7 +903,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 
   <h3>Version comparison</h3>
   <p class="muted">Median (p50) = typical deal. 90th percentile (p90) = slower tail. Deterministic pass rate = share of cases where approval lane, margin and risk-flag recall all matched golden labels.</p>
-  <div class="table-wrap card" style="padding:0" id="primary-compare"></div>
+  <div class="table-wrap table-wrap--sticky-first table-wrap--scroll-hint card" style="padding:0" id="primary-compare"></div>
 
   <h3>Primary visualisations</h3>
   <div class="grid two">
@@ -786,7 +981,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     <summary>D. Cost, tokens &amp; latency detail</summary>
     <div class="panel-body">
       <div id="cost-semantics" class="muted" style="margin-bottom:.75rem"></div>
-      <div class="table-wrap" id="cost-dist-table"></div>
+      <div class="table-wrap table-wrap--sticky-first table-wrap--scroll-hint" id="cost-dist-table"></div>
       <div class="grid two" style="margin-top:1rem">
         <div class="card chart-card" style="box-shadow:none">
           <div class="chart-title">Cost distribution</div>
@@ -797,10 +992,10 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
           <div id="chart-token-mix"></div>
         </div>
       </div>
-      <div class="table-wrap" style="margin-top:1rem" id="cost-breakdown-table"></div>
-      <div class="table-wrap" style="margin-top:1rem" id="latency-table"></div>
+      <div class="table-wrap table-wrap--sticky-first table-wrap--scroll-hint" style="margin-top:1rem" id="cost-breakdown-table"></div>
+      <div class="table-wrap table-wrap--sticky-first table-wrap--scroll-hint" style="margin-top:1rem" id="latency-table"></div>
       <div id="latency-investigation" style="margin-top:1rem"></div>
-      <div class="table-wrap" style="margin-top:1rem" id="step-latency-table"></div>
+      <div class="table-wrap table-wrap--sticky-first table-wrap--scroll-hint" style="margin-top:1rem" id="step-latency-table"></div>
       <h3>Monthly API-cost projection</h3>
       <p class="muted">Estimate only: observed evaluation agent costs × volume. Not guaranteed production spend.</p>
       <div class="proj-row">
@@ -826,7 +1021,8 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
           <option value="costup">v2→v3 cost increase &gt; $0.02</option>
         </select>
       </div>
-      <div class="table-wrap" style="max-height:420px;overflow:auto" id="scenario-compare"></div>
+      <div class="table-wrap desktop-only-table" style="max-height:420px;overflow:auto" id="scenario-compare"></div>
+      <div class="row-collapse mobile-only" id="scenario-compare-mobile"></div>
     </div>
   </details>
   <details class="panel">
@@ -847,24 +1043,27 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
         <button type="button" data-preset="margin">Margin Traps (edge_margin)</button>
         <button type="button" data-preset="ge016">v3 Critic Revision (GE-016)</button>
       </div>
-  <div class="controls">
-    <select id="f-version"><option value="All">All versions</option><option>v1</option><option>v2</option><option>v3</option></select>
-    <select id="f-diff"><option value="All">All difficulties</option><option>standard</option><option>edge_margin</option><option>edge_legal</option><option>compound_trap</option></select>
-    <select id="f-status"><option value="All">All statuses</option><option>Passed</option><option>Partially Passed</option><option>Failed</option></select>
+      <button type="button" id="explorer-filters-toggle" aria-expanded="false" aria-controls="explorer-filters">Filters</button>
+      <div class="controls is-collapsed-mobile" id="explorer-filters">
+        <select id="f-version"><option value="All">All versions</option><option>v1</option><option>v2</option><option>v3</option></select>
+        <select id="f-diff"><option value="All">All difficulties</option><option>standard</option><option>edge_margin</option><option>edge_legal</option><option>compound_trap</option></select>
+        <select id="f-status"><option value="All">All statuses</option><option>Passed</option><option>Partially Passed</option><option>Failed</option></select>
         <input id="f-search" type="search" placeholder="Search case id or account…" style="min-width:200px;" />
-  </div>
-      <div class="table-wrap card" style="padding:0">
-    <table>
-      <thead>
-        <tr>
-          <th>Version</th><th>Case</th><th>Account</th><th>Difficulty</th><th>Status</th>
+      </div>
+      <div class="table-wrap card" style="padding:0" id="case-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Version</th><th>Case</th><th>Account</th><th>Difficulty</th><th>Status</th>
               <th>Lane</th><th>Margin</th><th>Flag F1</th><th>Judge</th><th>API cost</th><th>Revised</th>
-        </tr>
-      </thead>
-      <tbody id="case-tbody"></tbody>
-    </table>
-  </div>
-  <div id="case-drawer" class="drawer"></div>
+            </tr>
+          </thead>
+          <tbody id="case-tbody"></tbody>
+        </table>
+      </div>
+      <div id="case-cards" class="data-cards" aria-label="Case results"></div>
+      <div id="sheet-backdrop" class="sheet-backdrop" hidden></div>
+      <div id="case-drawer" class="drawer" role="dialog" aria-modal="true" aria-label="Case detail"></div>
 
       <h3>Traceability</h3>
   <div class="card" id="trace-box"></div>
@@ -1449,17 +1648,38 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     if (mode === 'improved') rows = rows.filter(r => r.v1_to_v2 && r.v1_to_v2.pass_change > 0);
     if (mode === 'f1reg') rows = rows.filter(r => r.v2_to_v3 && (r.v2_to_v3.f1_change < 0 || r.v2_to_v3.precision_change < 0));
     if (mode === 'costup') rows = rows.filter(r => r.v2_to_v3 && r.v2_to_v3.cost_change_usd > 0.02);
-    let html = '<table><thead><tr><th>Case</th><th>Difficulty</th><th>v1</th><th>v2</th><th>v3</th><th>v1→v2</th><th>v2→v3</th></tr></thead><tbody>';
-    rows.forEach(r => {
-      const cell = ver => {
-        const c = r[ver]; if (!c) return '—';
-        return '<span class="badge ' + (c.status === 'Partially Passed' ? 'partial' : c.status) + '">' + c.status + '</span><br/><span class="mono">F1 ' + fmtNum(c.flag_f1, 2) + ' · ' + fmtUsd(c.total_cost_usd, 3) + (c.revision_applied ? ' · REV' : '') + '</span>';
+    const statusBadge = (c) => {
+      if (!c) return '—';
+      return '<span class="badge ' + (c.status === 'Partially Passed' ? 'partial' : c.status) + '">' + c.status + '</span>';
+    };
+    const cell = ver => {
+      const c = r => r[ver];
+      return (r) => {
+        const x = c(r); if (!x) return '—';
+        return statusBadge(x) + '<br/><span class="mono">F1 ' + fmtNum(x.flag_f1, 2) + ' · ' + fmtUsd(x.total_cost_usd, 3) + (x.revision_applied ? ' · REV' : '') + '</span>';
       };
+    };
+    const cellV1 = cell('v1'), cellV2 = cell('v2'), cellV3 = cell('v3');
+    let html = '<table><thead><tr><th>Case</th><th>Difficulty</th><th>v1</th><th>v2</th><th>v3</th><th>v1→v2</th><th>v2→v3</th></tr></thead><tbody>';
+    let mobile = '';
+    rows.forEach(r => {
       const d12 = r.v1_to_v2 ? ('pass ' + r.v1_to_v2.pass_change + ' · F1 ' + r.v1_to_v2.f1_change) : '—';
       const d23 = r.v2_to_v3 ? ('F1 ' + r.v2_to_v3.f1_change + ' · P ' + r.v2_to_v3.precision_change + ' · ' + fmtUsd(r.v2_to_v3.cost_change_usd, 3)) : '—';
-      html += '<tr><td class="mono">' + r.case_id + '</td><td>' + r.difficulty + '</td><td>' + cell('v1') + '</td><td>' + cell('v2') + '</td><td>' + cell('v3') + '</td><td>' + d12 + '</td><td>' + d23 + '</td></tr>';
+      html += '<tr><td class="mono">' + r.case_id + '</td><td>' + r.difficulty + '</td><td>' + cellV1(r) + '</td><td>' + cellV2(r) + '</td><td>' + cellV3(r) + '</td><td>' + d12 + '</td><td>' + d23 + '</td></tr>';
+      mobile +=
+        '<details>' +
+        '<summary><span class="mono">' + r.case_id + '</span><span class="dc-meta">' + r.difficulty + '</span>' +
+        '<span class="rc-badges">' + statusBadge(r.v1) + statusBadge(r.v2) + statusBadge(r.v3) + '</span></summary>' +
+        '<div class="rc-body"><div class="rc-grid">' +
+        '<div class="rc-block"><div class="rc-label">v1</div>' + cellV1(r) + '</div>' +
+        '<div class="rc-block"><div class="rc-label">v2</div>' + cellV2(r) + '</div>' +
+        '<div class="rc-block"><div class="rc-label">v3</div>' + cellV3(r) + '</div>' +
+        '<div class="rc-block"><div class="rc-label">v1→v2</div>' + d12 + '</div>' +
+        '<div class="rc-block"><div class="rc-label">v2→v3</div>' + d23 + '</div>' +
+        '</div></div></details>';
     });
     document.getElementById('scenario-compare').innerHTML = html + '</tbody></table>';
+    document.getElementById('scenario-compare-mobile').innerHTML = mobile || '<p class="muted">No scenarios match this filter.</p>';
   }
   document.getElementById('sc-filter').addEventListener('change', renderScenarioCompare);
   renderScenarioCompare();
@@ -1474,13 +1694,30 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   ];
   document.getElementById('next-experiments').innerHTML =
     '<p class="muted">Proposed — not completed.</p>' +
-    '<div class="table-wrap"><table><thead><tr><th>Priority</th><th>Hypothesis</th><th>Why</th><th>Benefit</th><th>Success</th><th>Metrics</th></tr></thead><tbody>' +
+    '<div class="table-wrap desktop-only-table"><table><thead><tr><th>Priority</th><th>Hypothesis</th><th>Why</th><th>Benefit</th><th>Success</th><th>Metrics</th></tr></thead><tbody>' +
     experiments.map(e => '<tr><td><span class="tag hyp">' + e.pri + '</span></td><td>' + e.hyp + '</td><td>' + e.why + '</td><td>' + e.benefit + '</td><td>' + e.success + '</td><td class="mono">' + e.metrics + '</td></tr>').join('') +
-    '</tbody></table></div>';
+    '</tbody></table></div>' +
+    '<div class="data-cards mobile-only">' +
+    experiments.map(e =>
+      '<article class="data-card">' +
+      '<div class="dc-head"><span class="tag hyp">' + e.pri + '</span></div>' +
+      '<p class="dc-title" style="font-size:.9rem;font-weight:650;margin:0 0 .55rem">' + e.hyp + '</p>' +
+      '<ul class="dc-rows">' +
+      '<li><span class="dc-k">Why</span><span class="dc-v">' + e.why + '</span></li>' +
+      '<li><span class="dc-k">Benefit</span><span class="dc-v">' + e.benefit + '</span></li>' +
+      '<li><span class="dc-k">Success</span><span class="dc-v">' + e.success + '</span></li>' +
+      '<li><span class="dc-k">Metrics</span><span class="dc-v mono">' + e.metrics + '</span></li>' +
+      '</ul></article>'
+    ).join('') +
+    '</div>';
 
   // ===== 5 Explorer =====
   const tbody = document.getElementById('case-tbody');
+  const caseCards = document.getElementById('case-cards');
   const drawer = document.getElementById('case-drawer');
+  const sheetBackdrop = document.getElementById('sheet-backdrop');
+  const filtersEl = document.getElementById('explorer-filters');
+  const filtersToggle = document.getElementById('explorer-filters-toggle');
   let caseIdSet = null;
   const PRESETS = {
     all: { version: 'All', diff: 'All', status: 'All', search: '', ids: null },
@@ -1488,6 +1725,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     margin: { version: 'All', diff: 'edge_margin', status: 'All', search: '', ids: null },
     ge016: { version: 'v3', diff: 'All', status: 'All', search: '', ids: ['GE-016'] }
   };
+  function isMobile() { return window.matchMedia('(max-width: 767px)').matches; }
   function setPresetActive(name) {
     document.querySelectorAll('#explorer-presets button').forEach(btn => {
       btn.classList.toggle('active', btn.getAttribute('data-preset') === name);
@@ -1507,26 +1745,50 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     setPresetActive(null);
     caseIdSet = null;
   }
-  function renderCases() {
+  function closeCaseSheet() {
+    drawer.className = 'drawer';
+    drawer.innerHTML = '';
+    sheetBackdrop.classList.remove('open');
+    sheetBackdrop.hidden = true;
+    document.body.style.overflow = '';
+  }
+  function openCaseSheet() {
+    drawer.className = 'drawer open';
+    if (isMobile()) {
+      sheetBackdrop.hidden = false;
+      sheetBackdrop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      sheetBackdrop.classList.remove('open');
+      sheetBackdrop.hidden = true;
+      document.body.style.overflow = '';
+    }
+  }
+  function filteredCases() {
     const ver = document.getElementById('f-version').value;
     const diff = document.getElementById('f-diff').value;
     const status = document.getElementById('f-status').value;
     const q = (document.getElementById('f-search').value || '').toLowerCase();
-    tbody.innerHTML = '';
-    DATA.cases.filter(c => {
+    return DATA.cases.filter(c => {
       if (caseIdSet && !caseIdSet.has(c.case_id)) return false;
       if (ver !== 'All' && c.experiment_version !== ver) return false;
       if (diff !== 'All' && c.difficulty !== diff) return false;
       if (status !== 'All' && c.status !== status) return false;
       if (q && !(c.case_id.toLowerCase().includes(q) || (c.account_name || '').toLowerCase().includes(q))) return false;
       return true;
-    }).forEach(c => {
+    });
+  }
+  function renderCases() {
+    tbody.innerHTML = '';
+    caseCards.innerHTML = '';
+    filteredCases().forEach(c => {
+      const statusClass = c.status === 'Partially Passed' ? 'partial' : c.status;
       const tr = el('tr', { className: 'clickable' }, [
         el('td', {}, [el('span', { className: 'tag ' + c.experiment_version, text: c.experiment_version })]),
         el('td', { className: 'mono', text: c.case_id }),
         el('td', { text: c.account_name || '—' }),
         el('td', { text: c.difficulty }),
-        el('td', {}, [el('span', { className: 'badge ' + (c.status === 'Partially Passed' ? 'partial' : c.status), text: c.status })]),
+        el('td', {}, [el('span', { className: 'badge ' + statusClass, text: c.status })]),
         el('td', { text: c.actual_approval_lane || '—' }),
         el('td', { text: String(c.actual_gross_margin_pct) }),
         el('td', { text: Number(c.flag_f1).toFixed(2) }),
@@ -1536,11 +1798,36 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
       ]);
       tr.addEventListener('click', () => showCase(c));
       tbody.appendChild(tr);
+
+      const card = el('article', { className: 'data-card clickable', tabindex: '0', role: 'button' });
+      card.appendChild(el('div', { className: 'dc-head' }, [
+        el('span', { className: 'tag ' + c.experiment_version, text: c.experiment_version }),
+        el('span', { className: 'badge ' + statusClass, text: c.status })
+      ]));
+      card.appendChild(el('p', { className: 'dc-title mono', text: c.case_id }));
+      card.appendChild(el('p', { className: 'dc-meta', text: (c.account_name || '—') + ' · ' + c.difficulty }));
+      card.appendChild(el('ul', { className: 'dc-rows' }, [
+        el('li', {}, [el('span', { className: 'dc-k', text: 'Cost' }), el('span', { className: 'dc-v', text: fmtUsd(c.total_cost_usd, 3) })]),
+        el('li', {}, [el('span', { className: 'dc-k', text: 'Flag F1' }), el('span', { className: 'dc-v', text: Number(c.flag_f1).toFixed(2) })]),
+        el('li', {}, [el('span', { className: 'dc-k', text: 'Lane' }), el('span', { className: 'dc-v', text: c.actual_approval_lane || '—' })]),
+        el('li', {}, [el('span', { className: 'dc-k', text: 'Revised' }), el('span', { className: 'dc-v', text: c.revision_applied ? 'Yes' : 'No' })])
+      ]));
+      card.addEventListener('click', () => showCase(c));
+      card.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); showCase(c); }
+      });
+      caseCards.appendChild(card);
     });
   }
   function showCase(c) {
-    drawer.className = 'drawer open';
+    openCaseSheet();
     drawer.innerHTML = '';
+    const bar = el('div', { className: 'sheet-bar' });
+    bar.appendChild(el('strong', { text: c.case_id }));
+    const closeBtn = el('button', { type: 'button', className: 'sheet-close', text: 'Close' });
+    closeBtn.addEventListener('click', closeCaseSheet);
+    bar.appendChild(closeBtn);
+    drawer.appendChild(bar);
     drawer.appendChild(el('h3', { text: c.experiment_version + ' / ' + c.case_id + ' — ' + (c.account_name || ''), style: 'margin-top:0' }));
     drawer.appendChild(el('p', {}, [
       el('span', { className: 'badge ' + (c.status === 'Partially Passed' ? 'partial' : c.status), text: c.status }),
@@ -1550,15 +1837,21 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     const tabs = el('div', { className: 'tabs' });
     const panes = el('div', {});
     const tabDefs = [
-      { id: 'grade', label: 'Evaluation results' },
       { id: 'memo', label: 'AI memo output' },
+      { id: 'grade', label: 'Evaluation results' },
       { id: 'deal', label: 'Deal input' },
       { id: 'trace', label: 'Tokens & trace' }
     ];
+    const defaultTab = isMobile() ? 'memo' : 'grade';
+    // Keep grade first on desktop; memo first on mobile for scanning
+    if (!isMobile()) {
+      tabDefs.splice(0, 2, { id: 'grade', label: 'Evaluation results' }, { id: 'memo', label: 'AI memo output' });
+    }
     const bodies = {};
-    tabDefs.forEach((t, i) => {
-      const btn = el('button', { type: 'button', className: i === 0 ? 'active' : '', text: t.label });
-      const pane = el('div', { className: 'tab-pane' + (i === 0 ? ' active' : ''), id: 'pane-' + t.id });
+    tabDefs.forEach((t) => {
+      const active = t.id === defaultTab;
+      const btn = el('button', { type: 'button', className: active ? 'active' : '', text: t.label });
+      const pane = el('div', { className: 'tab-pane' + (active ? ' active' : ''), id: 'pane-' + t.id });
       bodies[t.id] = pane;
       btn.addEventListener('click', () => {
         tabs.querySelectorAll('button').forEach(b => b.classList.remove('active'));
@@ -1569,7 +1862,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     });
 
     bodies.grade.appendChild(el('p', { className: 'muted', text: 'Deterministic graders and Opus scores — not the agent’s commercial recommendation itself.' }));
-    bodies.grade.appendChild(el('div', { className: 'table-wrap' }, [el('table', {}, [el('tbody', {}, [
+    bodies.grade.appendChild(el('div', { className: 'table-wrap table-wrap--sticky-first' }, [el('table', {}, [el('tbody', {}, [
       el('tr', {}, [el('th', { text: 'Field' }), el('th', { text: 'Expected (golden)' }), el('th', { text: 'Actual (agent)' })]),
       el('tr', {}, [el('td', { text: 'Approval lane' }), el('td', { text: String(c.expected_approval_lane) }), el('td', { text: String(c.actual_approval_lane) })]),
       el('tr', {}, [el('td', { text: 'Gross margin %' }), el('td', { text: String(c.expected_gross_margin_pct) }), el('td', { text: String(c.actual_gross_margin_pct) })]),
@@ -1589,15 +1882,24 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     bodies.trace.appendChild(el('pre', { className: 'json', text: JSON.stringify({ agent: c.agent_token_totals, judge: c.judge_token_totals, cache_hit_rate_pct: c.cache_hit_rate_pct, total_latency_ms: c.total_latency_ms, step_trace: c.step_trace }, null, 2) }));
 
     drawer.appendChild(tabs); drawer.appendChild(panes);
-    drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (!isMobile()) drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+  sheetBackdrop.addEventListener('click', closeCaseSheet);
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && drawer.classList.contains('open')) closeCaseSheet();
+  });
+  filtersToggle.addEventListener('click', () => {
+    const open = filtersEl.classList.contains('is-collapsed-mobile');
+    filtersEl.classList.toggle('is-collapsed-mobile', !open);
+    filtersToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
   document.querySelectorAll('#explorer-presets button').forEach(btn => {
     btn.addEventListener('click', () => applyPreset(btn.getAttribute('data-preset')));
   });
   ['f-version', 'f-diff', 'f-status', 'f-search'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => {
       clearPresetHighlight();
-  renderCases();
+      renderCases();
     });
   });
   applyPreset('all');
