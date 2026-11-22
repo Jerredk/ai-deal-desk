@@ -4,7 +4,7 @@ Use the deal-desk agent to review enterprise quotes with deterministic margin ma
 
 **Deterministic margin guardrails + constrained AI for enterprise deal review** — with per-run cost instrumentation and a 60-run evaluation suite.
 
-[Article](https://meetjeroen.com/explorations/designing-a-deal-desk-that-protects-margin-without-slowing-sales) · [Evaluation dashboard](https://meetjeroen.com/explorations/deal-desk-evaluation-dashboard.html) · [Quickstart](#quickstart) · [Benchmark results](#benchmark-results) · [Architecture](#architecture)
+[Article](https://meetjeroen.com/explorations/ai-deal-desk-margin-governance) · [Evaluation dashboard](https://meetjeroen.com/explorations/ai-deal-desk-evaluation-dashboard.html) · [Quickstart](#quickstart) · [Benchmark results](#benchmark-results) · [Architecture](#architecture)
 
 Enterprise B2B SaaS companies often lose margin—and deal velocity—when discounts, Net-60/90 terms, unbilled onboarding, and legal redlines stack without a single system that recomputes economics and routes approvals. This repo implements a framework-free Python + SQLite deal-desk agent on the Anthropic Messages API:
 
@@ -78,9 +78,9 @@ Lane and margin accuracy were **100% across all three versions** — failures co
 
 ## Companion dashboard
 
-Hosted evaluation dashboard: [deal-desk-evaluation-dashboard.html](https://meetjeroen.com/explorations/deal-desk-evaluation-dashboard.html)
+Hosted evaluation dashboard: [deal-desk-evaluation-dashboard.html](https://meetjeroen.com/explorations/ai-deal-desk-evaluation-dashboard.html)
 
-Companion write-up: [Designing a Deal Desk That Protects Margin Without Slowing Sales](https://meetjeroen.com/explorations/designing-a-deal-desk-that-protects-margin-without-slowing-sales)
+Companion write-up: [Designing a Deal Desk That Protects Margin Without Slowing Sales](https://meetjeroen.com/explorations/ai-deal-desk-margin-governance)
 
 Rebuild the local evidence locker (no CDNs, no network fetches):
 
