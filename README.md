@@ -4,7 +4,7 @@ Use the deal-desk agent to review enterprise quotes with deterministic margin ma
 
 **Deterministic margin guardrails + constrained AI for enterprise deal review** — with per-run cost instrumentation and a 60-run evaluation suite.
 
-[Companion dashboard](#-companion-dashboard) · [Quickstart](#-quickstart) · [Benchmark results](#-benchmark-results) · [Architecture](#-architecture)
+[Companion dashboard](#companion-dashboard) · [Quickstart](#quickstart) · [Benchmark results](#benchmark-results) · [Architecture](#architecture)
 
 Enterprise B2B SaaS companies often lose margin—and deal velocity—when discounts, Net-60/90 terms, unbilled onboarding, and legal redlines stack without a single system that recomputes economics and routes approvals. This repo implements a framework-free Python + SQLite deal-desk agent on the Anthropic Messages API:
 
