@@ -14,11 +14,11 @@
   --line: #e2e8f0;
   --line-strong: #cbd5e1;
   --grid: #e2e8f0;
-  --accent: #0f766e;
-  --accent-soft: #ccfbf1;
-  --v1: #78716c;
-  --v2: #0f766e;
-  --v3: #2563eb;
+  --accent: #0d9488;
+  --accent-soft: #f0fdfa;
+  --v1: #8b8d98;
+  --v2: #0d9488;
+  --v3: #6366f1;
   --pass-text: #15803d; --pass-fill: #dcfce7; --pass-zone: #f0fdf4;
   --caution-text: #b45309; --caution-fill: #fef3c7; --caution-zone: #fffbeb;
   --fail-text: #b91c1c; --fail-fill: #fee2e2;
@@ -70,7 +70,7 @@ section { margin: 2.75rem 0; scroll-margin-top: 4.25rem; }
 section > h2 {
   font-family: var(--display); font-size:1.35rem; margin:0 0 .35rem; letter-spacing:-.015em; font-weight:700;
 }
-section > .section-lead { color: var(--muted); margin:0 0 1.15rem; max-width: 72ch; }
+section > .section-lead { color: var(--muted); margin:0 0 1.15rem; max-width: none; width: 100%; }
 h3 { margin:1.35rem 0 .55rem; font-size:1.02rem; font-weight:650; }
 .grid { display:grid; gap:1rem; }
 .grid.kpis { grid-template-columns: repeat(4, 1fr); }
@@ -98,14 +98,52 @@ h3 { margin:1.35rem 0 .55rem; font-size:1.02rem; font-weight:650; }
   font-weight:700; font-size:.72rem; letter-spacing:.04em; padding:.28rem .6rem; border-radius:999px;
   margin:0 0 .65rem; line-height:1.25;
 }
-.rec-banner h3 { margin:0 0 .55rem; font-size:1.05rem; line-height:1.35; }
-.rec-banner p { margin:.55rem 0 0; line-height:1.55; }
+.rec-banner p { margin:.55rem 0 0; font-size:1em; font-weight:400; line-height:1.55; }
+.rec-banner p.rec-lead { margin-top:.35rem; }
 .rec-banner .tag { margin:0 .15rem .15rem 0; vertical-align:middle; }
-.limits {
+/* Pill labels sit above their related copy page-wide */
+p.callout-label, .callout-label { margin: .55rem 0 0; margin-bottom: 0; }
+p.callout-body, .callout-body { margin: .3rem 0 0; }
+.rec-banner p.callout-label, .limits p.callout-label { margin-top: .55rem; }
+.rec-banner p.callout-label:first-of-type { margin-top: .55rem; }
+details.limits {
   background: #fffbeb; border:1px solid #fde68a; border-radius: var(--radius);
-  padding: .95rem 1.05rem; margin: 1rem 0; font-size:.9rem; line-height:1.55;
+  margin: 1rem 0; font-size:.9rem; line-height:1.55;
 }
-.limits strong { display:block; margin-bottom:.4rem; }
+details.limits > summary {
+  cursor:pointer; list-style:none; padding: .95rem 1.05rem; font-weight:700;
+  display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+}
+details.limits > summary::-webkit-details-marker { display:none; }
+details.limits > summary .limits-title {
+  display:inline-flex; align-items:center; gap:.4rem;
+}
+details.limits > summary .limits-title svg {
+  width:1.05em; height:1.05em; flex:0 0 auto; color:#b45309;
+}
+details.limits > summary::after {
+  content:"+"; color:#b45309; font-weight:700; font-family:var(--mono); flex:0 0 auto;
+}
+details.limits[open] > summary::after { content:"–"; }
+details.limits .limits-body {
+  padding: 0 1.05rem 1rem; border-top:1px solid #fde68a;
+}
+#failure-taxonomy { display:flex; flex-direction:column; gap:0; margin:0; padding:0; }
+.fail-item {
+  margin:0; padding:1.15rem 0; border-bottom:1px solid var(--line);
+}
+.fail-item:first-child { padding-top:0; }
+.fail-item:last-child { border-bottom:none; padding-bottom:0; }
+#failure-taxonomy .fail-item > h3 { margin:0 0 .4rem; font-size:1.02rem; }
+.fail-item p { margin:0 0 .5rem; line-height:1.55; }
+.fail-item p:last-child { margin-bottom:0; }
+.fail-item .fail-counts { margin:0 0 .5rem; }
+#unavailable-failures.fail-note {
+  background:#fffbeb; border:1px solid #fde68a; border-radius:var(--radius);
+  padding:.95rem 1.05rem; margin:1.35rem 0 0; font-size:.9rem; line-height:1.55;
+}
+#unavailable-failures.fail-note strong { display:block; margin-bottom:.4rem; }
+.panel-body > h3 { margin-top:1.5rem; }
 .tag {
   display:inline-flex; align-items:center; justify-content:center;
   padding:.18rem .5rem; border-radius:999px; font-size:.72rem; font-weight:650;
@@ -124,9 +162,9 @@ p .tag, li .tag, h3 .tag {
 .tag.obs { background: var(--pass-fill); color: var(--pass-text); }
 .tag.interp { background: var(--caution-fill); color: var(--caution-text); }
 .tag.hyp { background: #e0e7ff; color: #3730a3; }
-.tag.v1 { background:#f5f5f4; color:var(--v1); }
+.tag.v1 { background:#f4f4f5; color:var(--v1); }
 .tag.v2 { background:var(--accent-soft); color:var(--v2); }
-.tag.v3 { background:#dbeafe; color:var(--v3); }
+.tag.v3 { background:#eef2ff; color:var(--v3); }
 .badge { display:inline-block; padding:.12rem .45rem; border-radius:999px; font-size:.72rem; font-weight:650; }
 .badge.Passed { background:var(--pass-fill); color:var(--pass-text); }
 .badge.Partially\ Passed, .badge.partial { background:var(--caution-fill); color:var(--caution-text); }
@@ -141,10 +179,14 @@ table { width:100%; border-collapse:collapse; font-size:.86rem; background:var(-
 th, td { padding:.5rem .55rem; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
 th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:650; }
 .table-wrap { overflow:auto; border:1px solid var(--line); border-radius: var(--radius); }
-.chart-card { padding: 1rem 1.05rem 1.1rem; }
-.chart-title { font-size:1rem; font-weight:700; margin:0 0 .2rem; }
-.chart-measure { color: var(--muted); font-size:.84rem; margin:0 0 .25rem; }
-.chart-takeaway { color: var(--ink); font-size:.9rem; margin:0 0 .75rem; padding:.55rem .7rem; background:#f8fafc; border-radius:8px; border:1px solid var(--line); }
+.grid:has(.chart-card) { gap: 1.25rem; }
+@media (max-width: 900px) { .grid:has(.chart-card) { gap: 1.5rem; } }
+.chart-card { padding: 1.2rem 1.2rem 1.25rem; }
+.chart-title { font-size:1rem; font-weight:700; margin:0 0 .45rem; }
+.chart-measure,
+p.chart-measure { color: var(--muted); font-size:.84rem; margin:0 0 1.5rem; margin-block:0 1.5rem; }
+.chart-takeaway,
+p.chart-takeaway { color: var(--ink); font-size:.9rem; margin:0 0 1rem; margin-block:0 1rem; padding:.75rem .8rem; background:#f8fafc; border-radius:8px; border:1px solid var(--line); }
 .chart-card svg { width:100%; height:auto; display:block; }
 .muted { color: var(--muted); }
 .mono { font-family: var(--mono); font-size:.8rem; }
@@ -238,15 +280,15 @@ th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spaci
 .pipe-step .step-k { font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); margin:0 0 .35rem; }
 .pipe-step .step-body { margin:0; color:var(--ink); line-height:1.4; }
 .pipe-step.det { border-color:#99f6e4; background:#f0fdfa; }
-.pipe-step.det .pipe-icon { background:#ccfbf1; color:#0f766e; }
+.pipe-step.det .pipe-icon { background:#f0fdfa; color:#0d9488; }
 .pipe-step.ai { border-color:#bfdbfe; background:#eff6ff; }
-.pipe-step.ai .pipe-icon { background:#dbeafe; color:#1d4ed8; }
+.pipe-step.ai .pipe-icon { background:#eef2ff; color:#6366f1; }
 .pipe-step.out { border-color:#e2e8f0; background:#fff; }
 .pipe-step.out .pipe-icon { background:#f1f5f9; color:#475569; }
 .pipe-step.opt {
   border-style:dashed; border-color:#93c5fd; background:linear-gradient(180deg,#eff6ff 0%,#f8fafc 100%);
 }
-.pipe-step.opt .pipe-icon { background:#dbeafe; color:var(--v3); }
+.pipe-step.opt .pipe-icon { background:#eef2ff; color:var(--v3); }
 .pipe-step .pipe-badge {
   display:inline-flex; align-items:center; justify-content:center;
   margin-top:auto; font-size:.68rem; font-weight:700; font-family:var(--mono);
@@ -266,9 +308,9 @@ th { background:#f1f5f9; font-size:.7rem; text-transform:uppercase; letter-spaci
   width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
   margin-top:.1rem;
 }
-.ver-card.v1 .ver-ico { background:#f5f5f4; color:var(--v1); }
+.ver-card.v1 .ver-ico { background:#f4f4f5; color:var(--v1); }
 .ver-card.v2 .ver-ico { background:var(--accent-soft); color:var(--v2); }
-.ver-card.v3 .ver-ico { background:#dbeafe; color:var(--v3); }
+.ver-card.v3 .ver-ico { background:#eef2ff; color:var(--v3); }
 .ver-card .ver-ico svg { width:20px; height:20px; display:block; }
 .ver-card .ver-title {
   font-weight:700; font-size:.95rem; margin:0 0 .35rem; line-height:1.35;
@@ -364,8 +406,8 @@ pre.json {
 .proj-row { display:flex; flex-wrap:wrap; gap:1rem; align-items:end; margin:.6rem 0; }
 .proj-row label { display:flex; flex-direction:column; gap:.2rem; font-size:.82rem; color:var(--muted); }
 .list-tight li { margin:.28rem 0; }
-.legend-bar { display:flex; flex-wrap:wrap; gap:.65rem 1rem; font-size:.78rem; color:var(--muted); margin:.85rem 0 .35rem; align-items:center; }
-.legend-bar > span { display:inline-flex; align-items:center; gap:.4rem; line-height:1.35; }
+.legend-bar { display:flex; flex-wrap:wrap; gap:.85rem 1.25rem; font-size:.78rem; color:var(--muted); margin:.85rem 0 .35rem; align-items:flex-start; }
+.legend-bar > span { display:inline-flex; flex-direction:column; align-items:flex-start; gap:.25rem; line-height:1.35; }
 .legend-bar .tag { margin:0; }
 footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); color:var(--muted); font-size:.82rem; }
 .clickable { cursor:pointer; }
@@ -408,9 +450,9 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   <p class="sub">Empirical evidence behind "Inside the AI Deal Desk": 60 benchmark runs testing deterministic guardrails, hybrid retrieval, and critic loops.</p>
   <div class="meta-row" id="meta-pills"></div>
   <div class="legend-bar">
-    <span><span class="tag obs">Observed</span> Measured Result</span>
-    <span><span class="tag interp">Interpretation</span> Analytical Reading</span>
-    <span><span class="tag hyp">Hypothesis</span> Untested</span>
+    <span><span class="tag obs">Observed</span><span>Measured Result</span></span>
+    <span><span class="tag interp">Interpretation</span><span>Analytical Reading</span></span>
+    <span><span class="tag hyp">Hypothesis</span><span>Untested</span></span>
   </div>
 </header>
 
@@ -428,7 +470,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   <div class="card built-block" id="system-flow">
     <p class="muted" style="margin-bottom:.35rem">One deal-desk agent pipeline, three configurations: <span class="tag v1">version 1</span> baseline, <span class="tag v2">version 2</span> guardrailed, and <span class="tag v3">version 3</span> with a critic.</p>
     <ul class="list-tight muted" style="margin:.15rem 0 .85rem; padding-left:1.15rem">
-      <li>Code owns exact math: margin, penalties and approval lanes.</li>
+      <li>Code owns exact calculations: margin, penalties and approval lanes.</li>
       <li>The AI Agent handles unstructured judgment: reading redlines and non-standard clauses, choosing risk flags, and drafting the executive memo.</li>
     </ul>
 
@@ -438,7 +480,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
           <div class="pipe-step out">
             <div class="pipe-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
-            </div>
+  </div>
             <div class="step-k">1. Deal input</div>
             <details class="ver-details">
               <summary>Details</summary>
@@ -456,11 +498,11 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
                 <div style="font-weight:700; margin:.15rem 0 .1rem">Context:</div>
                 <ul class="list-tight" style="margin:0; padding-left:1.05rem">
                   <li>Account identity</li>
-                </ul>
-              </div>
+      </ul>
+    </div>
             </details>
             <span class="pipe-badge" style="background:#f1f5f9;color:#475569">All versions</span>
-          </div>
+  </div>
           <div class="pipe-h-arrow spacer" aria-hidden="true">→</div>
         </div>
         <div class="pipe-math-row">
@@ -472,7 +514,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
             <div class="pipe-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M16 14v4"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
             </div>
-            <div class="step-k">2. Deterministic math</div>
+            <div class="step-k">2. Deterministic calculations</div>
             <details class="ver-details">
               <summary>Details</summary>
               <div class="ver-details-body">
@@ -497,8 +539,8 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
       <div class="pipe-step split" aria-label="Retrieval and agent differ by version">
         <div class="pipe-icon" aria-hidden="true" style="background:#f3e8ff;color:#7e22ce">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="10" rx="2"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/><path d="M8 19v2M16 19v2M3 13h2M19 13h2"/></svg>
-        </div>
-        <div class="step-k">3. Retrieval + agent (where versions diverge)</div>
+  </div>
+        <div class="step-k">3. Retrieval + Deal Intake Agent (Multiple Versions)</div>
         <div class="ver-cards">
           <div class="ver-pair">
             <article class="ver-card v1">
@@ -506,11 +548,11 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
               <div class="ver-head">
                 <div class="ver-ico" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15V9"/><path d="M12 15V7"/><path d="M16 15v-3"/></svg>
-                </div>
+  </div>
                 <div>
                   <p class="ver-title"><span class="tag v1">V1</span> Baseline</p>
                   <p class="ver-sub">Config 1 - Starting Agent</p>
-                </div>
+  </div>
               </div>
               <details class="ver-details">
                 <summary>Details</summary>
@@ -629,13 +671,9 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
                 <li>Margin</li>
               </ul>
               <div style="font-weight:700; margin:.15rem 0 .1rem">From AI:</div>
-              <ul class="list-tight" style="margin:0 0 .35rem; padding-left:1.05rem">
+              <ul class="list-tight" style="margin:0; padding-left:1.05rem">
                 <li>Risk flags</li>
                 <li>Memo</li>
-              </ul>
-              <div style="font-weight:700; margin:.15rem 0 .1rem">Benchmark only:</div>
-              <ul class="list-tight" style="margin:0; padding-left:1.05rem">
-                <li>Offline graders</li>
               </ul>
             </div>
           </details>
@@ -646,11 +684,19 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   </div>
 
   <h3>Key findings <span class="tag v2">Version 2</span></h3>
-  <p class="muted" style="margin-top:-.25rem">Four headline metrics from the Version 2 configuration on the 20-scenario golden suite. Derived from embedded benchmark data.</p>
+  <p class="muted" style="margin-top:-.25rem">Four headline metrics from the Version 2 configuration on the 20-scenario golden suite:</p>
   <div class="grid kpis" id="hero-kpis"></div>
 
   <div class="rec-banner" id="rec-banner"></div>
-  <div class="limits" id="landing-limits"></div>
+  <details class="limits" id="landing-limits">
+    <summary>
+      <span class="limits-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Important limitations
+      </span>
+    </summary>
+    <div class="limits-body" id="landing-limits-body"></div>
+  </details>
 </section>
 
 <!-- ========== 2 RESULTS ========== -->
@@ -668,7 +714,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   <div class="grid two">
     <div class="card chart-card">
       <div class="chart-title">Quality versus cost</div>
-      <p class="chart-measure">Measured: deterministic pass rate vs median API cost per deal. Bubble size = median processing time.</p>
+      <p class="chart-measure">Measured: deterministic pass rate vs median API cost per deal.<br />Bubble size represents median processing time.</p>
       <p class="chart-takeaway" id="takeaway-pareto"></p>
       <div id="chart-pareto"></div>
     </div>
@@ -680,9 +726,9 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     </div>
   </div>
   <div class="grid two" style="margin-top:1rem">
-    <div class="card chart-card">
+  <div class="card chart-card">
       <div class="chart-title">Cost and processing time</div>
-      <p class="chart-measure">Measured: median API cost and median end-to-end agent latency by version.</p>
+      <p class="chart-measure">Measured: median API cost (input tokens, output tokens, cache) and median end-to-end agent latency by version.</p>
       <p class="chart-takeaway" id="takeaway-costlat"></p>
       <div id="chart-cost-latency"></div>
     </div>
@@ -690,8 +736,8 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
       <div class="chart-title">Scenario-level pass rates</div>
       <p class="chart-measure">Measured: deterministic pass rate by difficulty band. Small bands show exact counts (k/n).</p>
       <p class="chart-takeaway" id="takeaway-heat"></p>
-      <div id="chart-heatmap"></div>
-    </div>
+    <div id="chart-heatmap"></div>
+  </div>
   </div>
 
   <h3>Interpretation</h3>
@@ -745,7 +791,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
         <div class="card chart-card" style="box-shadow:none">
           <div class="chart-title">Cost distribution</div>
           <div id="chart-cost-dist"></div>
-        </div>
+  </div>
         <div class="card chart-card" style="box-shadow:none">
           <div class="chart-title">Token mix &amp; caching</div>
           <div id="chart-token-mix"></div>
@@ -759,7 +805,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
       <p class="muted">Estimate only: observed evaluation agent costs × volume. Not guaranteed production spend.</p>
       <div class="proj-row">
         <label>Monthly deal volume
-          <input type="range" id="deal-volume" min="50" max="5000" step="50" value="500" />
+          <input type="range" id="deal-volume" min="50" max="25000" step="50" value="500" />
           <span id="deal-volume-label" class="mono">500</span>
         </label>
       </div>
@@ -770,7 +816,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     <summary>E. Failure analysis</summary>
     <div class="panel-body">
       <div id="failure-taxonomy"></div>
-      <div id="unavailable-failures" class="limits" style="margin-top:1rem"></div>
+      <div id="unavailable-failures" class="fail-note"></div>
       <h3>Scenario-level paired comparison</h3>
       <div class="controls">
         <select id="sc-filter">
@@ -801,33 +847,33 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
         <button type="button" data-preset="margin">Margin Traps (edge_margin)</button>
         <button type="button" data-preset="ge016">v3 Critic Revision (GE-016)</button>
       </div>
-      <div class="controls">
-        <select id="f-version"><option value="All">All versions</option><option>v1</option><option>v2</option><option>v3</option></select>
-        <select id="f-diff"><option value="All">All difficulties</option><option>standard</option><option>edge_margin</option><option>edge_legal</option><option>compound_trap</option></select>
-        <select id="f-status"><option value="All">All statuses</option><option>Passed</option><option>Partially Passed</option><option>Failed</option></select>
+  <div class="controls">
+    <select id="f-version"><option value="All">All versions</option><option>v1</option><option>v2</option><option>v3</option></select>
+    <select id="f-diff"><option value="All">All difficulties</option><option>standard</option><option>edge_margin</option><option>edge_legal</option><option>compound_trap</option></select>
+    <select id="f-status"><option value="All">All statuses</option><option>Passed</option><option>Partially Passed</option><option>Failed</option></select>
         <input id="f-search" type="search" placeholder="Search case id or account…" style="min-width:200px;" />
-      </div>
+  </div>
       <div class="table-wrap card" style="padding:0">
-        <table>
-          <thead>
-            <tr>
-              <th>Version</th><th>Case</th><th>Account</th><th>Difficulty</th><th>Status</th>
+    <table>
+      <thead>
+        <tr>
+          <th>Version</th><th>Case</th><th>Account</th><th>Difficulty</th><th>Status</th>
               <th>Lane</th><th>Margin</th><th>Flag F1</th><th>Judge</th><th>API cost</th><th>Revised</th>
-            </tr>
-          </thead>
-          <tbody id="case-tbody"></tbody>
-        </table>
-      </div>
-      <div id="case-drawer" class="drawer"></div>
+        </tr>
+      </thead>
+      <tbody id="case-tbody"></tbody>
+    </table>
+  </div>
+  <div id="case-drawer" class="drawer"></div>
 
       <h3>Traceability</h3>
-      <div class="card" id="trace-box"></div>
+  <div class="card" id="trace-box"></div>
     </div>
   </details>
 </section>
 
 <footer>
-  Generated by <code>python -m src.build_report</code>. Self-contained HTML — no CDNs, no network required. Raw artifacts under <code>results/data/</code>.
+  Generated by <code>python -m src.build_report</code>.
 </footer>
 </div>
 <div id="chart-tooltip"></div>
@@ -837,7 +883,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   const DATA = JSON.parse(document.getElementById('eval-data').textContent);
   const A = DATA.analytics;
   const VERSIONS = ['v1', 'v2', 'v3'];
-  const COLORS = { v1: '#78716c', v2: '#0f766e', v3: '#2563eb' };
+  const COLORS = { v1: '#8b8d98', v2: '#0d9488', v3: '#6366f1' };
   const PASS = { text: '#15803d', fill: '#dcfce7', zone: '#f0fdf4' };
   const CAUTION = { text: '#b45309', fill: '#fef3c7', zone: '#fffbeb' };
   const FAIL = { text: '#b91c1c', fill: '#fee2e2' };
@@ -922,10 +968,10 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   // ===== 1 Hero KPIs (from data) =====
   const hero = document.getElementById('hero-kpis');
   [
-    { label: 'Evaluation pass rate', value: A.distributions.v2.pass_count + '/20', hint: '100% deterministic pass · Version 2', sub: 'v1 was 17/20 (85%)' },
-    { label: 'Risk-flag F1', value: fmtNum(v2.mean_flag_f1, 2), hint: 'Precision & recall both 1.00 · Version 2', sub: 'v3 F1 ' + fmtNum(v3.mean_flag_f1, 3) + ' (precision ' + fmtNum(v3.mean_flag_precision, 3) + ')' },
-    { label: 'Median API cost', value: fmtUsd(v2.p50_cost_usd, 3), hint: 'Per deal · Version 2 · API-level', sub: fmtNum(deltaPct(v2.p50_cost_usd, v1.p50_cost_usd), 0) + '% vs Version 1 median' },
-    { label: 'Median processing time', value: fmtNum(v2.p50_latency_s, 0) + 's', hint: 'End-to-end agent latency · Version 2', sub: 'p90 ' + fmtNum(v2.p90_latency_s, 0) + 's' }
+    { label: 'Evaluation pass rate', value: A.distributions.v2.pass_count + '/20', hint: '100% Deterministic Pass', sub: 'Version 1 was 17/20 (85%)' },
+    { label: 'Risk-flag F1', value: fmtNum(v2.mean_flag_f1, 2), hint: 'Precision & Recall both 1.00', sub: 'Version 3 F1 ' + fmtNum(v3.mean_flag_f1, 3) + ' (precision ' + fmtNum(v3.mean_flag_precision, 3) + ')' },
+    { label: 'Median API cost', value: fmtUsd(v2.p50_cost_usd, 3), hint: 'Per deal · API-level', sub: fmtNum(deltaPct(v2.p50_cost_usd, v1.p50_cost_usd), 0) + '% cost vs. version 1 median' },
+    { label: 'Median processing time', value: fmtNum(v2.p50_latency_s, 0) + 's', hint: 'End-to-end agent latency', sub: 'Version 2 p90 ' + fmtNum(v2.p90_latency_s, 0) + 's' }
   ].forEach(k => {
     hero.appendChild(el('div', { className: 'card kpi-card' }, [
       el('div', { className: 'label', text: k.label }),
@@ -936,29 +982,35 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   });
 
   document.getElementById('rec-banner').innerHTML =
-    '<div class="badge-rec">RECOMMENDED CONFIGURATION IN THIS EVALUATION: Version 2</div>' +
-    '<h3>Version 2 delivered the best observed trade-off: full deterministic pass on 20/20 scenarios, perfect risk-flag F1, roughly half Version 1 median API cost, and the lowest median processing time.</h3>' +
-    '<p style="margin:0;font-size:.92rem"><span class="tag obs">Observed</span> Version 3 matched the 20/20 pass rate but raised median cost (+' +
+    '<div class="badge-rec">RECOMMENDED CONFIGURATION IN THIS EVALUATION:</div>' +
+    '<p class="rec-lead"><strong><span style="color:var(--v2)">Version 2</span> delivered the best observed trade-off</strong>: full deterministic pass on 20/20 scenarios, perfect risk-flag F1, roughly half Version 1 median API cost, and the lowest median processing time.</p>' +
+    '<p class="callout-label"><span class="tag obs">Observed</span></p>' +
+    '<p class="callout-body">Version 3 matched the 20/20 pass rate but raised median cost (+' +
     fmtNum(deltaPct(v3.p50_cost_usd, v2.p50_cost_usd), 1) + '% vs Version 2) and mean flag precision fell to ' +
-    fmtNum(v3.mean_flag_precision, 2) + ' after the only critic revision. ' +
-    '<span class="tag interp">Interpretation</span> Strong <em>benchmark</em> performance for Version 2 is not the same as proven production readiness — see limitations.</p>';
+    fmtNum(v3.mean_flag_precision, 2) + ' after revision.</p>' +
+    '<p class="callout-label"><span class="tag interp">Interpretation</span></p>' +
+    '<p class="callout-body">Strong <em>benchmark</em> performance for Version 2 is not the same as proven production readiness (see limitations).</p>';
 
-  document.getElementById('landing-limits').innerHTML =
-    '<strong>Important limitations</strong>' +
-    'Single run per scenario×version (no consistency estimate). McNemar test on Version 1→2 pass improvement is underpowered (exact p=0.25 on n=20; 3 discordant pairs). ' +
-    'edge_legal (n=2) and compound_trap (n=3) subgroups are tiny. Opus LLM-as-a-Judge overall means sit at a ceiling of about 4.97–4.99 / 5.0, so qualitative scores barely discriminate versions. ' +
-    'Benefit of the Version 3 critic on “high-stakes” deals remains a <span class="tag hyp">hypothesis</span>, not demonstrated here.';
+  const judgeModel = (function () {
+    const raw = (meta.models && meta.models.judge) ? String(meta.models.judge) : 'claude-opus-4-6';
+    const body = raw.replace(/^claude-/i, '').replace(/(\d+)-(\d+)$/, '$1.$2');
+    return 'Claude ' + body.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  })();
+  document.getElementById('landing-limits-body').innerHTML =
+    '<p style="margin:.75rem 0 0">Each scenario was run once per version, so these results don\'t capture run-to-run consistency. With 20 deals total (and only 3 cases where Version 1 and Version 2 differed), the pass-rate improvement is clear operationally but underpowered for formal statistical significance (exact McNemar p = 0.25), and the hardest subgroups (edge_legal, n = 2; compound_trap, n = 3) are very small. In addition, the independent LLM-as-a-Judge grader (' + judgeModel + ', separate from the deal-desk agent) scored almost every memo near the 5.0 ceiling (4.97–4.99), leaving little room to distinguish writing quality across versions.</p>' +
+    '<p class="callout-label"><span class="tag hyp">Hypothesis</span></p>' +
+    '<p class="callout-body">Any benefit from the Version 3 critic on high-stakes deals remains an open hypothesis rather than a proven result.</p>';
 
   // ===== 2 Experiment design + table =====
   document.getElementById('experiment-design').innerHTML =
     '<h3 style="margin-top:0">Experiment design</h3>' +
     '<ul class="list-tight">' +
-    '<li><strong>Version 1 — Baseline agent.</strong> BM25 retrieval, basic tools, no prompt caching, no critic.</li>' +
-    '<li><strong>Version 2 — Improved constraints + retrieval + caching.</strong> Poka-yoked tool schemas, hybrid BM25 + dense retrieval with Reciprocal Rank Fusion, Anthropic prompt caching.</li>' +
-    '<li><strong>Version 3 — Version 2 + AI critic.</strong> Same as Version 2, plus an Evaluator-Optimizer critic and conditional producer revision.</li>' +
+    '<li><strong>Version 1 — Baseline AI agent.</strong> BM25 retrieval, basic tools. No prompt caching or critic.</li>' +
+    '<li><strong>Version 2 — Guardrailed AI agent.</strong> Improved constraints, retrieval and caching using poka-yoked tool schemas, hybrid BM25 + dense retrieval with Reciprocal Rank Fusion and (Anthropic) prompt caching.</li>' +
+    '<li><strong>Version 3 — Evaluator-Optimizer agent.</strong> Same basis as Version 2, enriched with an Evaluator-Optimizer pattern critic and conditional producer revision.</li>' +
     '</ul>' +
-    '<p style="margin-bottom:0">Each configuration reviewed the <strong>same 20 golden scenarios</strong> → <strong>60 benchmark runs</strong> completed. Unit tests (' +
-    DATA.kpis.unit_tests_passed + ') are separate from these agent evaluations.</p>';
+    '<p>Each configuration reviewed the <strong>same 20 golden scenarios</strong> → <strong>60 benchmark runs</strong> completed.</p>' +
+    '<p class="muted" style="margin-bottom:0;font-size:.84rem">Unit tests (' + DATA.kpis.unit_tests_passed + ') are separate from these agent evaluations.</p>';
 
   (function primaryCompare() {
     const rows = A.comparison_matrix;
@@ -998,21 +1050,24 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   document.getElementById('takeaway-flags').textContent =
     'Commercial takeaway: Canonical risk-flag constraints in v2 lifted Flag F1 from 0.7567 to 1.0000. The v3 critic kept full recall but mean precision dipped to ' + fmtNum(v3.mean_flag_precision, 3) + ' after the GE-016 false positive.';
   document.getElementById('takeaway-costlat').textContent =
-    'Commercial takeaway: Cutting JSON-repair retries and enabling prompt caching drove the v1→v2 gain (−50% median API cost, −35.7% median latency). v3 adds +24.5% median cost and stretches p90 latency without a quality lift.';
+    'Commercial takeaway: Version 1→2 cut median cost −50% and latency −35.7% (caching + fewer JSON repairs). Version 3 adds +24.5% median cost and a slower p90 with no quality lift.';
   document.getElementById('takeaway-heat').textContent =
-    'Commercial takeaway: Margin and lane math stayed correct in every band. v1 only missed legal/compound flag labelling (exact k/n shown); v2 and v3 clear every band.';
+    'Commercial takeaway: Margin and lane calculations stayed correct in every band. v1 only missed legal/compound flag labelling (exact k/n shown); v2 and v3 clear every band.';
 
   document.getElementById('results-interpretation').innerHTML =
-    '<p><span class="tag obs">Observed</span> Moving from Version 1 to Version 2 closed all three partial failures (GE-009, GE-018, GE-019), lifted risk-flag F1 to 1.00, cut median API cost by ' +
+    '<p class="callout-label"><span class="tag obs">Observed</span></p>' +
+    '<p class="callout-body">Moving from Version 1 to Version 2 closed all three partial failures (GE-009, GE-018, GE-019), lifted risk-flag F1 to 1.00, cut median API cost by ' +
     DATA.kpis.v1_to_v2_p50_cost_reduction_pct + '% (mean cost by ' + DATA.kpis.v1_to_v2_mean_cost_reduction_pct +
     '%), and reduced median latency from ' + fmtNum(v1.p50_latency_s, 0) + 's to ' + fmtNum(v2.p50_latency_s, 0) + 's.</p>' +
-    '<p><span class="tag obs">Observed</span> Version 3 kept 20/20 deterministic passes. The critic revised 1/20 cases (GE-016). That run was the slowest and most expensive Version 3 case and re-introduced a false-positive risk flag (precision 0.5 on that case).</p>' +
-    '<p style="margin-bottom:0"><span class="tag interp">Interpretation</span> In <em>this</em> evaluation, the extra critic did not improve deterministic accuracy and worsened unit economics versus Version 2. That does <strong>not</strong> prove critics are inherently unhelpful — only that this configuration, on this 20-case set, showed no measured accuracy gain. Treating Version 3 as preferable for high-stakes deals remains a <span class="tag hyp">hypothesis</span>.</p>';
+    '<p class="callout-label"><span class="tag obs">Observed</span></p>' +
+    '<p class="callout-body">Version 3 kept 20/20 deterministic passes. The critic revised 1/20 cases (GE-016). That run was the slowest and most expensive Version 3 case and re-introduced a false-positive risk flag (precision 0.5 on that case).</p>' +
+    '<p class="callout-label"><span class="tag interp">Interpretation</span></p>' +
+    '<p class="callout-body" style="margin-bottom:0">In this evaluation, the extra critic did not improve deterministic accuracy and worsened unit economics versus Version 2. That does not prove critics are inherently unhelpful. It only shows that this configuration, on this 20 case set, showed no measured accuracy gain. Treating Version 3 as preferable for high stakes deals remains a hypothesis.</p>';
 
   // ===== Charts =====
   (function chartPareto() {
     const host = document.getElementById('chart-pareto');
-    const W = 520, H = 340, m = { l: 52, r: 16, t: 36, b: 48 };
+    const W = 520, H = 380, m = { l: 52, r: 16, t: 44, b: 56 };
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const x = v => m.l + (v / 0.12) * iw, y = v => m.t + ((105 - v) / 30) * ih;
     const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img' });
@@ -1029,9 +1084,9 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     svg.appendChild(svgEl('line', { x1: m.l, y1: m.t, x2: m.l, y2: m.t + ih, stroke: '#94a3b8', 'stroke-width': 1.25 }));
     svg.appendChild(svgEl('line', { x1: m.l, y1: m.t + ih, x2: m.l + iw, y2: m.t + ih, stroke: '#94a3b8', 'stroke-width': 1.25 }));
     svg.appendChild(svgEl('line', { x1: m.l, y1: y(100), x2: m.l + iw, y2: y(100), stroke: PASS.text, 'stroke-width': 1.25, 'stroke-dasharray': '5 4' }));
-    axisLabel(svg, m.l + iw / 2, H - 10, 'Median API cost / deal (USD)', { size: 11 });
+    axisLabel(svg, m.l + iw / 2, H - 14, 'Median API cost / deal (USD)', { size: 11 });
     axisLabel(svg, 14, m.t + ih / 2, 'Pass rate (%)', { size: 11, rotate: -90 });
-    legend(svg, VERSIONS.map(v => ({ label: v, color: COLORS[v] })), m.l, 18);
+    legend(svg, VERSIONS.map(v => ({ label: v, color: COLORS[v] })), m.l, 22);
     const pts = VERSIONS.map(ver => ({ ver, cost: byVer[ver].p50_cost_usd, pass: byVer[ver].deterministic_pass_rate_pct, lat: byVer[ver].p50_latency_s }));
     const latMin = Math.min(...pts.map(p => p.lat)), latMax = Math.max(...pts.map(p => p.lat));
     const rB = lat => 9 + 12 * ((lat - latMin) / (latMax - latMin || 1));
@@ -1043,7 +1098,6 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
       const g = svgEl('g'), cx = x(p.cost), cy = y(p.pass), rr = rB(p.lat);
       if (p.ver === 'v2') g.appendChild(svgEl('circle', { cx, cy, r: rr + 4, fill: 'none', stroke: PASS.text, 'stroke-width': 2 }));
       g.appendChild(svgEl('circle', { cx, cy, r: rr, fill: COLORS[p.ver], stroke: '#fff', 'stroke-width': 1.5 }));
-      g.appendChild(svgEl('text', { x: cx, y: cy - rr - 6, fill: COLORS[p.ver], 'font-size': 11, 'font-weight': 700, 'text-anchor': 'middle', text: p.ver }));
       bindTip(g, () => '<div class="tt-title">' + p.ver + '</div>Pass ' + fmtPct(p.pass, 1) + ' (n=20)<br/>p50 cost ' + fmtUsd(p.cost, 3) + '<br/>p50 latency ' + fmtNum(p.lat, 1) + 's');
       svg.appendChild(g);
     });
@@ -1057,7 +1111,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
       { key: 'mean_flag_recall', label: 'Recall' },
       { key: 'mean_flag_f1', label: 'F1' }
     ];
-    const W = 520, H = 340, m = { l: 48, r: 16, t: 36, b: 48 };
+    const W = 520, H = 380, m = { l: 48, r: 16, t: 44, b: 56 };
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H });
     for (let t = 0; t <= 100; t += 25) {
@@ -1068,11 +1122,11 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     svg.appendChild(svgEl('line', { x1: m.l, y1: m.t, x2: m.l, y2: m.t + ih, stroke: '#94a3b8', 'stroke-width': 1.25 }));
     svg.appendChild(svgEl('line', { x1: m.l, y1: m.t + ih, x2: m.l + iw, y2: m.t + ih, stroke: '#94a3b8', 'stroke-width': 1.25 }));
     axisLabel(svg, 14, m.t + ih / 2, 'Score (%)', { size: 11, rotate: -90 });
-    legend(svg, VERSIONS.map(v => ({ label: v, color: COLORS[v] })), m.l, 18);
+    legend(svg, VERSIONS.map(v => ({ label: v, color: COLORS[v] })), m.l, 22);
     const groupW = iw / metrics.length, barW = Math.min(26, (groupW - 14) / 3);
     metrics.forEach((met, mi) => {
       const gx = m.l + mi * groupW + groupW / 2;
-      axisLabel(svg, gx, H - m.b + 18, met.label, { size: 11 });
+      axisLabel(svg, gx, H - m.b + 20, met.label, { size: 11 });
       VERSIONS.forEach((ver, vi) => {
         const pct = byVer[ver][met.key] * 100;
         const h = ih * (pct / 100), bx = gx - (3 * barW + 6) / 2 + vi * (barW + 3), by = m.t + ih - h;
@@ -1094,31 +1148,38 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 
   (function chartCostLat() {
     const host = document.getElementById('chart-cost-latency');
-    const W = 520, H = 340, m = { l: 48, r: 48, t: 40, b: 48 };
+    const W = 520, H = 380, m = { l: 48, r: 48, t: 44, b: 56 };
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H });
-    const maxCost = 0.12, maxLat = 90;
+    const maxCost = 0.15, maxLat = 90, costTicks = 5; // $0.03 intervals → $0.15 … $0.00
+    const LATENCY = '#0284c7'; // sky — distinct from zinc/teal/indigo bars
     const yCost = v => m.t + ih * (1 - v / maxCost);
     const yLat = v => m.t + ih * (1 - v / maxLat);
-    for (let i = 0; i <= 4; i++) {
-      const yy = m.t + ih * i / 4;
+    for (let i = 0; i <= costTicks; i++) {
+      const yy = m.t + ih * i / costTicks;
       svg.appendChild(svgEl('line', { x1: m.l, y1: yy, x2: m.l + iw, y2: yy, stroke: GRID, 'stroke-dasharray': '3 4' }));
-      axisLabel(svg, m.l - 6, yy + 3, '$' + (maxCost * (1 - i / 4)).toFixed(2), { size: 10, anchor: 'end' });
-      axisLabel(svg, m.l + iw + 6, yy + 3, Math.round(maxLat * (1 - i / 4)) + 's', { size: 10, anchor: 'start' });
+      axisLabel(svg, m.l - 6, yy + 3, '$' + (maxCost * (1 - i / costTicks)).toFixed(2), { size: 10, anchor: 'end' });
+      axisLabel(svg, m.l + iw + 6, yy + 3, Math.round(maxLat * (1 - i / costTicks)) + 's', { size: 10, anchor: 'start' });
     }
     svg.appendChild(svgEl('line', { x1: m.l, y1: m.t, x2: m.l, y2: m.t + ih, stroke: '#94a3b8', 'stroke-width': 1.25 }));
     svg.appendChild(svgEl('line', { x1: m.l + iw, y1: m.t, x2: m.l + iw, y2: m.t + ih, stroke: '#94a3b8', 'stroke-width': 1.25 }));
     svg.appendChild(svgEl('line', { x1: m.l, y1: m.t + ih, x2: m.l + iw, y2: m.t + ih, stroke: '#94a3b8', 'stroke-width': 1.25 }));
     axisLabel(svg, m.l + iw / 2, H - 10, 'Version', { size: 11 });
-    legend(svg, [{ type: 'rect', label: 'Median cost', color: '#0f766e' }, { type: 'line', label: 'Median latency', color: '#2563eb' }], m.l, 18);
+    legend(svg, [{ type: 'rect', label: 'Median cost', color: COLORS.v2 }, { type: 'line', label: 'Median latency', color: LATENCY }], m.l, 22);
     const colW = iw / 3, barW = 28;
+    const seriesPos = {};
     VERSIONS.forEach((ver, i) => {
       const cx = m.l + colW * i + colW / 2;
       const cost = byVer[ver].p50_cost_usd, lat = byVer[ver].p50_latency_s;
-      const by = yCost(cost), h = m.t + ih - by;
+      const by = yCost(cost), cy = yLat(lat), h = m.t + ih - by;
       const g = svgEl('g');
       g.appendChild(svgEl('rect', { x: cx - barW / 2, y: by, width: barW, height: Math.max(h, 0), fill: COLORS[ver], rx: 2, opacity: 0.9 }));
-      g.appendChild(svgEl('text', { x: cx, y: by - 6, fill: COLORS[ver], 'font-size': 10, 'font-weight': 700, 'text-anchor': 'middle', text: fmtUsd(cost, 3) }));
+      // Cost labels sit above the bars in version colors.
+      g.appendChild(svgEl('text', {
+        x: cx, y: by - 8, fill: COLORS[ver], 'font-size': 10, 'font-weight': 700,
+        'text-anchor': 'middle', text: fmtUsd(cost, 3)
+      }));
+      seriesPos[ver] = { cx, cy };
       axisLabel(svg, cx, H - m.b + 16, ver, { size: 11 });
       bindTip(g, () => '<div class="tt-title">' + ver + '</div>p50 cost ' + fmtUsd(cost, 4) + '<br/>p50 latency ' + fmtNum(lat, 1) + 's<br/>p90 latency ' + fmtNum(byVer[ver].p90_latency_s, 1) + 's');
       svg.appendChild(g);
@@ -1127,12 +1188,17 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     for (let i = 0; i < 2; i++) {
       const a = VERSIONS[i], b = VERSIONS[i + 1];
       const x1 = m.l + colW * i + colW / 2, x2 = m.l + colW * (i + 1) + colW / 2;
-      svg.appendChild(svgEl('line', { x1, y1: yLat(byVer[a].p50_latency_s), x2, y2: yLat(byVer[b].p50_latency_s), stroke: '#2563eb', 'stroke-width': 2 }));
+      svg.appendChild(svgEl('line', { x1, y1: yLat(byVer[a].p50_latency_s), x2, y2: yLat(byVer[b].p50_latency_s), stroke: LATENCY, 'stroke-width': 2 }));
     }
-    VERSIONS.forEach((ver, i) => {
-      const cx = m.l + colW * i + colW / 2, cy = yLat(byVer[ver].p50_latency_s);
-      svg.appendChild(svgEl('circle', { cx, cy, r: 5, fill: '#2563eb', stroke: '#fff', 'stroke-width': 1.5 }));
-      svg.appendChild(svgEl('text', { x: cx + 10, y: cy - 8, fill: '#2563eb', 'font-size': 10, 'font-weight': 700, text: fmtNum(byVer[ver].p50_latency_s, 0) + 's' }));
+    VERSIONS.forEach((ver) => {
+      const { cx, cy } = seriesPos[ver];
+      svg.appendChild(svgEl('circle', { cx, cy, r: 5, fill: LATENCY, stroke: '#fff', 'stroke-width': 1.5 }));
+      // Latency labels stay above every connection dot, outside the bars.
+    svg.appendChild(svgEl('text', {
+        x: cx, y: cy - 12, fill: LATENCY,
+        'font-size': 10, 'font-weight': 700, 'text-anchor': 'middle',
+        text: fmtNum(byVer[ver].p50_latency_s, 0) + 's'
+      }));
     });
     host.appendChild(svg);
   })();
@@ -1143,7 +1209,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     const labels = { standard: 'standard (n=10)', edge_margin: 'edge_margin (n=5)', edge_legal: 'edge_legal (n=2)', compound_trap: 'compound_trap (n=3)' };
     const lookup = {};
     DATA.difficulty_breakdown.forEach(r => { lookup[r.experiment_version + '|' + r.difficulty] = r; });
-    const W = 520, H = 300, m = { l: 130, r: 12, t: 28, b: 12 };
+    const W = 520, H = 340, m = { l: 130, r: 12, t: 36, b: 16 };
     const cellW = (W - m.l - m.r) / 3, cellH = (H - m.t - m.b) / 4;
     const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H });
     VERSIONS.forEach((ver, vi) => axisLabel(svg, m.l + cellW * vi + cellW / 2, m.t - 8, ver, { size: 12 }));
@@ -1171,10 +1237,10 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     '<ul class="list-tight">' +
     '<li><strong>20 test scenarios</strong> covering standard deals, margin-edge cases, legal redlines, and compound traps.</li>' +
     '<li><strong>Deterministic grading:</strong> approval-lane exact match; gross-margin within tolerance; risk-flag precision, recall and F1 against golden flag codes.</li>' +
-    '<li><strong>AI qualitative grading:</strong> an independent Opus model scores commercial accuracy, policy grounding, executive clarity and actionability (1–5).</li>' +
+    '<li><strong>AI qualitative grading:</strong> an independent LLM-as-a-Judge (' + judgeModel + ') scores each memo against a rubric covering commercial accuracy, policy grounding, executive clarity and actionability (1–5).</li>' +
     '<li><strong>Paired design:</strong> every scenario runs under Version 1, Version 2 and Version 3 so comparisons are scenario-matched.</li>' +
     '</ul>' +
-    '<p class="muted" style="margin-bottom:0">A correct approval lane does not by itself mean the memo is complete or safe to act on — qualitative review still matters.</p>';
+    '<p class="muted" style="margin-bottom:0">A correct approval lane does not by itself mean the memo is complete or safe to act on. Qualitative review still matters.</p>';
 
   const ex = A.execution_vs_success;
   document.getElementById('exec-vs-success').innerHTML =
@@ -1200,11 +1266,24 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     '<p class="muted">Bootstrap 95% CI for mean paired cost change Version 2−1: [' + pc.cost_v1_v2.boot_ci95_mean_lo + ', ' + pc.cost_v1_v2.boot_ci95_mean_hi +
     '] (consistent savings). Version 3−2: [' + pc.cost_v2_v3.boot_ci95_mean_lo + ', ' + pc.cost_v2_v3.boot_ci95_mean_hi + '] (consistent overhead).</p>';
 
-  document.getElementById('judge-panel').innerHTML =
-    '<p><span class="tag interp">Interpretation</span> ' + A.judge_analysis.note + '</p>' +
-    '<p>Available dimensions: ' + A.judge_analysis.available_dimensions.join(', ') + '.</p>' +
-    '<p><strong>Not separately scored in stored outputs:</strong></p><ul>' +
-    A.judge_analysis.unavailable_requested_dimensions.map(u => '<li><code>' + u.name + '</code> — ' + u.reason + '</li>').join('') + '</ul>';
+  (function () {
+    let judgeNote = A.judge_analysis.note || '';
+    const pillMap = { observed: ['obs', 'Observed'], interpretation: ['interp', 'Interpretation'], hypothesis: ['hyp', 'Hypothesis'] };
+    let judgePill = 'interp', judgeLabel = 'Interpretation';
+    const m = judgeNote.match(/^(Observed|Interpretation|Hypothesis)\s+/i);
+    if (m) {
+      const mapped = pillMap[m[1].toLowerCase()];
+      judgePill = mapped[0];
+      judgeLabel = mapped[1];
+      judgeNote = judgeNote.slice(m[0].length);
+    }
+    document.getElementById('judge-panel').innerHTML =
+      '<p class="callout-label"><span class="tag ' + judgePill + '">' + judgeLabel + '</span></p>' +
+      '<p class="callout-body">' + judgeNote + '</p>' +
+      '<p>Available dimensions: ' + A.judge_analysis.available_dimensions.join(', ') + '.</p>' +
+      '<p><strong>Not separately scored in stored outputs:</strong></p><ul>' +
+      A.judge_analysis.unavailable_requested_dimensions.map(u => '<li><code>' + u.name + '</code> — ' + u.reason + '</li>').join('') + '</ul>';
+  })();
 
   document.getElementById('gaps-panel').innerHTML = '<ul>' + A.data_gaps.map(g => '<li>' + g + '</li>').join('') + '</ul>';
 
@@ -1216,7 +1295,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     '<li><strong>Tools:</strong> poka-yoked schemas (Version 2+) forcing decimal discounts, payment-term enums, canonical legal flags.</li>' +
     '<li><strong>Retrieval:</strong> Deal-Desk policies + CUAD-style clauses in SQLite; BM25 only (v1) or hybrid dense+BM25 RRF (v2/v3).</li>' +
     '<li><strong>Output:</strong> structured <code>DealDeskExecutiveMemo</code> JSON with JSON-repair path when needed.</li>' +
-    '<li><strong>Evaluation:</strong> deterministic graders + independent Opus judge; costs logged in a pinned rate-card ledger (as of 2026-11-21).</li>' +
+    '<li><strong>Evaluation:</strong> deterministic graders + independent LLM-as-a-Judge (' + judgeModel + '); costs logged in a pinned rate-card ledger (as of 2026-11-21).</li>' +
     '</ul>';
 
   document.getElementById('tech-agent').innerHTML =
@@ -1246,7 +1325,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   // cost dist + token charts (compact)
   (function () {
     const host = document.getElementById('chart-cost-dist');
-    const W = 420, H = 300, m = { l: 48, r: 12, t: 36, b: 40 };
+    const W = 420, H = 340, m = { l: 48, r: 12, t: 44, b: 48 };
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const y = v => m.t + ((0.14 - v) / 0.14) * ih;
     const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H });
@@ -1270,7 +1349,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 
   (function () {
     const host = document.getElementById('chart-token-mix');
-    const W = 420, H = 260, m = { l: 40, r: 70, t: 36, b: 36 };
+    const W = 420, H = 300, m = { l: 40, r: 70, t: 44, b: 44 };
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const x = v => m.l + (v / 550) * iw;
     const svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H });
@@ -1314,9 +1393,12 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
 
   const li = A.latency_investigation;
   document.getElementById('latency-investigation').innerHTML =
-    '<p><span class="tag obs">Observed</span> ' + li.observation + ' Slowest Version 3 case: <code>' + li.max_case.case_id + '</code> (' + fmtNum(li.max_case.latency_s, 0) + 's, revision=' + li.max_case.revision_applied + ').</p>' +
-    '<p><span class="tag interp">Interpretation</span> ' + li.evidence + '</p>' +
-    '<p class="muted"><span class="tag hyp">Not proven</span> ' + li.hypothesis_not_proven + '</p>';
+    '<p class="callout-label"><span class="tag obs">Observed</span></p>' +
+    '<p class="callout-body">' + li.observation + ' Slowest Version 3 case: <code>' + li.max_case.case_id + '</code> (' + fmtNum(li.max_case.latency_s, 0) + 's, revision=' + li.max_case.revision_applied + ').</p>' +
+    '<p class="callout-label"><span class="tag interp">Interpretation</span></p>' +
+    '<p class="callout-body">' + li.evidence + '</p>' +
+    '<p class="callout-label"><span class="tag hyp">Hypothesis</span></p>' +
+    '<p class="callout-body muted">' + li.hypothesis_not_proven + '</p>';
 
   document.getElementById('step-latency-table').innerHTML =
     '<table><thead><tr><th>Version</th><th>Producer</th><th>JSON repair</th><th>Critic</th><th>Revision</th><th>Judge</th></tr></thead><tbody>' +
@@ -1350,14 +1432,16 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   document.getElementById('failure-taxonomy').innerHTML =
     A.failure_taxonomy.map(t => {
       const counts = VERSIONS.map(v => v + ': ' + t.counts_by_version[v] + (t.cases_by_version[v].length ? ' (' + t.cases_by_version[v].join(', ') + ')' : '')).join(' · ');
-      return '<div style="margin-bottom:1rem;padding-bottom:.85rem;border-bottom:1px solid var(--line)">' +
-        '<h3 style="margin:0 0 .3rem">' + t.label + '</h3><p>' + t.description + '</p>' +
-        '<p class="mono" style="font-size:.78rem">' + counts + '</p>' +
-        '<p class="muted">Resolved in: ' + (t.resolved_in || 'unresolved / none observed') + '. ' + t.notes + '</p></div>';
+      return '<article class="fail-item">' +
+        '<h3>' + t.label + '</h3>' +
+        '<p>' + t.description + '</p>' +
+        '<p class="mono fail-counts" style="font-size:.78rem">' + counts + '</p>' +
+        '<p class="muted">Resolved in: ' + (t.resolved_in || 'unresolved / none observed') + '. ' + t.notes + '</p>' +
+        '</article>';
     }).join('');
   document.getElementById('unavailable-failures').innerHTML =
-    '<strong>Not measurable with current outputs</strong> ' +
-    A.unavailable_failure_categories.map(u => u.label + ' — ' + u.reason).join(' · ');
+    '<strong>Not measurable with current outputs</strong>' +
+    '<p style="margin:0">' + A.unavailable_failure_categories.map(u => u.label + ' — ' + u.reason).join(' · ') + '</p>';
 
   function renderScenarioCompare() {
     const mode = document.getElementById('sc-filter').value;
@@ -1513,7 +1597,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
   ['f-version', 'f-diff', 'f-status', 'f-search'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => {
       clearPresetHighlight();
-      renderCases();
+  renderCases();
     });
   });
   applyPreset('all');
@@ -1524,7 +1608,7 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     const elTarget = document.getElementById(id);
     if (!elTarget) return;
     if (elTarget.tagName === 'DETAILS') elTarget.open = true;
-    const parentDetails = elTarget.closest && elTarget.closest('details.panel');
+    const parentDetails = elTarget.closest && elTarget.closest('details.panel, details.limits');
     if (parentDetails) parentDetails.open = true;
     if (id === 'explorer') {
       const panel = document.getElementById('explorer-panel');
@@ -1539,6 +1623,22 @@ footer { margin-top:3rem; padding-top:1rem; border-top:1px solid var(--line); co
     '<p><strong>Reproduce:</strong> <code>python -m src.build_report</code></p>' +
     '<p><strong>Sources:</strong> ' + Object.values(meta.sources).map(v => '<code>' + v + '</code>').join(', ') + '</p>' +
     '<p class="muted" style="margin-bottom:0">Embedded <code>analytics</code> block preserves Wilson CIs, McNemar, bootstrap paired deltas, failure taxonomy and step rollups. No network fetches.</p>';
+})();
+</script>
+<script>
+/* Local-only auto-reload: large embedded HTML breaks live-server/Browsersync snippet injection. */
+(function () {
+  var host = location.hostname;
+  if (host !== '127.0.0.1' && host !== 'localhost') return;
+  var prev = null;
+  setInterval(function () {
+    fetch(location.href, { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+      var stamp = r.headers.get('etag') || r.headers.get('last-modified');
+      if (!stamp) return;
+      if (prev && stamp !== prev) location.reload();
+      prev = stamp;
+    }).catch(function () {});
+  }, 800);
 })();
 </script>
 </body>
